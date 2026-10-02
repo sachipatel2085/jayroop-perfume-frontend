@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, BookOpen, X } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import { Badge } from '../../components/common/Badge.jsx';
+import { ImageDropzone } from '../../components/common/ImageDropzone.jsx';
 
 export const AdminBlogs = () => {
   const [blogs, setBlogs] = useState([]);
@@ -228,17 +229,14 @@ export const AdminBlogs = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">Cover Image URL *</label>
-                <input
-                  type="url"
-                  required
-                  value={formData.coverImageUrl}
-                  onChange={(e) => setFormData({ ...formData, coverImageUrl: e.target.value })}
-                  placeholder="https://..."
-                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
-                />
-              </div>
+              <ImageDropzone
+                value={formData.coverImageUrl}
+                onChange={(url) => setFormData({ ...formData, coverImageUrl: url })}
+                folder="blogs"
+                label="Article Editorial Cover Photo"
+                hint="Upload high-res editorial banner (PNG, JPG, WebP)"
+                required={true}
+              />
 
               <div>
                 <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">Excerpt (Short preview) *</label>

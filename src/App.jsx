@@ -23,6 +23,7 @@ import { OrderHistory } from './pages/OrderHistory.jsx';
 import { WishlistPage } from './pages/WishlistPage.jsx';
 import { BlogList } from './pages/BlogList.jsx';
 import { BlogDetail } from './pages/BlogDetail.jsx';
+import { AboutUs } from './pages/AboutUs.jsx';
 import { Login } from './pages/Auth/Login.jsx';
 import { Register } from './pages/Auth/Register.jsx';
 
@@ -86,6 +87,7 @@ export default function App() {
                 <Route path="/track-order" element={<OrderTrackingPage />} />
                 <Route path="/track-order/:orderNumber" element={<OrderTrackingPage />} />
                 <Route path="/wishlist" element={<WishlistPage />} />
+                <Route path="/about" element={<AboutUs />} />
                 <Route path="/blog" element={<BlogList />} />
                 <Route path="/blog/:slug" element={<BlogDetail />} />
                 <Route path="/login" element={<Login />} />

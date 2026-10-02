@@ -34,7 +34,7 @@ export const BlogDetail = () => {
     return (
       <div className="bg-noir min-h-screen py-24 text-center">
         <div className="w-10 h-10 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="font-serif text-xs uppercase tracking-widest text-gold">Opening Royal Journal...</p>
+        <p className="font-serif text-xs uppercase tracking-widest text-gold">Opening Royal Blog...</p>
       </div>
     );
   }
@@ -46,7 +46,7 @@ export const BlogDetail = () => {
           Article Not Found
         </h2>
         <Link to="/blog" className="btn-gold text-xs py-3 px-6">
-          Return to Journal
+          Return to Blog
         </Link>
       </div>
     );
@@ -63,7 +63,7 @@ export const BlogDetail = () => {
       <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-zinc-500 mb-8">
         <Link to="/" className="hover:text-gold transition-colors">Home</Link>
         <ChevronRight className="w-3.5 h-3.5" />
-        <Link to="/blog" className="hover:text-gold transition-colors">Journal</Link>
+        <Link to="/blog" className="hover:text-gold transition-colors">Blog</Link>
         <ChevronRight className="w-3.5 h-3.5" />
         <span className="text-gold font-medium truncate">{blog.title}</span>
       </nav>
@@ -145,7 +145,7 @@ export const BlogDetail = () => {
       {recentBlogs.length > 0 && (
         <div className="mt-16 pt-10 border-t border-zinc-900">
           <h3 className="font-serif text-lg uppercase tracking-wider text-gold font-semibold mb-6">
-            More From The Scent Journal
+            More From The Royal Blog
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {recentBlogs.map((r) => (

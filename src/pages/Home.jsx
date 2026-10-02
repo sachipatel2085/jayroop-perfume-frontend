@@ -267,13 +267,13 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* 6. EDITORIAL JOURNAL PREVIEW */}
+      {/* 6. EDITORIAL BLOG PREVIEW */}
       {blogs.length > 0 && (
         <section className="py-20 bg-noir border-t border-zinc-900 px-4 sm:px-8 max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
             <div>
               <span className="text-[11px] uppercase tracking-[0.3em] text-gold font-medium">
-                The Scent Journal
+                The Royal Blog
               </span>
               <h2 className="font-serif text-2xl sm:text-3xl uppercase tracking-wider text-zinc-100 font-semibold mt-1">
                 Editorial & Rituals
@@ -283,7 +283,7 @@ export const Home = () => {
               to="/blog"
               className="text-xs text-gold hover:text-white uppercase tracking-widest font-semibold flex items-center gap-1"
             >
-              <span>Read Full Journal</span>
+              <span>Read Full Blog</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

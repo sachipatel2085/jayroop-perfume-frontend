@@ -21,7 +21,7 @@ export const BlogList = () => {
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-12 px-4 sm:px-8 max-w-7xl mx-auto">
       <SEOHead
-        title="The Royal Journal & Editorial"
+        title="The Royal Blog & Editorial"
         description="Essays, rituals, and botanical insights from the house of Jayroop."
       />
 
@@ -30,7 +30,7 @@ export const BlogList = () => {
           Editorial & Fragrance Philosophy
         </span>
         <h1 className="font-serif text-3xl sm:text-5xl uppercase tracking-wider font-bold text-zinc-100">
-          The Scent Journal
+          The Royal Blog
         </h1>
         <p className="text-xs text-zinc-400 font-light">
           Explorations in royal Indian distillation, oud maturation, and the science of skin confidence.
@@ -44,7 +44,7 @@ export const BlogList = () => {
           ))}
         </div>
       ) : blogs.length === 0 ? (
-        <p className="text-center text-zinc-500 py-20">No journal entries published yet.</p>
+        <p className="text-center text-zinc-500 py-20">No blog articles published yet.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {blogs.map((blog) => (

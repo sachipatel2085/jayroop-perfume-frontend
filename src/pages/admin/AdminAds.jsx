@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Video, Image, Check, X } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import { Badge } from '../../components/common/Badge.jsx';
+import { ImageDropzone } from '../../components/common/ImageDropzone.jsx';
 
 export const AdminAds = () => {
   const [ads, setAds] = useState([]);
@@ -243,32 +244,26 @@ export const AdminAds = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">
-                  Media Direct URL (Cloudinary / MP4 link) *
-                </label>
-                <input
-                  type="url"
-                  required
-                  value={formData.mediaUrl}
-                  onChange={(e) => setFormData({ ...formData, mediaUrl: e.target.value })}
-                  placeholder="https://...mp4"
-                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
-                />
-              </div>
+              <ImageDropzone
+                value={formData.mediaUrl}
+                onChange={(url) => setFormData({ ...formData, mediaUrl: url })}
+                folder="ads"
+                label={formData.mediaType === 'VIDEO' ? 'Campaign Video Stream (MP4) *' : 'Campaign Hero Image *'}
+                hint={formData.mediaType === 'VIDEO' ? 'Upload high-res MP4 video or image up to 15MB' : 'Upload high-res banner photo up to 15MB'}
+                accept={formData.mediaType === 'VIDEO' ? 'video/mp4,image/*' : 'image/*'}
+                isVideo={formData.mediaType === 'VIDEO'}
+                required={true}
+              />
 
-              <div>
-                <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">
-                  Poster Thumbnail URL (For instant video preview)
-                </label>
-                <input
-                  type="url"
+              {formData.mediaType === 'VIDEO' && (
+                <ImageDropzone
                   value={formData.posterUrl}
-                  onChange={(e) => setFormData({ ...formData, posterUrl: e.target.value })}
-                  placeholder="https://...jpg"
-                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
+                  onChange={(url) => setFormData({ ...formData, posterUrl: url })}
+                  folder="ads"
+                  label="Poster Thumbnail Image (For instant video preview)"
+                  hint="Upload video cover thumbnail photo (PNG, JPG, WebP)"
                 />
-              </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div>

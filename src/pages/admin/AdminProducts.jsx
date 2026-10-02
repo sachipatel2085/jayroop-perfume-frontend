@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Search, Package, Check, X } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import { Badge } from '../../components/common/Badge.jsx';
+import { ImageDropzone } from '../../components/common/ImageDropzone.jsx';
 
 export const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -403,16 +404,13 @@ export const AdminProducts = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">Primary Image URL</label>
-                <input
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  placeholder="https://..."
-                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
-                />
-              </div>
+              <ImageDropzone
+                value={formData.imageUrl}
+                onChange={(url) => setFormData({ ...formData, imageUrl: url })}
+                folder="products"
+                label="Product Primary Flacon Photograph"
+                hint="Drag & drop high-res bottle photo (PNG, JPG, WebP up to 10MB)"
+              />
 
               <div>
                 <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">Short Description</label>

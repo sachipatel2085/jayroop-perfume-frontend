@@ -73,9 +73,9 @@ export const Footer = () => {
             Collections
           </h4>
           <ul className="space-y-2.5 text-xs">
-            <li><Link to="/shop" className="hover:text-gold transition-colors">All Creations</Link></li>
             <li><Link to="/category/perfumes" className="hover:text-gold transition-colors">Royal Extraits de Parfum</Link></li>
             <li><Link to="/category/skincare" className="hover:text-gold transition-colors">Jayroop Special Skincare</Link></li>
+            <li><Link to="/category/soaps" className="hover:text-gold transition-colors">Artisanal Saffron Soaps</Link></li>
           </ul>
         </div>
 
@@ -85,10 +85,11 @@ export const Footer = () => {
             Concierge
           </h4>
           <ul className="space-y-2.5 text-xs">
+            <li><Link to="/about" className="hover:text-gold transition-colors">About Jayroop House</Link></li>
             <li><Link to="/orders" className="hover:text-gold transition-colors">Track Your Order</Link></li>
             <li><Link to="/profile" className="hover:text-gold transition-colors">My Royal Account</Link></li>
-            <li><Link to="/wishlist" className="hover:text-gold transition-colors">Saved Fragrance Wishlist</Link></li>
-            <li><Link to="/blog" className="hover:text-gold transition-colors">Editorial Journal</Link></li>
+            <li><Link to="/wishlist" className="hover:text-gold transition-colors">Saved Wishlist</Link></li>
+            <li><Link to="/blog" className="hover:text-gold transition-colors">Royal Blog</Link></li>
           </ul>
         </div>
 

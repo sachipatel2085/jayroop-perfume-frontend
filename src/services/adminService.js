@@ -46,4 +46,15 @@ export const adminService = {
   getReviews: async () => (await api.get('/reviews/admin')).data,
   toggleReviewApproval: async (id) => (await api.put(`/reviews/admin/${id}/status`)).data,
   deleteReview: async (id) => (await api.delete(`/reviews/admin/${id}`)).data,
+
+  // Direct Media Upload (Cloudinary)
+  uploadMedia: async (file, folder = 'general') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
+    const res = await api.post('/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res?.data || res;
+  },
 };
