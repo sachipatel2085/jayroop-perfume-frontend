@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-noir text-zinc-200 overflow-x-hidden;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* Luxury subtle scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #080808;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2b2618;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #d4af37;
+  }
+}
+
+@layer components {
+  .btn-gold {
+    @apply relative inline-flex items-center justify-center px-7 py-3 text-xs uppercase tracking-[0.2em] font-medium text-black bg-gradient-to-r from-gold via-gold-light to-gold hover:opacity-95 transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline-gold {
+    @apply relative inline-flex items-center justify-center px-7 py-3 text-xs uppercase tracking-[0.2em] font-medium text-gold border border-gold/40 hover:border-gold hover:bg-gold/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .gold-border {
+    @apply border border-gold/20 hover:border-gold/40 transition-colors duration-300;
+  }
+
+  .gold-gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-gold via-gold-light to-gold;
+  }
+
+  .luxury-glass {
+    @apply bg-noir-card/85 backdrop-blur-md border border-white/5;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-gold-glow;
+  }
+}
