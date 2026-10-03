@@ -11,13 +11,13 @@ export const AdminAds = () => {
   const [editingId, setEditingId] = useState(null);
 
   const [formData, setFormData] = useState({
-    title: '',
-    subtitle: '',
-    description: '',
-    mediaType: 'VIDEO',
-    mediaUrl: '',
+    title: 'JAYRUP',
+    subtitle: 'LUXURY PERFUME',
+    description: "Marwad ka Pahla Luxury Perfume — Royal man's first choice. Experience Royal Flora Eau De Parfum.",
+    mediaType: 'IMAGE',
+    mediaUrl: '/uploads/jayrup-hero-banner.jpg',
     posterUrl: '',
-    ctaText: 'EXPLORE COLLECTION',
+    ctaText: 'EXPLORE ROYAL FLORA',
     ctaUrl: '/shop',
     location: 'HOMEPAGE_HERO',
     priority: 10,
@@ -43,13 +43,13 @@ export const AdminAds = () => {
   const handleOpenAdd = () => {
     setEditingId(null);
     setFormData({
-      title: '',
-      subtitle: '',
-      description: '',
-      mediaType: 'VIDEO',
-      mediaUrl: '',
+      title: 'JAYRUP',
+      subtitle: 'LUXURY PERFUME',
+      description: "Marwad ka Pahla Luxury Perfume — Royal man's first choice. Experience Royal Flora Eau De Parfum.",
+      mediaType: 'IMAGE',
+      mediaUrl: '/uploads/jayrup-hero-banner.jpg',
       posterUrl: '',
-      ctaText: 'EXPLORE COLLECTION',
+      ctaText: 'EXPLORE ROYAL FLORA',
       ctaUrl: '/shop',
       location: 'HOMEPAGE_HERO',
       priority: 10,

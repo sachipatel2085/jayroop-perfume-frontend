@@ -4,6 +4,8 @@ import { ArrowRight, Sparkles, Award, Star, Compass, Play, Volume2, VolumeX } fr
 import { productService } from '../services/productService.js';
 import { ProductCard } from '../components/product/ProductCard.jsx';
 import { SEOHead } from '../components/common/SEOHead.jsx';
+import defaultHeroBanner from '../assets/jayrup-hero-banner.jpg';
+import logoImg from '../assets/jayroop-logo.webp';
 
 export const Home = () => {
   const [heroAd, setHeroAd] = useState(null);
@@ -51,9 +53,9 @@ export const Home = () => {
         description="Explore Jayroop (JR) handcrafted royal extraits de parfum, saffron soaps, and Jayroop Special Pimples Cream. पिंपल्स भागे, आत्मविश्वास जागे."
       />
 
-      {/* 1. HERO SECTION: Dynamically loaded from Advertisement DB */}
-      <section className="relative w-full min-h-[85vh] sm:min-h-[90vh] flex items-center justify-center overflow-hidden bg-black">
-        {/* Dynamic Video or High-res Poster Background */}
+      {/* 1. HERO SECTION: Dynamically loaded from Advertisement DB / Uploaded Banner */}
+      <section className="relative w-full min-h-[85vh] sm:min-h-[92vh] flex items-center justify-center overflow-hidden bg-[#070b10]">
+        {/* Dynamic Video or High-res Poster / Image Background */}
         {heroAd?.mediaType === 'VIDEO' ? (
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <video
@@ -77,47 +79,99 @@ export const Home = () => {
           </div>
         ) : (
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-40 scale-105"
+            className="absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-100 sm:scale-105 filter brightness-[0.75] sm:brightness-[0.65]"
             style={{
               backgroundImage: `url(${
-                heroAd?.mediaUrl ||
-                'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=1600'
+                heroAd?.mediaUrl
+                  ? heroAd.mediaUrl.startsWith('/uploads')
+                    ? `http://localhost:5000${heroAd.mediaUrl}`
+                    : heroAd.mediaUrl
+                  : defaultHeroBanner
               })`,
             }}
           />
         )}
 
-        {/* Ambient Dark Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-noir via-noir/40 to-noir/70" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gold/10 via-transparent to-noir/90" />
+        {/* Ambient Dark Luxury Gradient Overlays & Golden Spotlight */}
+        <div className="absolute inset-0 bg-gradient-to-t from-noir via-noir/50 to-noir/60" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gold/15 via-transparent to-noir/95 pointer-events-none" />
 
-        {/* Hero Content */}
-        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/40 bg-noir/60 backdrop-blur-sm text-gold-light text-[11px] uppercase tracking-[0.25em] font-medium shadow-gold-glow">
-            <Sparkles className="w-3.5 h-3.5 text-gold" />
-            <span>{heroAd?.subtitle || 'THE ROYAL FRAGRANCE & SKINCARE HOUSE'}</span>
+        {/* Hero Content Overlay (Text styled as per royal brand crest & slogan) */}
+        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-4 sm:space-y-5 py-12">
+          {/* 1. Royal Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/40 bg-noir/80 backdrop-blur-md text-gold-light text-[11px] uppercase tracking-[0.25em] font-medium shadow-gold-glow">
+            <Sparkles className="w-3.5 h-3.5 text-gold-amber" />
+            <span>Royal Man's First Choice</span>
           </div>
 
-          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-[0.08em] uppercase text-zinc-100 leading-tight">
-            {heroAd?.title || 'THE CROWN OF ROYAL LUXURY'}
-          </h1>
+          {/* 2. Ornate Crest Emblem */}
+          <div className="flex justify-center -mb-2">
+            <div className="relative p-1 rounded-full border border-gold/40 shadow-gold-glow bg-noir/80">
+              <div className="w-12 h-12 rounded-full overflow-hidden">
+                <img
+                  src={logoImg}
+                  alt="JR Royal Crest"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
 
-          <p className="text-zinc-300 text-sm sm:text-base md:text-lg max-w-2xl mx-auto font-sans font-light leading-relaxed">
+          {/* 3. Main Brand Title */}
+          <div>
+            <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-[0.18em] sm:tracking-[0.25em] uppercase text-transparent bg-clip-text bg-gradient-to-b from-[#FFF5D0] via-[#D4AF37] to-[#8C6B1B] drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] leading-none">
+              {heroAd?.title || 'JAYRUP'}
+              <span className="text-xs sm:text-sm font-sans tracking-normal text-gold align-top ml-1">™</span>
+            </h1>
+
+            {/* Subtitle: LUXURY PERFUME */}
+            <p className="mt-2 text-gold tracking-[0.35em] sm:tracking-[0.45em] text-xs sm:text-sm uppercase font-semibold">
+              {heroAd?.subtitle || 'LUXURY PERFUME'}
+            </p>
+          </div>
+
+          {/* 4. Rajputana Royal Filigree Divider */}
+          <div className="flex items-center justify-center gap-3 text-gold/60 my-1">
+            <span className="h-px w-12 sm:w-24 bg-gradient-to-r from-transparent to-gold/60" />
+            <span className="text-gold text-xs tracking-widest select-none">❦ ✦ ❦</span>
+            <span className="h-px w-12 sm:w-24 bg-gradient-to-l from-transparent to-gold/60" />
+          </div>
+
+          {/* 5. Highlighted Slogan Bar: Marwad ka Pahla Luxury Perfume */}
+          <div className="relative py-2.5 px-6 sm:px-12 inline-block my-1">
+            {/* Illuminated Gold Light Beams */}
+            <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-gold to-transparent shadow-[0_0_12px_rgba(212,175,55,0.9)]" />
+            <div className="absolute inset-x-0 bottom-0 h-[1.5px] bg-gradient-to-r from-transparent via-gold to-transparent shadow-[0_0_12px_rgba(212,175,55,0.9)]" />
+
+            <p className="font-serif italic text-xl sm:text-2xl md:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-[#FFF4CC] via-[#E5C058] to-[#FFF4CC] tracking-wide font-normal drop-shadow-[0_2px_10px_rgba(212,175,55,0.5)]">
+              Marwad ka Pahla Luxury Perfume
+            </p>
+            <div className="flex justify-center -mt-0.5">
+              <span className="text-[10px] text-gold/80">❖</span>
+            </div>
+          </div>
+
+          {/* 6. Description / Edition Details */}
+          <p className="text-zinc-300 text-xs sm:text-sm md:text-base max-w-xl mx-auto font-sans font-light leading-relaxed pt-1">
             {heroAd?.description ||
-              'Crafted with rare Cambodian Oud, Taif Roses, and time-honored Ayurvedic botanical extracts.'}
+              "Royal man's first choice • Royal Flora Eau De Parfum (50 ml | e 1.69 fl.oz) — Handcrafted with the majestic spirit and timeless heritage of Marwad."}
           </p>
 
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to={heroAd?.ctaUrl || '/shop'} className="btn-gold text-xs py-3.5 px-8">
-              <span>{heroAd?.ctaText || 'EXPLORE COLLECTION'}</span>
+          {/* 7. Action CTAs */}
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              to={heroAd?.ctaUrl || '/shop'}
+              className="btn-gold text-xs py-3.5 px-8 flex items-center gap-2 group shadow-gold-glow"
+            >
+              <span>{heroAd?.ctaText || 'EXPLORE ROYAL FLORA'}</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </Link>
 
             <Link
               to="/products/jayroop-special-pimples-cream"
-              className="btn-outline-gold text-xs py-3.5 px-7 flex items-center gap-2"
+              className="btn-outline-gold text-xs py-3.5 px-7 flex items-center gap-2 bg-noir/50 backdrop-blur-sm"
             >
-              <span>Jayroop Special Cream</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>Jayroop Special Skincare</span>
             </Link>
           </div>
         </div>
