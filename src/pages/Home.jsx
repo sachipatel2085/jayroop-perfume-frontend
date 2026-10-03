@@ -4,6 +4,9 @@ import { ArrowRight, Sparkles, Award, Star, Compass, Play, Volume2, VolumeX } fr
 import { productService } from '../services/productService.js';
 import { ProductCard } from '../components/product/ProductCard.jsx';
 import { SEOHead } from '../components/common/SEOHead.jsx';
+import VideoSEO from '../components/common/VideoSEO.jsx';
+import InspirationsSection from '../components/influencer/InspirationsSection.jsx';
+import ScentFluencerSection from '../components/influencer/ScentFluencerSection.jsx';
 import defaultHeroBanner from '../assets/jayrup-hero-banner.jpg';
 import logoImg from '../assets/jayroop-logo.webp';
 
@@ -12,6 +15,7 @@ export const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [blogs, setBlogs] = useState([]);
+  const [influencerVideos, setInfluencerVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
 
@@ -36,6 +40,10 @@ export const Home = () => {
         // 4. Fetch blogs
         const blogRes = await productService.getBlogs({ limit: 2 });
         if (blogRes?.data) setBlogs(blogRes.data);
+
+        // 5. Fetch influencer & inspiration videos
+        const videoRes = await productService.getInfluencerVideos();
+        if (videoRes?.data) setInfluencerVideos(videoRes.data);
       } catch (err) {
         console.error('Failed to load home data', err);
       } finally {
@@ -46,12 +54,16 @@ export const Home = () => {
     loadHomeData();
   }, []);
 
+  const inspirations = influencerVideos.filter((v) => v.sectionType === 'INSPIRATIONS');
+  const scentFluencers = influencerVideos.filter((v) => v.sectionType === 'SCENT_FLUENCER');
+
   return (
     <div className="bg-noir min-h-screen text-zinc-100">
       <SEOHead
         title="Royal Fragrances & Skincare"
         description="Explore Jayroop (JR) handcrafted royal extraits de parfum, saffron soaps, and Jayroop Special Pimples Cream. पिंपल्स भागे, आत्मविश्वास जागे."
       />
+      <VideoSEO videos={influencerVideos} />
 
       {/* 1. HERO SECTION: Dynamically loaded from Advertisement DB / Uploaded Banner */}
       <section className="relative w-full min-h-[85vh] sm:min-h-[92vh] flex items-center justify-center overflow-hidden bg-[#070b10]">
@@ -228,7 +240,10 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* 4. BRAND STORY & ROYAL HERITAGE */}
+      {/* 4. OUR SCENT-FLUENCER (Shoppable Vertical Reels) */}
+      <ScentFluencerSection videos={scentFluencers} />
+
+      {/* 5. BRAND STORY & ROYAL HERITAGE */}
       <section className="py-20 bg-noir-card border-y border-gold/15 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
@@ -272,7 +287,10 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* 5. SHOP BY DYNAMIC CATEGORY */}
+      {/* 6. INSPIRATIONS (16:9 Celebrity / Ambassador Stories) */}
+      <InspirationsSection videos={inspirations} />
+
+      {/* 7. SHOP BY DYNAMIC CATEGORY */}
       <section className="py-20 px-4 sm:px-8 max-w-7xl mx-auto">
         <div className="text-center max-w-xl mx-auto mb-14 space-y-2">
           <span className="text-[11px] uppercase tracking-[0.3em] text-gold font-medium">

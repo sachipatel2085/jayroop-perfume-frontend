@@ -45,4 +45,9 @@ export const productService = {
     const res = await api.post('/reviews', reviewData);
     return res.data;
   },
+
+  getInfluencerVideos: async (params = {}) => {
+    const res = await api.get('/influencers', { params });
+    return res;
+  },
 };

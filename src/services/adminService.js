@@ -57,4 +57,10 @@ export const adminService = {
     });
     return res?.data || res;
   },
+
+  // Influencer Videos (Inspirations & Scent-Fluencers)
+  getAdminInfluencers: async (params) => (await api.get('/influencers/admin', { params })),
+  createInfluencerVideo: async (data) => (await api.post('/influencers', data)).data,
+  updateInfluencerVideo: async (id, data) => (await api.put(`/influencers/${id}`, data)).data,
+  deleteInfluencerVideo: async (id) => (await api.delete(`/influencers/${id}`)).data,
 };

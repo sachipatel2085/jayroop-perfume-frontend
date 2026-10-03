@@ -39,6 +39,7 @@ import { AdminInventory } from './pages/admin/AdminInventory.jsx';
 import { AdminReviews } from './pages/admin/AdminReviews.jsx';
 import { AdminBlogs } from './pages/admin/AdminBlogs.jsx';
 import { AdminAuditLogs } from './pages/admin/AdminAuditLogs.jsx';
+import { AdminInfluencerVideos } from './pages/admin/AdminInfluencerVideos.jsx';
 
 // Customer Route Protection
 const ProtectedCustomerRoute = () => {
@@ -107,6 +108,7 @@ export default function App() {
                 <Route path="categories" element={<AdminCategories />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="ads" element={<AdminAds />} />
+                <Route path="influencers" element={<AdminInfluencerVideos />} />
                 <Route path="coupons" element={<AdminCoupons />} />
                 <Route path="inventory" element={<AdminInventory />} />
                 <Route path="reviews" element={<AdminReviews />} />
