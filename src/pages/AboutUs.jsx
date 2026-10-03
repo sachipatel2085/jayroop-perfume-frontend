@@ -8,8 +8,8 @@ export const AboutUs = () => {
   return (
     <div className="bg-noir min-h-screen text-zinc-100 overflow-hidden">
       <SEOHead
-        title="About Us | Jayroop (JR) Royal Fragrance & Skincare House"
-        description="Discover the heritage, artisanal distillation, and Ayurvedic skincare science behind Jayroop. पिंपल्स भागे, आत्मविश्वास जागे."
+        title="About Us | Jayrup (JR) Royal Fragrance & Skincare House"
+        description="Discover the heritage, artisanal distillation, and Ayurvedic skincare science behind Jayrup. पिंपल्स भागे, आत्मविश्वास जागे."
       />
 
       {/* 1. HERO SECTION */}
@@ -24,7 +24,7 @@ export const AboutUs = () => {
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-noir">
               <img
                 src={logoImg}
-                alt="Jayroop Royal House Crest"
+                alt="Jayrup Royal House Crest"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -32,7 +32,7 @@ export const AboutUs = () => {
 
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/40 bg-noir-card text-gold text-xs uppercase tracking-[0.25em] font-semibold">
             <Sparkles className="w-3.5 h-3.5 text-gold-amber" />
-            <span>The Heritage of Jayroop (जयरूप)</span>
+            <span>The Heritage of Jayrup (जयरूप)</span>
           </div>
 
           <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl uppercase tracking-wider font-bold text-zinc-100 leading-tight">
@@ -48,7 +48,7 @@ export const AboutUs = () => {
           </div>
 
           <p className="text-sm sm:text-base text-zinc-400 font-light max-w-2xl mx-auto leading-relaxed pt-2">
-            Jayroop Royal House unites the time-honored artisanal distillation traditions of princely India with modern dermatological botanical purity — creating extraordinary extraits de parfum and transformative skincare formulations.
+            Jayrup Royal House unites the time-honored artisanal distillation traditions of princely India with modern dermatological botanical purity — creating extraordinary extraits de parfum and transformative skincare formulations.
           </p>
         </div>
       </section>
@@ -71,11 +71,11 @@ export const AboutUs = () => {
             </p>
 
             <p className="text-xs sm:text-sm text-zinc-400 font-light leading-relaxed">
-              <strong>Jayroop (JR)</strong> was established to revive this magnificent heritage for the modern connoisseur. Each creation is formulated without dilution, utilizing unprecedented perfume oil concentrations (Extrait de Parfum at 30%+) to deliver timeless sillage that lingers from twilight until dawn.
+              <strong>Jayrup (JR)</strong> was established to revive this magnificent heritage for the modern connoisseur. Each creation is formulated without dilution, utilizing unprecedented perfume oil concentrations (Extrait de Parfum at 30%+) to deliver timeless sillage that lingers from twilight until dawn.
             </p>
 
             <div className="border-l-2 border-gold pl-4 py-1 text-xs text-gold/90 italic font-serif">
-              "To wear Jayroop is not merely to adorn a scent; it is to step into your sovereign self."
+              "To wear Jayrup is not merely to adorn a scent; it is to step into your sovereign self."
             </div>
           </div>
 
@@ -109,7 +109,7 @@ export const AboutUs = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-noir via-transparent to-transparent opacity-60" />
               <div className="absolute bottom-6 left-6 right-6 p-4 bg-noir/90 backdrop-blur-md border border-gold/20">
                 <span className="bg-gold-amber text-black text-[9px] font-extrabold uppercase px-2 py-0.5 rounded tracking-wider">
-                  Jayroop Special
+                  Jayrup Special
                 </span>
                 <p className="text-xs text-zinc-200 font-semibold mt-1">Holistic Herbal Acne & Skin Clarifying Mastery</p>
               </div>
@@ -135,7 +135,7 @@ export const AboutUs = () => {
             </p>
 
             <p className="text-xs sm:text-sm text-zinc-400 font-light leading-relaxed">
-              This conviction sparked the creation of our renowned <strong>Jayroop Special Pimples Cream</strong>. Developed through painstaking Ayurvedic research, this specialized cream blends pure Kashmiri saffron, wild neem bark, turmeric rhizome, and calming botanicals to target root impurities without stinging or drying the skin.
+              This conviction sparked the creation of our renowned <strong>Jayrup Special Pimples Cream</strong>. Developed through painstaking Ayurvedic research, this specialized cream blends pure Kashmiri saffron, wild neem bark, turmeric rhizome, and calming botanicals to target root impurities without stinging or drying the skin.
             </p>
 
             <div className="grid grid-cols-2 gap-4 pt-2">
@@ -226,7 +226,7 @@ export const AboutUs = () => {
             Experience the Distillations of Royalty
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-light max-w-xl mx-auto leading-relaxed">
-            Step into the world of Jayroop. Discover our signature fragrances, explore the Jayroop Special Skincare collection, or consult our Royal Concierge for personalized recommendations.
+            Step into the world of Jayrup. Discover our signature fragrances, explore the Jayrup Special Skincare collection, or consult our Royal Concierge for personalized recommendations.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">

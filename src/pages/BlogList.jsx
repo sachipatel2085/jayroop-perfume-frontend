@@ -22,7 +22,7 @@ export const BlogList = () => {
     <div className="bg-noir min-h-screen text-zinc-100 py-12 px-4 sm:px-8 max-w-7xl mx-auto">
       <SEOHead
         title="The Royal Blog & Editorial"
-        description="Essays, rituals, and botanical insights from the house of Jayroop."
+        description="Essays, rituals, and botanical insights from the house of Jayrup."
       />
 
       <div className="border-b border-gold/20 pb-8 mb-12 text-center max-w-2xl mx-auto space-y-3">

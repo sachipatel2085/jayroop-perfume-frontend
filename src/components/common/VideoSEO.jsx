@@ -21,7 +21,7 @@ export default function VideoSEO({ videos = [] }) {
       return 'PT1M00S';
     };
 
-    const scriptId = 'jayroop-video-seo-jsonld';
+    const scriptId = 'jayrup-video-seo-jsonld';
     let scriptTag = document.getElementById(scriptId);
     if (!scriptTag) {
       scriptTag = document.createElement('script');
@@ -36,14 +36,14 @@ export default function VideoSEO({ videos = [] }) {
       return {
         '@context': 'https://schema.org',
         '@type': 'VideoObject',
-        name: video.title || 'Jayroop Luxury Fragrance Story',
-        description: video.seoDescription || video.caption || 'Jayroop (JR) Royal Fragrance & Skincare Experience',
+        name: video.title || 'Jayrup Luxury Fragrance Story',
+        description: video.seoDescription || video.caption || 'Jayrup (JR) Royal Fragrance & Skincare Experience',
         thumbnailUrl: [video.posterUrl || 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=1200'],
         uploadDate: video.createdAt || new Date().toISOString(),
         duration: parseDurationToISO(video.videoDuration),
         contentUrl: video.videoUrl,
         embedUrl: video.videoUrl,
-        keywords: Array.isArray(video.seoKeywords) ? video.seoKeywords.join(', ') : (video.seoKeywords || 'Jayroop, Perfume, Luxury Fragrance'),
+        keywords: Array.isArray(video.seoKeywords) ? video.seoKeywords.join(', ') : (video.seoKeywords || 'Jayrup, Perfume, Luxury Fragrance'),
         interactionStatistic: {
           '@type': 'InteractionCounter',
           interactionType: { '@type': 'WatchAction' },
@@ -51,7 +51,7 @@ export default function VideoSEO({ videos = [] }) {
         },
         publisher: {
           '@type': 'Organization',
-          name: 'Jayroop (JR) Royal Fragrance & Skincare House',
+          name: 'Jayrup (JR) Royal Fragrance & Skincare House',
           logo: {
             '@type': 'ImageObject',
             url: window.location.origin + '/jayroop-logo.webp',

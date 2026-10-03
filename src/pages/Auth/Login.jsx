@@ -74,7 +74,7 @@ export const Login = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="patron@jayroop.com"
+                placeholder="patron@jayrup.com"
                 className="w-full bg-noir border border-zinc-800 p-2.5 pl-10 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold"
               />
             </div>
@@ -114,14 +114,14 @@ export const Login = () => {
           <div className="flex justify-center gap-2">
             <button
               type="button"
-              onClick={() => fillQuickAccount('admin@jayroop.com', 'Admin@12345')}
+              onClick={() => fillQuickAccount('admin@jayrup.com', 'Admin@12345')}
               className="text-[10px] bg-gold/15 text-gold border border-gold/40 px-3 py-1 rounded hover:bg-gold/25 transition-colors"
             >
-              Demo Admin (admin@jayroop.com)
+              Demo Admin (admin@jayrup.com)
             </button>
             <button
               type="button"
-              onClick={() => fillQuickAccount('customer@jayroop.com', 'Customer@12345')}
+              onClick={() => fillQuickAccount('customer@jayrup.com', 'Customer@12345')}
               className="text-[10px] bg-zinc-800 text-zinc-300 border border-zinc-700 px-3 py-1 rounded hover:bg-zinc-700 transition-colors"
             >
               Demo Customer
@@ -130,7 +130,7 @@ export const Login = () => {
         </div>
 
         <div className="text-center text-xs text-zinc-400">
-          <span>New to Jayroop Royal House? </span>
+          <span>New to Jayrup Royal House? </span>
           <Link to="/register" className="text-gold hover:underline font-semibold">
             Create an Account
           </Link>

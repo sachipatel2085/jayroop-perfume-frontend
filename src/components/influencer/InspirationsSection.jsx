@@ -42,7 +42,7 @@ export default function InspirationsSection({ videos = [] }) {
               <div className="relative aspect-video w-full overflow-hidden bg-stone-900">
                 <img
                   src={video.posterUrl || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=800'}
-                  alt={video.altText || `${video.influencerName || 'Celebrity'} endorsing Jayroop Perfumes`}
+                  alt={video.altText || `${video.influencerName || 'Celebrity'} endorsing Jayrup Perfumes`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-100"
                   loading="lazy"
                 />

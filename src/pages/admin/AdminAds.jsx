@@ -208,7 +208,7 @@ export const AdminAds = () => {
                   type="text"
                   value={formData.subtitle}
                   onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                  placeholder="e.g. JAYROOP ROYAL FRAGRANCE HOUSE"
+                  placeholder="e.g. JAYRUP ROYAL FRAGRANCE HOUSE"
                   className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
                 />
               </div>

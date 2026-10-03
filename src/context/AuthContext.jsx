@@ -5,10 +5,10 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('jayroop_user');
+    const saved = localStorage.getItem('jayrup_user') || localStorage.getItem('jayroop_user');
     return saved ? JSON.parse(saved) : null;
   });
-  const [token, setToken] = useState(() => localStorage.getItem('jayroop_token'));
+  const [token, setToken] = useState(() => localStorage.getItem('jayrup_token') || localStorage.getItem('jayroop_token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

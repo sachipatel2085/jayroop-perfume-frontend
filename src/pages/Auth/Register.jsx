@@ -34,7 +34,7 @@ export const Register = () => {
 
   return (
     <div className="bg-noir min-h-screen text-zinc-100 flex items-center justify-center py-16 px-4">
-      <SEOHead title="Join the Royal House of Jayroop" />
+      <SEOHead title="Join the Royal House of Jayrup" />
 
       <div className="w-full max-w-md bg-noir-card border border-gold/30 p-8 shadow-2xl space-y-6">
         <div className="text-center space-y-3">

@@ -49,7 +49,7 @@ export const Footer = () => {
         <div className="md:col-span-2 space-y-4">
           <BrandLogo size="normal" showTagline={true} />
           <p className="text-zinc-400 text-xs leading-relaxed max-w-sm mt-3">
-            Jayroop (जयरूप) is a distinguished Indian house of regal perfumery and specialized herbal cosmetics. We distill time-honored heritage with uncompromising botanical purity to awaken enduring confidence.
+            Jayrup (जयरूप) is a distinguished Indian house of regal perfumery and specialized herbal cosmetics. We distill time-honored heritage with uncompromising botanical purity to awaken enduring confidence.
           </p>
           <div className="pt-2 text-[11px] text-zinc-500 space-y-1">
             <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export const Footer = () => {
             </div>
             <div className="flex items-center gap-2">
               <Mail className="w-3.5 h-3.5 text-gold" />
-              <span>care@jayroop.com</span>
+              <span>care@jayrup.com</span>
             </div>
           </div>
         </div>
@@ -74,7 +74,7 @@ export const Footer = () => {
           </h4>
           <ul className="space-y-2.5 text-xs">
             <li><Link to="/category/perfumes" className="hover:text-gold transition-colors">Royal Extraits de Parfum</Link></li>
-            <li><Link to="/category/skincare" className="hover:text-gold transition-colors">Jayroop Special Skincare</Link></li>
+            <li><Link to="/category/skincare" className="hover:text-gold transition-colors">Jayrup Special Skincare</Link></li>
             <li><Link to="/category/soaps" className="hover:text-gold transition-colors">Artisanal Saffron Soaps</Link></li>
           </ul>
         </div>
@@ -85,7 +85,7 @@ export const Footer = () => {
             Concierge
           </h4>
           <ul className="space-y-2.5 text-xs">
-            <li><Link to="/about" className="hover:text-gold transition-colors">About Jayroop House</Link></li>
+            <li><Link to="/about" className="hover:text-gold transition-colors">About Jayrup House</Link></li>
             <li><Link to="/orders" className="hover:text-gold transition-colors">Track Your Order</Link></li>
             <li><Link to="/profile" className="hover:text-gold transition-colors">My Royal Account</Link></li>
             <li><Link to="/wishlist" className="hover:text-gold transition-colors">Saved Wishlist</Link></li>
@@ -101,7 +101,7 @@ export const Footer = () => {
           <p className="text-zinc-400 text-xs mb-3">
             Receive private releases, royal formulations, and limited batch invitations.
           </p>
-          <form onSubmit={(e) => { e.preventDefault(); alert('Welcome to the Jayroop Royal Private Circle!'); }} className="space-y-2">
+          <form onSubmit={(e) => { e.preventDefault(); alert('Welcome to the Jayrup Royal Private Circle!'); }} className="space-y-2">
             <input
               type="email"
               placeholder="Your royal email address"
@@ -118,7 +118,7 @@ export const Footer = () => {
       {/* Copyright */}
       <div className="border-t border-zinc-900 py-6 px-4 text-center text-zinc-500 text-[11px]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© {new Date().getFullYear()} JAYROOP (JR) ROYAL LUXURY HOUSE. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} JAYRUP (JR) ROYAL LUXURY HOUSE. All rights reserved.</p>
           <p className="text-gold/80 font-medium">पिंपल्स भागे, आत्मविश्वास जागे</p>
         </div>
       </div>

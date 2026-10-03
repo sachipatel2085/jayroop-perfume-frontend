@@ -4,8 +4,8 @@ export const authService = {
   login: async (credentials) => {
     const res = await api.post('/auth/login', credentials);
     if (res.data?.token) {
-      localStorage.setItem('jayroop_token', res.data.token);
-      localStorage.setItem('jayroop_user', JSON.stringify(res.data));
+      localStorage.setItem('jayrup_token', res.data.token);
+      localStorage.setItem('jayrup_user', JSON.stringify(res.data));
     }
     return res.data;
   },
@@ -13,13 +13,15 @@ export const authService = {
   register: async (userData) => {
     const res = await api.post('/auth/register', userData);
     if (res.data?.token) {
-      localStorage.setItem('jayroop_token', res.data.token);
-      localStorage.setItem('jayroop_user', JSON.stringify(res.data));
+      localStorage.setItem('jayrup_token', res.data.token);
+      localStorage.setItem('jayrup_user', JSON.stringify(res.data));
     }
     return res.data;
   },
 
   logout: () => {
+    localStorage.removeItem('jayrup_token');
+    localStorage.removeItem('jayrup_user');
     localStorage.removeItem('jayroop_token');
     localStorage.removeItem('jayroop_user');
   },

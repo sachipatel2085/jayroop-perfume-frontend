@@ -610,7 +610,7 @@ export const Navbar = () => {
                 }}
                 className="hover:text-gold border border-zinc-800 px-2.5 py-1 rounded-full text-gold-amber text-[10px] sm:text-xs"
               >
-                Jayroop Special Pimples Cream
+                Jayrup Special Pimples Cream
               </button>
               <button
                 type="button"

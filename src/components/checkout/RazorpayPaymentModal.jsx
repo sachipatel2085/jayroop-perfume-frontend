@@ -32,7 +32,7 @@ export const RazorpayPaymentModal = ({
           key: keyId,
           amount: Math.round(amount * 100),
           currency: 'INR',
-          name: 'Jayroop (JR) Royal Luxury House',
+          name: 'Jayrup (JR) Royal Luxury House',
           description: `Order #${orderNumber}`,
           image: '/src/assets/jayroop-logo.webp',
           order_id: razorpayOrderId,

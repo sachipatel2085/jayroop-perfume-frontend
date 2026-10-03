@@ -24,7 +24,7 @@ export const BrandLogo = ({
         >
           <img
             src={logoImg}
-            alt="Jayroop Royal House"
+            alt="Jayrup Royal House"
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
         </div>
@@ -37,14 +37,14 @@ export const BrandLogo = ({
                 isLarge ? "text-2xl" : isSmall ? "text-sm" : "text-lg"
               } ${isWhite ? "text-white" : "text-zinc-100 group-hover:text-gold-light"}`}
             >
-              JAYROOP
+              JAYRUP
             </span>
             <span className="text-[10px] tracking-widest text-gold font-sans font-semibold border border-gold/40 px-1 py-0.5 rounded">
               JR
             </span>
           </div>
           <span className="text-[9px] uppercase tracking-[0.35em] text-gold/80 font-sans font-medium -mt-0.5">
-            MARWAD KA FRAGRANCE
+            Luxury Perfum
           </span>
         </div>
       </div>
@@ -52,7 +52,7 @@ export const BrandLogo = ({
       {showTagline && (
         <div className="mt-1 flex items-center gap-2">
           <span className="inline-block bg-gradient-to-r from-gold-amber via-gold to-gold-amber text-black text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider shadow-sm">
-            Luxury Perfum
+            Marwad ka Pahla Luxury Perfume
           </span>
         </div>
       )}

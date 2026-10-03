@@ -12,7 +12,7 @@ const api = axios.create({
 // Auto-inject JWT token if present
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jayroop_token');
+    const token = localStorage.getItem('jayrup_token') || localStorage.getItem('jayroop_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -27,10 +27,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // If token expired, clear invalid session
-      if (localStorage.getItem('jayroop_token')) {
-        localStorage.removeItem('jayroop_token');
-        localStorage.removeItem('jayroop_user');
-      }
+      localStorage.removeItem('jayrup_token');
+      localStorage.removeItem('jayrup_user');
+      localStorage.removeItem('jayroop_token');
+      localStorage.removeItem('jayroop_user');
     }
     const message =
       error.response?.data?.message ||

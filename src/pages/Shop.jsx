@@ -80,7 +80,7 @@ export const Shop = () => {
     <div className="bg-noir min-h-screen text-zinc-100 py-10 px-4 sm:px-8 max-w-7xl mx-auto">
       <SEOHead
         title="Royal Fragrance & Skincare Catalog"
-        description="Browse the complete catalog of Jayroop extraits, saffron soaps, and therapeutic cosmetics."
+        description="Browse the complete catalog of Jayrup extraits, saffron soaps, and therapeutic cosmetics."
       />
 
       {/* Header */}

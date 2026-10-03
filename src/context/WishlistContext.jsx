@@ -8,7 +8,7 @@ export const WishlistProvider = ({ children }) => {
   const { user, isAuthenticated, refreshUser } = useAuth();
   const [wishlist, setWishlist] = useState(() => {
     try {
-      const saved = localStorage.getItem('jayroop_guest_wishlist');
+      const saved = localStorage.getItem('jayrup_guest_wishlist') || localStorage.getItem('jayroop_guest_wishlist');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -43,7 +43,7 @@ export const WishlistProvider = ({ children }) => {
         } else {
           updated = [...prev, productId];
         }
-        localStorage.setItem('jayroop_guest_wishlist', JSON.stringify(updated));
+        localStorage.setItem('jayrup_guest_wishlist', JSON.stringify(updated));
         return updated;
       });
     }

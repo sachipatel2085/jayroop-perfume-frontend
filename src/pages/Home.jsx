@@ -61,7 +61,7 @@ export const Home = () => {
     <div className="bg-noir min-h-screen text-zinc-100">
       <SEOHead
         title="Royal Fragrances & Skincare"
-        description="Explore Jayroop (JR) handcrafted royal extraits de parfum, saffron soaps, and Jayroop Special Pimples Cream. पिंपल्स भागे, आत्मविश्वास जागे."
+        description="Explore Jayrup (JR) handcrafted royal extraits de parfum, saffron soaps, and Jayrup Special Pimples Cream. पिंपल्स भागे, आत्मविश्वास जागे."
       />
       <VideoSEO videos={influencerVideos} />
 
@@ -180,10 +180,10 @@ export const Home = () => {
             </Link>
 
             <Link
-              to="/products/jayroop-special-pimples-cream"
+              to="/products/jayrup-special-pimples-cream"
               className="btn-outline-gold text-xs py-3.5 px-7 flex items-center gap-2 bg-noir/50 backdrop-blur-sm"
             >
-              <span>Jayroop Special Skincare</span>
+              <span>Jayrup Special Skincare</span>
             </Link>
           </div>
         </div>
@@ -194,7 +194,7 @@ export const Home = () => {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div className="flex items-center gap-3">
             <span className="bg-gradient-to-r from-gold-amber via-gold to-gold-amber text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
-              JAYROOP SPECIAL
+              JAYRUP SPECIAL
             </span>
             <span className="font-serif text-base sm:text-lg text-gold-light tracking-wide font-semibold">
               पिंपल्स भागे, आत्मविश्वास जागे
@@ -206,7 +206,7 @@ export const Home = () => {
           </div>
 
           <Link
-            to="/products/jayroop-special-pimples-cream"
+            to="/products/jayrup-special-pimples-cream"
             className="text-xs text-gold hover:text-white uppercase font-semibold tracking-widest inline-flex items-center gap-1 group"
           >
             <span>Learn More</span>
@@ -248,16 +248,16 @@ export const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <span className="text-[11px] uppercase tracking-[0.3em] text-gold font-medium">
-              The Heritage of Jayroop
+              The Heritage of Jayrup
             </span>
             <h2 className="font-serif text-2xl sm:text-4xl text-zinc-100 uppercase tracking-wide leading-tight">
               An Olfactory & Botanical Legacy Built on Regal Distinction
             </h2>
             <p className="text-zinc-300 text-sm leading-relaxed font-light">
-              Founded on the belief that scent and radiance are extensions of the soul, <strong>Jayroop (JR)</strong> fuses traditional copper-still ittar distillation with dermatologically revered Ayurvedic herbals.
+              Founded on the belief that scent and radiance are extensions of the soul, <strong>Jayrup (JR)</strong> fuses traditional copper-still ittar distillation with dermatologically revered Ayurvedic herbals.
             </p>
             <p className="text-zinc-400 text-sm leading-relaxed font-light">
-              Every drop of our <em>Royal Oud Extrait</em> is aged in seasoned casks, while our signature <em>Jayroop Special Pimples Cream</em> harnesses authentic cooling botanicals to restore pristine skin confidence.
+              Every drop of our <em>Royal Oud Extrait</em> is aged in seasoned casks, while our signature <em>Jayrup Special Pimples Cream</em> harnesses authentic cooling botanicals to restore pristine skin confidence.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
@@ -279,7 +279,7 @@ export const Home = () => {
           <div className="relative aspect-4/3 rounded-none overflow-hidden border border-gold/30 shadow-2xl">
             <img
               src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&q=80&w=1200"
-              alt="Jayroop Artisanal Perfumery"
+              alt="Jayrup Artisanal Perfumery"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-noir/80 via-transparent to-transparent" />

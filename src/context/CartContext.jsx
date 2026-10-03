@@ -6,7 +6,7 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [items, setItems] = useState(() => {
     try {
-      const saved = localStorage.getItem('jayroop_cart_items');
+      const saved = localStorage.getItem('jayrup_cart_items') || localStorage.getItem('jayroop_cart_items');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -14,7 +14,7 @@ export const CartProvider = ({ children }) => {
   });
 
   const [couponCode, setCouponCode] = useState(() => {
-    return localStorage.getItem('jayroop_coupon') || '';
+    return localStorage.getItem('jayrup_coupon') || localStorage.getItem('jayroop_coupon') || '';
   });
 
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -32,7 +32,7 @@ export const CartProvider = ({ children }) => {
   // Save cart to local storage
   useEffect(() => {
     try {
-      localStorage.setItem('jayroop_cart_items', JSON.stringify(items));
+      localStorage.setItem('jayrup_cart_items', JSON.stringify(items));
     } catch (err) {
       console.error('Could not save cart to localStorage', err);
     }
@@ -41,8 +41,9 @@ export const CartProvider = ({ children }) => {
   // Save applied coupon to local storage
   useEffect(() => {
     if (couponCode) {
-      localStorage.setItem('jayroop_coupon', couponCode);
+      localStorage.setItem('jayrup_coupon', couponCode);
     } else {
+      localStorage.removeItem('jayrup_coupon');
       localStorage.removeItem('jayroop_coupon');
     }
   }, [couponCode]);
@@ -132,6 +133,8 @@ export const CartProvider = ({ children }) => {
   const clearCart = () => {
     setItems([]);
     setCouponCode('');
+    localStorage.removeItem('jayrup_cart_items');
+    localStorage.removeItem('jayrup_coupon');
     localStorage.removeItem('jayroop_cart_items');
     localStorage.removeItem('jayroop_coupon');
   };

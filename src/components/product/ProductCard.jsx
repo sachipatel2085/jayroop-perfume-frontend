@@ -75,7 +75,7 @@ export const ProductCard = ({ product }) => {
         <div>
           {/* Brand & Category */}
           <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
-            <span>{product.brand || 'Jayroop Special'}</span>
+            <span>{product.brand || 'Jayrup Special'}</span>
             {product.category?.name && (
               <span className="text-gold/80">{product.category.name}</span>
             )}

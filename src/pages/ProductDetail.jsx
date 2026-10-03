@@ -179,7 +179,7 @@ export const ProductDetail = () => {
           <div>
             {/* Brand & SKU */}
             <div className="flex items-center justify-between text-xs uppercase tracking-widest text-zinc-400 mb-2">
-              <span className="text-gold font-semibold">{product.brand || 'Jayroop Special'}</span>
+              <span className="text-gold font-semibold">{product.brand || 'Jayrup Special'}</span>
               <span>SKU: {selectedVariant?.sku || product.sku}</span>
             </div>
 

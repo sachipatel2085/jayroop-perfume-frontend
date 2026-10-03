@@ -61,7 +61,7 @@ export const OrderHistory = () => {
             No Past Orders Found
           </h3>
           <p className="text-xs text-zinc-500 mb-6">
-            You haven't placed an order with Jayroop yet.
+            You haven't placed an order with Jayrup yet.
           </p>
           <Link to="/shop" className="btn-gold text-xs py-3 px-8">
             Explore Creations
