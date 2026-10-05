@@ -40,6 +40,7 @@ import { AdminReviews } from './pages/admin/AdminReviews.jsx';
 import { AdminBlogs } from './pages/admin/AdminBlogs.jsx';
 import { AdminAuditLogs } from './pages/admin/AdminAuditLogs.jsx';
 import { AdminInfluencerVideos } from './pages/admin/AdminInfluencerVideos.jsx';
+import { AdminSettings } from './pages/admin/AdminSettings.jsx';
 
 // Customer Route Protection
 const ProtectedCustomerRoute = () => {
@@ -114,6 +115,7 @@ export default function App() {
                 <Route path="reviews" element={<AdminReviews />} />
                 <Route path="blogs" element={<AdminBlogs />} />
                 <Route path="audit-logs" element={<AdminAuditLogs />} />
+                <Route path="settings" element={<AdminSettings />} />
               </Route>
 
               {/* 404 Fallback */}

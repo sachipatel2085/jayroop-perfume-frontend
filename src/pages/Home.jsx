@@ -10,14 +10,22 @@ import ScentFluencerSection from '../components/influencer/ScentFluencerSection.
 import defaultHeroBanner from '../assets/jayrup-hero-banner.jpg';
 import logoImg from '../assets/jayroop-logo.webp';
 
+const resolveMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('/uploads')) return `http://localhost:5000${url}`;
+  return url;
+};
+
 export const Home = () => {
   const [heroAd, setHeroAd] = useState(null);
+  const [campaignAd, setCampaignAd] = useState(null);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [blogs, setBlogs] = useState([]);
   const [influencerVideos, setInfluencerVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
+  const [isCampaignMuted, setIsCampaignMuted] = useState(true);
 
   useEffect(() => {
     const loadHomeData = async () => {
@@ -27,6 +35,12 @@ export const Home = () => {
         const adsRes = await productService.getActiveAds('HOMEPAGE_HERO');
         if (adsRes && adsRes.length > 0) {
           setHeroAd(adsRes[0]);
+        }
+
+        // 1b. Fetch dynamic mid-page campaign banner
+        const campRes = await productService.getActiveAds('HOMEPAGE_CAMPAIGN');
+        if (campRes && campRes.length > 0) {
+          setCampaignAd(campRes[0]);
         }
 
         // 2. Fetch featured products
@@ -75,10 +89,10 @@ export const Home = () => {
               loop
               muted={isMuted}
               playsInline
-              poster={heroAd.posterUrl}
+              poster={resolveMediaUrl(heroAd.posterUrl)}
               className="w-full h-full object-cover opacity-45 scale-105 transition-transform duration-1000"
             >
-              <source src={heroAd.mediaUrl} type="video/mp4" />
+              <source src={resolveMediaUrl(heroAd.mediaUrl)} type="video/mp4" />
             </video>
             {/* Audio Toggle Button */}
             <button
@@ -93,13 +107,7 @@ export const Home = () => {
           <div
             className="absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-100 sm:scale-105 filter brightness-[0.75] sm:brightness-[0.65]"
             style={{
-              backgroundImage: `url(${
-                heroAd?.mediaUrl
-                  ? heroAd.mediaUrl.startsWith('/uploads')
-                    ? `http://localhost:5000${heroAd.mediaUrl}`
-                    : heroAd.mediaUrl
-                  : defaultHeroBanner
-              })`,
+              backgroundImage: `url(${resolveMediaUrl(heroAd?.mediaUrl) || defaultHeroBanner})`,
             }}
           />
         )}
@@ -240,7 +248,74 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* 4. OUR SCENT-FLUENCER (Shoppable Vertical Reels) */}
+      {/* 4. DYNAMIC HOMEPAGE CAMPAIGN / PROMOTIONAL BANNER */}
+      {campaignAd && (
+        <section className="py-8 px-4 sm:px-8 max-w-7xl mx-auto">
+          <div className="relative overflow-hidden border border-gold/40 shadow-2xl bg-noir-card min-h-[320px] sm:min-h-[400px] flex items-center p-8 sm:p-14">
+            {campaignAd.mediaType === 'VIDEO' ? (
+              <div className="absolute inset-0 w-full h-full overflow-hidden">
+                <video
+                  autoPlay
+                  loop
+                  muted={isCampaignMuted}
+                  playsInline
+                  poster={resolveMediaUrl(campaignAd.posterUrl)}
+                  className="w-full h-full object-cover opacity-50 scale-105 transition-transform duration-1000"
+                >
+                  <source src={resolveMediaUrl(campaignAd.mediaUrl)} type="video/mp4" />
+                </video>
+                <button
+                  onClick={() => setIsCampaignMuted(!isCampaignMuted)}
+                  className="absolute bottom-4 right-4 z-20 p-2.5 rounded-full bg-noir/80 border border-gold/40 text-gold hover:text-white backdrop-blur-sm"
+                  aria-label={isCampaignMuted ? 'Unmute video' : 'Mute video'}
+                >
+                  {isCampaignMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </button>
+              </div>
+            ) : (
+              <img
+                src={resolveMediaUrl(campaignAd.mediaUrl)}
+                alt={campaignAd.title}
+                className="absolute inset-0 w-full h-full object-cover opacity-45 filter brightness-95"
+              />
+            )}
+
+            {/* Ambient Dark Gradient Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-r from-noir via-noir/80 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-noir/90 via-transparent to-noir/40 pointer-events-none" />
+
+            {/* Content Details */}
+            <div className="relative z-10 max-w-2xl space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/40 bg-noir/70 backdrop-blur-md text-gold-light text-[10px] uppercase tracking-[0.25em] font-medium">
+                <Sparkles className="w-3 h-3 text-gold-amber" />
+                <span>{campaignAd.subtitle || 'Special Royal Release'}</span>
+              </div>
+
+              <h2 className="font-serif text-3xl sm:text-5xl font-bold uppercase tracking-wider text-zinc-100 leading-tight">
+                {campaignAd.title}
+              </h2>
+
+              <p className="text-zinc-300 text-xs sm:text-sm md:text-base leading-relaxed font-light max-w-xl">
+                {campaignAd.description}
+              </p>
+
+              {campaignAd.ctaText && (
+                <div className="pt-2">
+                  <Link
+                    to={campaignAd.ctaUrl || '/shop'}
+                    className="btn-gold text-xs py-3.5 px-8 inline-flex items-center gap-2 group shadow-gold-glow"
+                  >
+                    <span>{campaignAd.ctaText}</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 5. OUR SCENT-FLUENCER (Shoppable Vertical Reels) */}
       <ScentFluencerSection videos={scentFluencers} />
 
       {/* 5. BRAND STORY & ROYAL HERITAGE */}

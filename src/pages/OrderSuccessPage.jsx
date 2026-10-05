@@ -31,7 +31,9 @@ export const OrderSuccessPage = () => {
       </div>
 
       <span className="text-[11px] uppercase tracking-[0.3em] text-gold font-semibold">
-        Payment & Royal Seal Verified
+        {order?.paymentMethod === 'COD'
+          ? 'Royal Order Confirmed • Cash on Delivery'
+          : 'Payment & Royal Seal Verified'}
       </span>
 
       <h1 className="font-serif text-3xl sm:text-4xl uppercase tracking-wider font-bold text-zinc-100 mt-2 mb-3">
@@ -108,14 +110,20 @@ export const OrderSuccessPage = () => {
 
               <div className="sm:text-right">
                 <p className="text-zinc-500 uppercase tracking-wider text-[10px]">
-                  Total Paid
+                  {order.paymentMethod === 'COD' ? 'Amount Due on Delivery' : 'Total Paid'}
                 </p>
                 <p className="text-gold font-sans text-xl font-bold mt-0.5">
                   ₹{order.total}
                 </p>
-                <span className="inline-block text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full mt-1">
-                  PAID VIA RAZORPAY
-                </span>
+                {order.paymentMethod === 'COD' ? (
+                  <span className="inline-block text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full mt-1 font-semibold uppercase tracking-wider">
+                    PAY CASH / UPI ON DELIVERY
+                  </span>
+                ) : (
+                  <span className="inline-block text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full mt-1 font-semibold uppercase tracking-wider">
+                    PAID VIA RAZORPAY
+                  </span>
+                )}
               </div>
             </div>
           </div>

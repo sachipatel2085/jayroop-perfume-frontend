@@ -48,6 +48,6 @@ export const authService = {
 
   toggleWishlist: async (productId) => {
     const res = await api.post('/auth/wishlist/toggle', { productId });
-    return res.data;
+    return res?.data || res;
   },
 };

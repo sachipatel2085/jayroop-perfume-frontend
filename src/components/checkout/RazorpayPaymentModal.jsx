@@ -8,6 +8,7 @@ export const RazorpayPaymentModal = ({
   checkoutData,
   disabled,
   onOrderInitiated,
+  onSuccess,
 }) => {
   const { clearCart } = useCart();
   const navigate = useNavigate();
@@ -46,8 +47,12 @@ export const RazorpayPaymentModal = ({
                 razorpay_signature: response.razorpay_signature,
               });
 
-              clearCart();
-              navigate(`/order-success/${verifyRes.orderNumber || orderNumber}`);
+              if (onSuccess) {
+                onSuccess(verifyRes.orderNumber || orderNumber);
+              } else {
+                clearCart();
+                navigate(`/order-success/${verifyRes.orderNumber || orderNumber}`);
+              }
             } catch (vErr) {
               setError(`Payment Verification Failed: ${vErr.message}`);
             }
@@ -57,7 +62,7 @@ export const RazorpayPaymentModal = ({
             contact: checkoutData.shippingAddress.phone,
           },
           theme: {
-            color: '#D4AF37', // Jayroop royal gold brand accent
+            color: '#D4AF37', // Jayrup royal gold brand accent
           },
         };
 
@@ -77,8 +82,12 @@ export const RazorpayPaymentModal = ({
           razorpay_signature: 'SIMULATED_TEST_SIGNATURE',
         });
 
-        clearCart();
-        navigate(`/order-success/${verifyRes.orderNumber || orderNumber}`);
+        if (onSuccess) {
+          onSuccess(verifyRes.orderNumber || orderNumber);
+        } else {
+          clearCart();
+          navigate(`/order-success/${verifyRes.orderNumber || orderNumber}`);
+        }
       }
     } catch (err) {
       setError(err.message || 'Payment initiation failed');

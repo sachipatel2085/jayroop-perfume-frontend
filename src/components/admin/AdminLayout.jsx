@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   Shield,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { BrandLogo } from '../common/BrandLogo.jsx';
@@ -39,6 +40,7 @@ export const AdminLayout = () => {
     { label: 'Client Reviews', path: '/admin/reviews', icon: MessageSquare },
     { label: 'Editorial Blogs', path: '/admin/blogs', icon: BookOpen },
     { label: 'Security Audit Logs', path: '/admin/audit-logs', icon: FileText },
+    { label: 'Store Settings (COD)', path: '/admin/settings', icon: Settings },
   ];
 
   return (

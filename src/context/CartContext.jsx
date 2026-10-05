@@ -13,6 +13,16 @@ export const CartProvider = ({ children }) => {
     }
   });
 
+  // Dedicated single-item instant checkout (Buy Now) state
+  const [instantCheckoutItem, setInstantCheckoutItem] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('jayrup_instant_checkout');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [couponCode, setCouponCode] = useState(() => {
     return localStorage.getItem('jayrup_coupon') || localStorage.getItem('jayroop_coupon') || '';
   });
@@ -96,7 +106,7 @@ export const CartProvider = ({ children }) => {
             productId: product._id,
             name: product.name,
             slug: product.slug,
-            image: product.images?.[0]?.url || '',
+            image: product.images?.[0]?.url || product.images?.[0] || '',
             price: selectedVariant?.salePrice || selectedVariant?.price || product.salePrice || product.price,
             variantSku,
             variantTitle: selectedVariant?.title || '',
@@ -125,7 +135,13 @@ export const CartProvider = ({ children }) => {
   const removeFromCart = (productId, variantSku = '') => {
     setItems((prevItems) =>
       prevItems.filter(
-        (item) => !(item.productId === productId && item.variantSku === (variantSku || ''))
+        (item) => {
+          const isSameProduct = String(item.productId) === String(productId);
+          const isSameVariant =
+            (!variantSku && !item.variantSku) ||
+            String(item.variantSku || '') === String(variantSku || '');
+          return !(isSameProduct && isSameVariant);
+        }
       )
     );
   };
@@ -137,6 +153,48 @@ export const CartProvider = ({ children }) => {
     localStorage.removeItem('jayrup_coupon');
     localStorage.removeItem('jayroop_cart_items');
     localStorage.removeItem('jayroop_coupon');
+  };
+
+  // Configure single product instant checkout without polluting general cart
+  const setInstantCheckout = (product, selectedVariant = null, quantity = 1) => {
+    const variantSku = selectedVariant?.sku || '';
+    const instantItem = {
+      productId: product._id,
+      name: product.name,
+      slug: product.slug,
+      image: product.images?.[0]?.url || product.images?.[0] || '',
+      price: selectedVariant?.salePrice || selectedVariant?.price || product.salePrice || product.price,
+      variantSku,
+      variantTitle: selectedVariant?.title || '',
+      quantity: Math.max(1, Number(quantity) || 1),
+    };
+
+    setInstantCheckoutItem(instantItem);
+    try {
+      sessionStorage.setItem('jayrup_instant_checkout', JSON.stringify(instantItem));
+    } catch (err) {
+      console.error('Could not save instant checkout item to sessionStorage', err);
+    }
+    return instantItem;
+  };
+
+  const clearInstantCheckout = () => {
+    setInstantCheckoutItem(null);
+    try {
+      sessionStorage.removeItem('jayrup_instant_checkout');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Complete checkout: If instant checkout, remove ONLY this product from the cart; otherwise clear entire cart
+  const completeOrder = (isInstant = false) => {
+    if (isInstant && instantCheckoutItem) {
+      removeFromCart(instantCheckoutItem.productId, instantCheckoutItem.variantSku);
+      clearInstantCheckout();
+    } else {
+      clearCart();
+    }
   };
 
   const applyCoupon = (code) => {
@@ -166,6 +224,11 @@ export const CartProvider = ({ children }) => {
         isCartOpen,
         setIsCartOpen,
         recalculate,
+        // Instant Checkout API
+        instantCheckoutItem,
+        setInstantCheckout,
+        clearInstantCheckout,
+        completeOrder,
       }}
     >
       {children}

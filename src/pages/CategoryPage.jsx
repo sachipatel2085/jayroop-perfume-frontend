@@ -1,23 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronRight, Sparkles, Volume2, VolumeX, ArrowRight } from 'lucide-react';
 import { productService } from '../services/productService.js';
 import { ProductCard } from '../components/product/ProductCard.jsx';
 import { SEOHead } from '../components/common/SEOHead.jsx';
 
+const resolveMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('/uploads')) return `http://localhost:5000${url}`;
+  return url;
+};
+
 export const CategoryPage = () => {
   const { slug } = useParams();
   const [category, setCategory] = useState(null);
+  const [categoryAd, setCategoryAd] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSubCategory, setSelectedSubCategory] = useState('');
+  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
     const fetchCategoryDetails = async () => {
       try {
         setLoading(true);
-        const catRes = await productService.getCategoryBySlug(slug);
+        const [catRes, adRes] = await Promise.all([
+          productService.getCategoryBySlug(slug),
+          productService.getActiveAds('CATEGORY_HEADER'),
+        ]);
+
         setCategory(catRes);
+        if (adRes && adRes.length > 0) {
+          setCategoryAd(adRes[0]);
+        }
 
         const prodRes = await productService.getProducts({
           category: slug,
@@ -51,26 +66,73 @@ export const CategoryPage = () => {
         <span className="text-gold font-semibold">{category?.name || slug}</span>
       </nav>
 
-      {/* Category Banner */}
-      <div className="relative overflow-hidden border border-gold/30 p-8 sm:p-12 mb-10 bg-noir-card">
-        {category?.image?.url && (
+      {/* Category Banner (Dynamic Ad or Default Category Header) */}
+      <div className="relative overflow-hidden border border-gold/30 p-8 sm:p-14 mb-10 bg-noir-card min-h-[220px] sm:min-h-[280px] flex items-center shadow-2xl">
+        {/* Dynamic Media: Video or Image */}
+        {categoryAd ? (
+          categoryAd.mediaType === 'VIDEO' ? (
+            <div className="absolute inset-0 w-full h-full overflow-hidden">
+              <video
+                autoPlay
+                loop
+                muted={isMuted}
+                playsInline
+                poster={resolveMediaUrl(categoryAd.posterUrl)}
+                className="w-full h-full object-cover opacity-35 scale-105"
+              >
+                <source src={resolveMediaUrl(categoryAd.mediaUrl)} type="video/mp4" />
+              </video>
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className="absolute bottom-4 right-4 z-20 p-2 rounded-full bg-black/70 border border-gold/40 text-gold hover:text-white backdrop-blur-sm"
+                aria-label={isMuted ? 'Unmute' : 'Mute'}
+              >
+                {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+          ) : (
+            <img
+              src={resolveMediaUrl(categoryAd.mediaUrl)}
+              alt={categoryAd.title}
+              className="absolute inset-0 w-full h-full object-cover opacity-35 filter brightness-90"
+            />
+          )
+        ) : category?.image?.url ? (
           <img
-            src={category.image.url}
+            src={resolveMediaUrl(category.image.url)}
             alt={category.name}
             className="absolute inset-0 w-full h-full object-cover opacity-20"
           />
-        )}
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-1.5 text-gold text-[10px] uppercase tracking-[0.25em] font-semibold">
-            <Sparkles className="w-3 h-3" />
-            <span>Royal House Category</span>
+        ) : null}
+
+        {/* Ambient Dark Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-r from-noir via-noir/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-noir/90 via-transparent to-noir/40 pointer-events-none" />
+
+        {/* Banner Content */}
+        <div className="relative z-10 max-w-2xl space-y-3.5">
+          <div className="inline-flex items-center gap-1.5 text-gold text-[10px] uppercase tracking-[0.25em] font-semibold bg-black/60 px-2.5 py-1 rounded border border-gold/30 backdrop-blur-sm">
+            <Sparkles className="w-3 h-3 text-gold" />
+            <span>{categoryAd?.subtitle || 'Royal House Category'}</span>
           </div>
-          <h1 className="font-serif text-3xl sm:text-5xl uppercase tracking-wider font-bold text-zinc-100">
-            {category?.name}
+          <h1 className="font-serif text-3xl sm:text-5xl uppercase tracking-wider font-bold text-zinc-100 leading-tight">
+            {categoryAd?.title || category?.name}
           </h1>
-          <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed font-light">
-            {category?.description || 'Authentic formulations and royal extraits handcrafted in limited batches.'}
+          <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed font-light max-w-xl">
+            {categoryAd?.description || category?.description || 'Authentic formulations and royal extraits handcrafted in limited batches.'}
           </p>
+
+          {categoryAd?.ctaText && (
+            <div className="pt-2">
+              <Link
+                to={categoryAd.ctaUrl || '/shop'}
+                className="inline-flex items-center gap-2 btn-gold text-xs py-2.5 px-6 font-semibold uppercase tracking-wider shadow-lg"
+              >
+                <span>{categoryAd.ctaText}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 

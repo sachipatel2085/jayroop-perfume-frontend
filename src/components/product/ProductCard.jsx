@@ -10,7 +10,8 @@ export const ProductCard = ({ product }) => {
 
   if (!product) return null;
 
-  const inWishlist = isInWishlist(product._id);
+  const pId = product._id || product.id;
+  const inWishlist = isInWishlist(pId);
   const primaryImage = product.images?.[0]?.url || 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=800';
   const hasSale = product.salePrice && product.salePrice < product.price;
   const isOutOfStock = product.stock <= 0;
@@ -26,7 +27,7 @@ export const ProductCard = ({ product }) => {
   const handleWishlistToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleWishlist(product._id);
+    toggleWishlist(pId, product);
   };
 
   return (

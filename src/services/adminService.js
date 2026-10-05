@@ -63,4 +63,8 @@ export const adminService = {
   createInfluencerVideo: async (data) => (await api.post('/influencers', data)).data,
   updateInfluencerVideo: async (id, data) => (await api.put(`/influencers/${id}`, data)).data,
   deleteInfluencerVideo: async (id) => (await api.delete(`/influencers/${id}`)).data,
+
+  // Store Configuration & Cash on Delivery (COD) Controls
+  getSettings: async () => (await api.get('/settings')).data,
+  updateSettings: async (settingsData) => (await api.put('/settings', settingsData)).data,
 };

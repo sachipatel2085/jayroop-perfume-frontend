@@ -20,6 +20,7 @@ export const AdminOrders = () => {
   const [statusModalOrder, setStatusModalOrder] = useState(null);
   const [statusForm, setStatusForm] = useState({
     status: 'PROCESSING',
+    paymentStatus: 'PENDING',
     note: '',
   });
 
@@ -66,6 +67,7 @@ export const AdminOrders = () => {
     setStatusModalOrder(ord);
     setStatusForm({
       status: ord.orderStatus,
+      paymentStatus: ord.paymentStatus || 'PENDING',
       note: '',
     });
   };
@@ -157,9 +159,20 @@ export const AdminOrders = () => {
                 </td>
 
                 <td className="py-3 px-4">
-                  <Badge variant={ord.paymentStatus === 'PAID' ? 'emerald' : 'noir'}>
-                    {ord.paymentStatus}
-                  </Badge>
+                  <div className="flex flex-col gap-1 items-start">
+                    <span
+                      className={`text-[9px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${
+                        ord.paymentMethod === 'COD'
+                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                          : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                      }`}
+                    >
+                      {ord.paymentMethod === 'COD' ? '💵 COD' : '💳 ONLINE'}
+                    </span>
+                    <Badge variant={ord.paymentStatus === 'PAID' ? 'emerald' : 'noir'}>
+                      {ord.paymentStatus}
+                    </Badge>
+                  </div>
                 </td>
 
                 <td className="py-3 px-4">
@@ -301,7 +314,14 @@ export const AdminOrders = () => {
                 </label>
                 <select
                   value={statusForm.status}
-                  onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
+                  onChange={(e) => {
+                    const newStatus = e.target.value;
+                    const updated = { ...statusForm, status: newStatus };
+                    if (newStatus === 'DELIVERED' && statusModalOrder?.paymentMethod === 'COD') {
+                      updated.paymentStatus = 'PAID';
+                    }
+                    setStatusForm(updated);
+                  }}
                   className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
                 >
                   <option value="PENDING_PAYMENT">PENDING_PAYMENT</option>
@@ -310,6 +330,22 @@ export const AdminOrders = () => {
                   <option value="SHIPPED">SHIPPED</option>
                   <option value="DELIVERED">DELIVERED</option>
                   <option value="CANCELLED">CANCELLED</option>
+                  <option value="REFUNDED">REFUNDED</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1 font-medium">
+                  Payment Status
+                </label>
+                <select
+                  value={statusForm.paymentStatus}
+                  onChange={(e) => setStatusForm({ ...statusForm, paymentStatus: e.target.value })}
+                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
+                >
+                  <option value="PENDING">PENDING (Unpaid / COD Due)</option>
+                  <option value="PAID">PAID (Settled)</option>
+                  <option value="FAILED">FAILED</option>
                   <option value="REFUNDED">REFUNDED</option>
                 </select>
               </div>

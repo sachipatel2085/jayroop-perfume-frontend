@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Star,
   Heart,
@@ -10,27 +10,27 @@ import {
   RotateCcw,
   Sparkles,
   ChevronRight,
-} from 'lucide-react';
-import { productService } from '../services/productService.js';
-import { useCart } from '../context/CartContext.jsx';
-import { useWishlist } from '../context/WishlistContext.jsx';
-import { VariantSelector } from '../components/product/VariantSelector.jsx';
-import { FragrancePyramid } from '../components/product/FragrancePyramid.jsx';
-import { ProductSpecifications } from '../components/product/ProductSpecifications.jsx';
-import { ReviewSection } from '../components/product/ReviewSection.jsx';
-import { ProductCard } from '../components/product/ProductCard.jsx';
-import { SEOHead } from '../components/common/SEOHead.jsx';
+} from "lucide-react";
+import { productService } from "../services/productService.js";
+import { useCart } from "../context/CartContext.jsx";
+import { useWishlist } from "../context/WishlistContext.jsx";
+import { VariantSelector } from "../components/product/VariantSelector.jsx";
+import { FragrancePyramid } from "../components/product/FragrancePyramid.jsx";
+import { ProductSpecifications } from "../components/product/ProductSpecifications.jsx";
+import { ReviewSection } from "../components/product/ReviewSection.jsx";
+import { ProductCard } from "../components/product/ProductCard.jsx";
+import { SEOHead } from "../components/common/SEOHead.jsx";
 
 export const ProductDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, setInstantCheckout } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [selectedVariant, setSelectedVariant] = useState(null);
-  const [selectedImage, setSelectedImage] = useState('');
+  const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +43,7 @@ export const ProductDetail = () => {
           setProduct(res.product);
           setRelatedProducts(res.relatedProducts || []);
           // Set initial image
-          setSelectedImage(res.product.images?.[0]?.url || '');
+          setSelectedImage(res.product.images?.[0]?.url || "");
           // Set initial variant if variants exist
           if (res.product.variants && res.product.variants.length > 0) {
             setSelectedVariant(res.product.variants[0]);
@@ -52,7 +52,7 @@ export const ProductDetail = () => {
           }
         }
       } catch (err) {
-        console.error('Failed to load product details', err);
+        console.error("Failed to load product details", err);
       } finally {
         setLoading(false);
       }
@@ -90,7 +90,8 @@ export const ProductDetail = () => {
   const currentPrice = selectedVariant?.price || product.price;
   const currentSalePrice = selectedVariant?.salePrice || product.salePrice;
   const hasSale = currentSalePrice && currentSalePrice < currentPrice;
-  const inWishlist = isInWishlist(product._id);
+  const pId = product._id || product.id;
+  const inWishlist = isInWishlist(pId);
   const isOutOfStock = (selectedVariant?.stock ?? product.stock) <= 0;
 
   const handleAddToCart = () => {
@@ -98,26 +99,30 @@ export const ProductDetail = () => {
   };
 
   const handleBuyNow = () => {
-    addToCart(product, selectedVariant, quantity);
-    navigate('/checkout');
+    setInstantCheckout(product, selectedVariant, quantity);
+    navigate("/checkout?mode=instant");
   };
 
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-8 px-4 sm:px-8 max-w-7xl mx-auto">
-      <SEOHead
-        title={product.name}
-        description={product.shortDescription}
-      />
+      <SEOHead title={product.name} description={product.shortDescription} />
 
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-zinc-500 mb-8">
-        <Link to="/" className="hover:text-gold transition-colors">Home</Link>
+        <Link to="/" className="hover:text-gold transition-colors">
+          Home
+        </Link>
         <ChevronRight className="w-3.5 h-3.5" />
-        <Link to="/shop" className="hover:text-gold transition-colors">Treasury</Link>
+        <Link to="/shop" className="hover:text-gold transition-colors">
+          Treasury
+        </Link>
         <ChevronRight className="w-3.5 h-3.5" />
         {product.category && (
           <>
-            <Link to={`/category/${product.category.slug}`} className="hover:text-gold transition-colors">
+            <Link
+              to={`/category/${product.category.slug}`}
+              className="hover:text-gold transition-colors"
+            >
               {product.category.name}
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -142,13 +147,13 @@ export const ProductDetail = () => {
               </span>
             )}
             <button
-              onClick={() => toggleWishlist(product._id)}
+              onClick={() => toggleWishlist(pId, product)}
               className="absolute top-4 right-4 p-2.5 rounded-full bg-noir/70 border border-white/10 text-zinc-300 hover:text-gold transition-all backdrop-blur-sm"
               aria-label="Toggle Wishlist"
             >
               <Heart
                 className={`w-5 h-5 ${
-                  inWishlist ? 'fill-gold text-gold scale-110' : ''
+                  inWishlist ? "fill-gold text-gold scale-110" : ""
                 }`}
               />
             </button>
@@ -163,11 +168,15 @@ export const ProductDetail = () => {
                   onClick={() => setSelectedImage(img.url)}
                   className={`w-20 h-20 border overflow-hidden transition-all flex-shrink-0 ${
                     selectedImage === img.url
-                      ? 'border-gold shadow-gold-glow'
-                      : 'border-zinc-800 opacity-60 hover:opacity-100'
+                      ? "border-gold shadow-gold-glow"
+                      : "border-zinc-800 opacity-60 hover:opacity-100"
                   }`}
                 >
-                  <img src={img.url} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={img.url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
                 </button>
               ))}
             </div>
@@ -179,7 +188,9 @@ export const ProductDetail = () => {
           <div>
             {/* Brand & SKU */}
             <div className="flex items-center justify-between text-xs uppercase tracking-widest text-zinc-400 mb-2">
-              <span className="text-gold font-semibold">{product.brand || 'Jayrup Special'}</span>
+              <span className="text-gold font-semibold">
+                {product.brand || "Jayrup Special"}
+              </span>
               <span>SKU: {selectedVariant?.sku || product.sku}</span>
             </div>
 
@@ -196,13 +207,15 @@ export const ProductDetail = () => {
                     key={s}
                     className={`w-4 h-4 ${
                       s <= Math.round(product.averageRating || 5)
-                        ? 'fill-gold text-gold'
-                        : 'text-zinc-700'
+                        ? "fill-gold text-gold"
+                        : "text-zinc-700"
                     }`}
                   />
                 ))}
                 <span className="ml-2 font-bold text-zinc-200">
-                  {product.averageRating > 0 ? product.averageRating.toFixed(1) : '5.0'}
+                  {product.averageRating > 0
+                    ? product.averageRating.toFixed(1)
+                    : "5.0"}
                 </span>
               </div>
               <span>•</span>
@@ -255,7 +268,8 @@ export const ProductDetail = () => {
                 </span>
               ) : (selectedVariant?.stock ?? product.stock) <= 5 ? (
                 <span className="text-gold-amber font-semibold uppercase tracking-wider animate-pulse">
-                  Only {selectedVariant?.stock ?? product.stock} flasks remaining in this batch
+                  Only {selectedVariant?.stock ?? product.stock} flasks
+                  remaining in this batch
                 </span>
               ) : (
                 <span className="text-emerald-400 font-medium uppercase tracking-wider">
@@ -294,7 +308,7 @@ export const ProductDetail = () => {
                   className="flex-1 btn-gold py-3 text-xs flex items-center justify-center gap-2"
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>{isOutOfStock ? 'Sold Out' : 'Add to Royal Bag'}</span>
+                  <span>{isOutOfStock ? "Sold Out" : "Add to Royal Bag"}</span>
                 </button>
               </div>
 
