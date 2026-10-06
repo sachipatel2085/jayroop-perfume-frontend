@@ -209,6 +209,20 @@ export const Navbar = () => {
             </Link>
 
             <Link
+              to="/contact"
+              className="hover:text-gold transition-colors duration-200"
+            >
+              Contact
+            </Link>
+
+            <Link
+              to="/faq"
+              className="hover:text-gold transition-colors duration-200"
+            >
+              FAQ
+            </Link>
+
+            <Link
               to="/blog"
               className="hover:text-gold transition-colors duration-200"
             >
@@ -534,6 +548,20 @@ export const Navbar = () => {
               className="py-1.5 px-2 hover:text-gold hover:bg-white/5 transition-colors"
             >
               About Us
+            </Link>
+            <Link
+              to="/contact"
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-1.5 px-2 hover:text-gold hover:bg-white/5 transition-colors"
+            >
+              Contact Concierge
+            </Link>
+            <Link
+              to="/faq"
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-1.5 px-2 hover:text-gold hover:bg-white/5 transition-colors"
+            >
+              FAQs & Guidance
             </Link>
             <Link
               to="/blog"

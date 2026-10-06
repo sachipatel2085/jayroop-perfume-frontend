@@ -24,6 +24,12 @@ import { WishlistPage } from './pages/WishlistPage.jsx';
 import { BlogList } from './pages/BlogList.jsx';
 import { BlogDetail } from './pages/BlogDetail.jsx';
 import { AboutUs } from './pages/AboutUs.jsx';
+import { PrivacyPolicy } from './pages/PrivacyPolicy.jsx';
+import { ShippingPolicy } from './pages/ShippingPolicy.jsx';
+import { ReturnRefundPolicy } from './pages/ReturnRefundPolicy.jsx';
+import { TermsOfService } from './pages/TermsOfService.jsx';
+import { ContactUs } from './pages/ContactUs.jsx';
+import { FAQ } from './pages/FAQ.jsx';
 import { Login } from './pages/Auth/Login.jsx';
 import { Register } from './pages/Auth/Register.jsx';
 
@@ -90,6 +96,16 @@ export default function App() {
                 <Route path="/track-order/:orderNumber" element={<OrderTrackingPage />} />
                 <Route path="/wishlist" element={<WishlistPage />} />
                 <Route path="/about" element={<AboutUs />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                <Route path="/return-policy" element={<ReturnRefundPolicy />} />
+                <Route path="/refund-policy" element={<ReturnRefundPolicy />} />
+                <Route path="/cancellation-policy" element={<ReturnRefundPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/terms-and-conditions" element={<TermsOfService />} />
+                <Route path="/contact" element={<ContactUs />} />
+                <Route path="/contact-us" element={<ContactUs />} />
+                <Route path="/faq" element={<FAQ />} />
                 <Route path="/blog" element={<BlogList />} />
                 <Route path="/blog/:slug" element={<BlogDetail />} />
                 <Route path="/login" element={<Login />} />
