@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, BookOpen, X } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import { Badge } from '../../components/common/Badge.jsx';
 import { ImageDropzone } from '../../components/common/ImageDropzone.jsx';
+import { SeoFormFields } from '../../components/admin/SeoFormFields.jsx';
 
 export const AdminBlogs = () => {
   const [blogs, setBlogs] = useState([]);
@@ -17,10 +18,18 @@ export const AdminBlogs = () => {
     excerpt: '',
     content: '',
     coverImageUrl: '',
+    coverImageAlt: '',
     author: 'Jayrup Editorial House',
     readTime: '5 min read',
     tags: 'Fragrance, Luxury, Heritage',
     status: 'PUBLISHED',
+    seo: {
+      metaTitle: '',
+      metaDescription: '',
+      metaKeywords: '',
+      focusKeyword: '',
+      canonicalUrl: '',
+    },
   });
 
   const loadBlogs = async () => {
@@ -48,10 +57,18 @@ export const AdminBlogs = () => {
       excerpt: '',
       content: '',
       coverImageUrl: '',
+      coverImageAlt: '',
       author: 'Jayrup Editorial House',
       readTime: '5 min read',
       tags: 'Fragrance, Luxury, Heritage',
       status: 'PUBLISHED',
+      seo: {
+        metaTitle: '',
+        metaDescription: '',
+        metaKeywords: '',
+        focusKeyword: '',
+        canonicalUrl: '',
+      },
     });
     setShowModal(true);
   };
@@ -65,10 +82,18 @@ export const AdminBlogs = () => {
       excerpt: b.excerpt,
       content: b.content,
       coverImageUrl: b.coverImage?.url || '',
+      coverImageAlt: b.coverImage?.altText || '',
       author: b.author,
       readTime: b.readTime,
       tags: b.tags?.join(', ') || '',
       status: b.status,
+      seo: {
+        metaTitle: b.seo?.metaTitle || '',
+        metaDescription: b.seo?.metaDescription || '',
+        metaKeywords: b.seo?.metaKeywords || '',
+        focusKeyword: b.seo?.focusKeyword || '',
+        canonicalUrl: b.seo?.canonicalUrl || '',
+      },
     });
     setShowModal(true);
   };
@@ -82,11 +107,15 @@ export const AdminBlogs = () => {
         category: formData.category,
         excerpt: formData.excerpt,
         content: formData.content,
-        coverImage: { url: formData.coverImageUrl },
+        coverImage: {
+          url: formData.coverImageUrl,
+          altText: formData.coverImageAlt || formData.title,
+        },
         author: formData.author,
         readTime: formData.readTime,
         tags: formData.tags.split(',').map((t) => t.trim()),
         status: formData.status,
+        seo: formData.seo,
       };
 
       if (editingId) {
@@ -185,9 +214,9 @@ export const AdminBlogs = () => {
 
       {/* Blog Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-noir-card border border-gold/40 p-6 sm:p-8 max-w-2xl w-full space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-noir-card border border-gold/40 p-6 sm:p-8 max-w-2xl w-full my-8 space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3 sticky top-0 bg-noir-card z-10">
               <h3 className="font-serif text-lg text-gold uppercase tracking-wider font-semibold">
                 {editingId ? 'Edit Article' : 'Write Journal Article'}
               </h3>
@@ -270,6 +299,20 @@ export const AdminBlogs = () => {
                   className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
                 />
               </div>
+
+              {/* Article Search Engine Optimization */}
+              <SeoFormFields
+                seoData={formData.seo}
+                onChange={(newSeo) => setFormData({ ...formData, seo: newSeo })}
+                fallbackTitle={formData.title}
+                fallbackDescription={formData.excerpt}
+                fallbackSlug={formData.slug || formData.title}
+                fallbackImage={formData.coverImageUrl}
+                itemType="blog"
+                showImageAlt={true}
+                imageAlt={formData.coverImageAlt}
+                onImageAltChange={(alt) => setFormData({ ...formData, coverImageAlt: alt })}
+              />
 
               <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">
                 <button

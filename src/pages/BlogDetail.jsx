@@ -55,8 +55,28 @@ export const BlogDetail = () => {
   return (
     <article className="bg-noir min-h-screen text-zinc-100 py-10 px-4 sm:px-8 max-w-4xl mx-auto">
       <SEOHead
-        title={blog.title}
-        description={blog.excerpt}
+        title={blog.seo?.metaTitle || `${blog.title} | Jayrup Royal Journal`}
+        description={blog.seo?.metaDescription || blog.excerpt}
+        keywords={blog.seo?.metaKeywords}
+        canonical={blog.seo?.canonicalUrl}
+        image={blog.coverImage?.url}
+        ogType="article"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: blog.title,
+          image: blog.coverImage?.url ? [blog.coverImage.url] : [],
+          datePublished: blog.publishedAt,
+          author: {
+            '@type': 'Person',
+            name: blog.author || 'Jayrup Fragrance House',
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'Jayrup Royal Luxury',
+          },
+          description: blog.seo?.metaDescription || blog.excerpt,
+        }}
       />
 
       {/* Breadcrumb */}
@@ -115,7 +135,7 @@ export const BlogDetail = () => {
       <div className="aspect-16/9 overflow-hidden bg-zinc-900 border border-gold/20 shadow-2xl mb-10">
         <img
           src={blog.coverImage?.url}
-          alt={blog.title}
+          alt={blog.coverImage?.altText || blog.title}
           className="w-full h-full object-cover"
         />
       </div>

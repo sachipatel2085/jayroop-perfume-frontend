@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Layers, X } from 'lucide-react';
-import { adminService } from '../../services/adminService.js';
-import { Badge } from '../../components/common/Badge.jsx';
-import { ImageDropzone } from '../../components/common/ImageDropzone.jsx';
+import React, { useState, useEffect } from "react";
+import { Plus, Edit2, Trash2, Layers, X } from "lucide-react";
+import { adminService } from "../../services/adminService.js";
+import { Badge } from "../../components/common/Badge.jsx";
+import { ImageDropzone } from "../../components/common/ImageDropzone.jsx";
+import { SeoFormFields } from "../../components/admin/SeoFormFields.jsx";
 
 export const AdminCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -11,13 +12,21 @@ export const AdminCategories = () => {
   const [editingId, setEditingId] = useState(null);
 
   const [formData, setFormData] = useState({
-    name: '',
-    slug: '',
-    parent: '',
-    description: '',
-    imageUrl: '',
+    name: "",
+    slug: "",
+    parent: "",
+    description: "",
+    imageUrl: "",
+    imageAlt: "",
     featured: false,
-    status: 'ACTIVE',
+    status: "ACTIVE",
+    seo: {
+      metaTitle: "",
+      metaDescription: "",
+      metaKeywords: "",
+      focusKeyword: "",
+      canonicalUrl: "",
+    },
   });
 
   const loadCategories = async () => {
@@ -39,13 +48,21 @@ export const AdminCategories = () => {
   const handleOpenAddModal = () => {
     setEditingId(null);
     setFormData({
-      name: '',
-      slug: '',
-      parent: '',
-      description: '',
-      imageUrl: '',
+      name: "",
+      slug: "",
+      parent: "",
+      description: "",
+      imageUrl: "",
+      imageAlt: "",
       featured: false,
-      status: 'ACTIVE',
+      status: "ACTIVE",
+      seo: {
+        metaTitle: "",
+        metaDescription: "",
+        metaKeywords: "",
+        focusKeyword: "",
+        canonicalUrl: "",
+      },
     });
     setShowModal(true);
   };
@@ -55,11 +72,19 @@ export const AdminCategories = () => {
     setFormData({
       name: cat.name,
       slug: cat.slug,
-      parent: cat.parent?._id || cat.parent || '',
-      description: cat.description || '',
-      imageUrl: cat.image?.url || '',
+      parent: cat.parent?._id || cat.parent || "",
+      description: cat.description || "",
+      imageUrl: cat.image?.url || "",
+      imageAlt: cat.image?.altText || "",
       featured: cat.featured,
       status: cat.status,
+      seo: {
+        metaTitle: cat.seo?.metaTitle || "",
+        metaDescription: cat.seo?.metaDescription || "",
+        metaKeywords: cat.seo?.metaKeywords || "",
+        focusKeyword: cat.seo?.focusKeyword || "",
+        canonicalUrl: cat.seo?.canonicalUrl || "",
+      },
     });
     setShowModal(true);
   };
@@ -69,12 +94,16 @@ export const AdminCategories = () => {
     try {
       const payload = {
         name: formData.name,
-        slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, '-'),
+        slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-"),
         parent: formData.parent || null,
         description: formData.description,
-        image: { url: formData.imageUrl },
+        image: {
+          url: formData.imageUrl,
+          altText: formData.imageAlt || formData.name,
+        },
         featured: formData.featured,
         status: formData.status,
+        seo: formData.seo,
       };
 
       if (editingId) {
@@ -91,7 +120,9 @@ export const AdminCategories = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete category? (Ensure no products are assigned first)')) {
+    if (
+      window.confirm("Delete category? (Ensure no products are assigned first)")
+    ) {
       try {
         await adminService.deleteCategory(id);
         loadCategories();
@@ -138,13 +169,18 @@ export const AdminCategories = () => {
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-3">
                     <img
-                      src={cat.image?.url || 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=100'}
+                      src={
+                        cat.image?.url ||
+                        "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=100"
+                      }
                       alt=""
                       className="w-10 h-10 object-cover border border-zinc-800 flex-shrink-0"
                     />
                     <div>
                       <p className="font-semibold text-zinc-200">{cat.name}</p>
-                      <p className="text-[10px] text-zinc-500 line-clamp-1">{cat.description}</p>
+                      <p className="text-[10px] text-zinc-500 line-clamp-1">
+                        {cat.description}
+                      </p>
                     </div>
                   </div>
                 </td>
@@ -153,7 +189,10 @@ export const AdminCategories = () => {
                   {cat.subcategories?.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       {cat.subcategories.map((s) => (
-                        <span key={s._id} className="bg-zinc-800 text-[10px] px-2 py-0.5 rounded text-zinc-300">
+                        <span
+                          key={s._id}
+                          className="bg-zinc-800 text-[10px] px-2 py-0.5 rounded text-zinc-300"
+                        >
                           {s.name}
                         </span>
                       ))}
@@ -163,7 +202,7 @@ export const AdminCategories = () => {
                   )}
                 </td>
                 <td className="py-3 px-4">
-                  <Badge variant={cat.status === 'ACTIVE' ? 'gold' : 'noir'}>
+                  <Badge variant={cat.status === "ACTIVE" ? "gold" : "noir"}>
                     {cat.status}
                   </Badge>
                 </td>
@@ -191,13 +230,16 @@ export const AdminCategories = () => {
 
       {/* Category Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-noir-card border border-gold/40 p-6 sm:p-8 max-w-lg w-full space-y-4 shadow-2xl text-xs">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-noir-card border border-gold/40 p-6 sm:p-8 max-w-2xl w-full my-8 space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3 top-0 bg-noir-card z-10">
               <h3 className="font-serif text-lg text-gold uppercase tracking-wider font-semibold">
-                {editingId ? 'Edit Category' : 'Create Category'}
+                {editingId ? "Edit Category" : "Create Category"}
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-zinc-400 hover:text-white">
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-zinc-400 hover:text-white"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -211,7 +253,9 @@ export const AdminCategories = () => {
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
                 />
               </div>
@@ -222,12 +266,16 @@ export const AdminCategories = () => {
                 </label>
                 <select
                   value={formData.parent}
-                  onChange={(e) => setFormData({ ...formData, parent: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, parent: e.target.value })
+                  }
                   className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
                 >
                   <option value="">None (Top-Level Root Category)</option>
                   {categories.map((c) => (
-                    <option key={c._id} value={c._id}>{c.name}</option>
+                    <option key={c._id} value={c._id}>
+                      {c.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -247,12 +295,32 @@ export const AdminCategories = () => {
                 <textarea
                   rows={3}
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">
+              {/* Category Search Engine Optimization */}
+              <SeoFormFields
+                seoData={formData.seo}
+                onChange={(newSeo) => setFormData({ ...formData, seo: newSeo })}
+                fallbackTitle={
+                  formData.name ? `${formData.name} Collection` : ""
+                }
+                fallbackDescription={formData.description}
+                fallbackSlug={formData.slug || formData.name}
+                fallbackImage={formData.imageUrl}
+                itemType="category"
+                showImageAlt={true}
+                imageAlt={formData.imageAlt}
+                onImageAltChange={(alt) =>
+                  setFormData({ ...formData, imageAlt: alt })
+                }
+              />
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800 bottom-0 bg-noir-card z-10 py-2">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
@@ -261,7 +329,7 @@ export const AdminCategories = () => {
                   Cancel
                 </button>
                 <button type="submit" className="btn-gold py-2 px-6 text-xs">
-                  {editingId ? 'Save Category' : 'Create Category'}
+                  {editingId ? "Save Category" : "Create Category"}
                 </button>
               </div>
             </form>

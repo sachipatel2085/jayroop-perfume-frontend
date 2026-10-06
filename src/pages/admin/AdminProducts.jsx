@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Search, Package, Check, X } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import { Badge } from '../../components/common/Badge.jsx';
 import { ImageDropzone } from '../../components/common/ImageDropzone.jsx';
+import { SeoFormFields } from '../../components/admin/SeoFormFields.jsx';
 
 export const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -26,6 +27,7 @@ export const AdminProducts = () => {
     sku: '',
     stock: '',
     imageUrl: '',
+    imageAlt: '',
     featured: false,
     status: 'ACTIVE',
     specKey1: 'Top Notes',
@@ -42,6 +44,14 @@ export const AdminProducts = () => {
     variant2Sku: '',
     variant2Price: '',
     variant2Stock: '',
+    seo: {
+      metaTitle: '',
+      metaDescription: '',
+      metaKeywords: '',
+      focusKeyword: '',
+      canonicalUrl: '',
+      searchIndexing: 'INDEX_FOLLOW',
+    },
   });
 
   const loadData = async () => {
@@ -79,6 +89,7 @@ export const AdminProducts = () => {
       sku: `JR-${Date.now().toString().slice(-4)}`,
       stock: '25',
       imageUrl: '',
+      imageAlt: '',
       featured: false,
       status: 'ACTIVE',
       specKey1: 'Top Notes',
@@ -95,6 +106,14 @@ export const AdminProducts = () => {
       variant2Sku: '',
       variant2Price: '',
       variant2Stock: '10',
+      seo: {
+        metaTitle: '',
+        metaDescription: '',
+        metaKeywords: '',
+        focusKeyword: '',
+        canonicalUrl: '',
+        searchIndexing: 'INDEX_FOLLOW',
+      },
     });
     setShowModal(true);
   };
@@ -115,6 +134,7 @@ export const AdminProducts = () => {
       sku: p.sku,
       stock: p.stock,
       imageUrl: p.images?.[0]?.url || '',
+      imageAlt: p.images?.[0]?.altText || '',
       featured: p.featured,
       status: p.status,
       specKey1: specs[0]?.[0] || 'Specification 1',
@@ -131,6 +151,14 @@ export const AdminProducts = () => {
       variant2Sku: p.variants?.[1]?.sku || '',
       variant2Price: p.variants?.[1]?.price || '',
       variant2Stock: p.variants?.[1]?.stock || '',
+      seo: {
+        metaTitle: p.seo?.metaTitle || '',
+        metaDescription: p.seo?.metaDescription || '',
+        metaKeywords: p.seo?.metaKeywords || '',
+        focusKeyword: p.seo?.focusKeyword || '',
+        canonicalUrl: p.seo?.canonicalUrl || '',
+        searchIndexing: p.seo?.searchIndexing || 'INDEX_FOLLOW',
+      },
     });
     setShowModal(true);
   };
@@ -175,11 +203,20 @@ export const AdminProducts = () => {
         salePrice: formData.salePrice ? Number(formData.salePrice) : null,
         sku: formData.sku,
         stock: Number(formData.stock),
-        images: formData.imageUrl ? [{ url: formData.imageUrl, isPrimary: true }] : [],
+        images: formData.imageUrl
+          ? [
+              {
+                url: formData.imageUrl,
+                altText: formData.imageAlt || formData.name,
+                isPrimary: true,
+              },
+            ]
+          : [],
         variants,
         specifications,
         featured: formData.featured,
         status: formData.status,
+        seo: formData.seo,
       };
 
       if (editingId) {
@@ -532,6 +569,20 @@ export const AdminProducts = () => {
                   </select>
                 </div>
               </div>
+
+              {/* Deep Search Engine Optimization (SEO & Rich Meta Tags) */}
+              <SeoFormFields
+                seoData={formData.seo}
+                onChange={(newSeo) => setFormData({ ...formData, seo: newSeo })}
+                fallbackTitle={formData.name}
+                fallbackDescription={formData.shortDescription || formData.description}
+                fallbackSlug={formData.slug || formData.name}
+                fallbackImage={formData.imageUrl}
+                itemType="products"
+                showImageAlt={true}
+                imageAlt={formData.imageAlt}
+                onImageAltChange={(alt) => setFormData({ ...formData, imageAlt: alt })}
+              />
 
               <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">
                 <button

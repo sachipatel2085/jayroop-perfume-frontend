@@ -9,9 +9,14 @@ import {
   Save,
   Truck,
   Info,
+  Globe,
+  Search,
+  KeyRound,
+  Eye,
 } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import { Badge } from '../../components/common/Badge.jsx';
+import { ImageDropzone } from '../../components/common/ImageDropzone.jsx';
 
 export const AdminSettings = () => {
   const [loading, setLoading] = useState(true);
@@ -25,6 +30,13 @@ export const AdminSettings = () => {
     codMinOrderAmount: 0,
     codMaxOrderAmount: 50000,
     onlinePaymentEnabled: true,
+    defaultMetaTitle: 'Jayrup (JR) | Royal Luxury Fragrance & Skincare House',
+    defaultMetaDescription:
+      'Jayrup (जयरूप) - Royal Indian Luxury House of High-Potency Extraits de Parfum and Ayurvedic Skincare. पिंपल्स भागे, आत्मविश्वास जागे.',
+    defaultMetaKeywords:
+      'luxury perfume, extrait de parfum, oud, kannauj rose, ayurvedic skincare, pimples soap, jayrup',
+    googleSiteVerification: '',
+    ogDefaultImage: '',
   });
 
   const loadSettings = async () => {
@@ -38,6 +50,17 @@ export const AdminSettings = () => {
           codMinOrderAmount: data.codMinOrderAmount || 0,
           codMaxOrderAmount: data.codMaxOrderAmount || 50000,
           onlinePaymentEnabled: data.onlinePaymentEnabled !== false,
+          defaultMetaTitle:
+            data.defaultMetaTitle ||
+            'Jayrup (JR) | Royal Luxury Fragrance & Skincare House',
+          defaultMetaDescription:
+            data.defaultMetaDescription ||
+            'Jayrup (जयरूप) - Royal Indian Luxury House of High-Potency Extraits de Parfum and Ayurvedic Skincare. पिंपल्स भागे, आत्मविश्वास जागे.',
+          defaultMetaKeywords:
+            data.defaultMetaKeywords ||
+            'luxury perfume, extrait de parfum, oud, kannauj rose, ayurvedic skincare, pimples soap, jayrup',
+          googleSiteVerification: data.googleSiteVerification || '',
+          ogDefaultImage: data.ogDefaultImage || '',
         });
       }
     } catch (err) {
@@ -282,6 +305,155 @@ export const AdminSettings = () => {
             <div className="p-3 bg-noir border border-zinc-800">
               <p className="text-zinc-200 font-bold">Digital Wallets</p>
               <p className="text-[10px] text-zinc-500 mt-0.5">Amazon Pay, Mobikwik</p>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 3: GLOBAL STOREFRONT SEO & WEBMASTER CONFIGURATION */}
+        <div className="p-6 bg-noir-card border border-gold/25 space-y-6 shadow-xl">
+          <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-full bg-gold/10 border border-gold/30 text-gold">
+                <Globe className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-serif text-base uppercase tracking-wider text-zinc-100 font-semibold">
+                  Global Storefront SEO & Webmaster Configuration
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  Set default meta tags, Google Search Console verification, and social share banners
+                </p>
+              </div>
+            </div>
+
+            <Badge variant="gold">SEARCH ENGINE VISIBILITY</Badge>
+          </div>
+
+          {/* Form Fields */}
+          <div className="space-y-4">
+            {/* Default Meta Title */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-zinc-300 uppercase tracking-wider text-[11px] font-semibold">
+                  Default Storefront Meta Title (Homepage Title)
+                </label>
+                <span
+                  className={`text-[10px] font-mono ${
+                    (settings.defaultMetaTitle || '').length > 60
+                      ? 'text-amber-400 font-bold'
+                      : 'text-zinc-500'
+                  }`}
+                >
+                  {(settings.defaultMetaTitle || '').length} / 60 chars (Optimal: 50-60)
+                </span>
+              </div>
+              <input
+                type="text"
+                value={settings.defaultMetaTitle}
+                onChange={(e) =>
+                  setSettings({ ...settings, defaultMetaTitle: e.target.value })
+                }
+                placeholder="Jayrup (JR) | Royal Luxury Fragrance & Skincare House"
+                className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 text-xs focus:outline-none focus:border-gold"
+              />
+            </div>
+
+            {/* Default Meta Description */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-zinc-300 uppercase tracking-wider text-[11px] font-semibold">
+                  Default Storefront Meta Description
+                </label>
+                <span
+                  className={`text-[10px] font-mono ${
+                    (settings.defaultMetaDescription || '').length > 160
+                      ? 'text-amber-400 font-bold'
+                      : 'text-zinc-500'
+                  }`}
+                >
+                  {(settings.defaultMetaDescription || '').length} / 160 chars (Optimal: 150-160)
+                </span>
+              </div>
+              <textarea
+                rows={3}
+                value={settings.defaultMetaDescription}
+                onChange={(e) =>
+                  setSettings({ ...settings, defaultMetaDescription: e.target.value })
+                }
+                placeholder="Jayrup (जयरूप) - Royal Indian Luxury House of High-Potency Extraits de Parfum..."
+                className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 text-xs focus:outline-none focus:border-gold resize-none"
+              />
+            </div>
+
+            {/* Default Meta Keywords & Google Site Verification */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-zinc-300 uppercase tracking-wider text-[11px] mb-1.5 font-semibold">
+                  Default Meta Keywords (Comma-separated)
+                </label>
+                <input
+                  type="text"
+                  value={settings.defaultMetaKeywords}
+                  onChange={(e) =>
+                    setSettings({ ...settings, defaultMetaKeywords: e.target.value })
+                  }
+                  placeholder="luxury perfume, extrait de parfum, oud, kannauj rose..."
+                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 text-xs focus:outline-none focus:border-gold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-zinc-300 uppercase tracking-wider text-[11px] mb-1.5 font-semibold flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5 text-gold" />
+                  <span>Google Search Console Verification Token</span>
+                </label>
+                <input
+                  type="text"
+                  value={settings.googleSiteVerification}
+                  onChange={(e) =>
+                    setSettings({ ...settings, googleSiteVerification: e.target.value })
+                  }
+                  placeholder="e.g. googled41d8cd98f00b204e or verification code"
+                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 text-xs focus:outline-none focus:border-gold font-mono"
+                />
+                <p className="text-[10px] text-zinc-500 mt-1">
+                  Injects &lt;meta name="google-site-verification" content="..."&gt; into &lt;head&gt;
+                </p>
+              </div>
+            </div>
+
+            {/* Default Social Share (OG) Banner */}
+            <div>
+              <ImageDropzone
+                value={settings.ogDefaultImage}
+                onChange={(url) => setSettings({ ...settings, ogDefaultImage: url })}
+                folder="settings"
+                label="Default OpenGraph / Social Share Banner"
+                hint="Banner image displayed when sharing store links on WhatsApp, iMessage, Twitter, Facebook (1200x630 recommended)"
+              />
+            </div>
+
+            {/* Live Google Search Snippet Preview */}
+            <div className="p-4 bg-zinc-950 border border-zinc-800 rounded space-y-2">
+              <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                <Search className="w-3.5 h-3.5 text-gold" />
+                <span>Google Search SERP Preview (Homepage)</span>
+              </div>
+              <div className="p-3 bg-[#1f1f1f] rounded border border-zinc-700/50 space-y-1 font-sans">
+                <div className="flex items-center gap-1.5 text-[11px] text-[#bdc1c6] truncate">
+                  <span className="w-4 h-4 rounded-full bg-gold/30 flex items-center justify-center text-[9px] text-gold font-bold">
+                    JR
+                  </span>
+                  <span>https://jayrup.com</span>
+                </div>
+                <h4 className="text-base text-[#8ab4f8] hover:underline cursor-pointer font-normal line-clamp-1">
+                  {settings.defaultMetaTitle || 'Jayrup (JR) | Royal Luxury Fragrance & Skincare House'}
+                </h4>
+                <p className="text-xs text-[#bdc1c6] line-clamp-2 leading-relaxed font-light">
+                  {settings.defaultMetaDescription ||
+                    'Jayrup (जयरूप) - Royal Indian Luxury House of High-Potency Extraits de Parfum and Ayurvedic Skincare.'}
+                </p>
+              </div>
             </div>
           </div>
         </div>

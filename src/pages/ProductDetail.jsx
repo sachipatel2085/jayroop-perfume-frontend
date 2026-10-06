@@ -105,7 +105,46 @@ export const ProductDetail = () => {
 
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-8 px-4 sm:px-8 max-w-7xl mx-auto">
-      <SEOHead title={product.name} description={product.shortDescription} />
+      <SEOHead
+        title={product.seo?.metaTitle || `${product.name} | Jayrup Royal Luxury`}
+        description={
+          product.seo?.metaDescription ||
+          product.shortDescription ||
+          product.description
+        }
+        keywords={product.seo?.metaKeywords}
+        canonical={product.seo?.canonicalUrl}
+        image={product.seo?.ogImage || product.images?.[0]?.url}
+        ogType="product"
+        searchIndexing={product.seo?.searchIndexing || 'INDEX_FOLLOW'}
+        jsonLd={{
+          '@context': 'https://schema.org/',
+          '@type': 'Product',
+          name: product.name,
+          image: product.images?.map((img) => img.url) || [],
+          description:
+            product.seo?.metaDescription ||
+            product.shortDescription ||
+            product.description,
+          brand: {
+            '@type': 'Brand',
+            name: 'Jayrup',
+          },
+          offers: {
+            '@type': 'Offer',
+            priceCurrency: 'INR',
+            price: currentSalePrice || currentPrice,
+            availability:
+              (selectedVariant?.stock ?? product.stock) > 0
+                ? 'https://schema.org/InStock'
+                : 'https://schema.org/OutOfStock',
+            seller: {
+              '@type': 'Organization',
+              name: 'Jayrup Royal Luxury',
+            },
+          },
+        }}
+      />
 
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-zinc-500 mb-8">
@@ -138,7 +177,11 @@ export const ProductDetail = () => {
           <div className="relative aspect-square bg-noir-card border border-gold/25 overflow-hidden shadow-2xl">
             <img
               src={selectedImage || product.images?.[0]?.url}
-              alt={product.name}
+              alt={
+                product.images?.find((img) => img.url === selectedImage)?.altText ||
+                product.images?.[0]?.altText ||
+                product.name
+              }
               className="w-full h-full object-cover object-center transition-all duration-500"
             />
             {hasSale && (
@@ -174,7 +217,7 @@ export const ProductDetail = () => {
                 >
                   <img
                     src={img.url}
-                    alt=""
+                    alt={img.altText || `${product.name} view ${i + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>

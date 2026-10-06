@@ -22,6 +22,8 @@ export const AdminAds = () => {
     location: 'HOMEPAGE_HERO',
     priority: 10,
     status: 'ACTIVE',
+    altText: 'Jayrup Royal Luxury Perfume - Marwad ka Pahla Luxury Perfume House',
+    seoTitle: 'Jayrup Royal Luxury Perfume Campaign',
   });
 
   const loadAds = async () => {
@@ -54,6 +56,8 @@ export const AdminAds = () => {
       location: 'HOMEPAGE_HERO',
       priority: 10,
       status: 'ACTIVE',
+      altText: 'Jayrup Royal Luxury Perfume - Marwad ka Pahla Luxury Perfume House',
+      seoTitle: 'Jayrup Royal Luxury Perfume Campaign',
     });
     setShowModal(true);
   };
@@ -72,6 +76,8 @@ export const AdminAds = () => {
       location: ad.location,
       priority: ad.priority,
       status: ad.status,
+      altText: ad.altText || '',
+      seoTitle: ad.seoTitle || '',
     });
     setShowModal(true);
   };
@@ -174,9 +180,9 @@ export const AdminAds = () => {
 
       {/* Ad Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-noir-card border border-gold/40 p-6 sm:p-8 max-w-lg w-full space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-noir-card border border-gold/40 p-6 sm:p-8 max-w-lg w-full my-8 space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3 sticky top-0 bg-noir-card z-10">
               <h3 className="font-serif text-lg text-gold uppercase tracking-wider font-semibold">
                 {editingId ? 'Edit Campaign Media' : 'New Campaign Media'}
               </h3>
@@ -264,6 +270,44 @@ export const AdminAds = () => {
                   hint="Upload video cover thumbnail photo (PNG, JPG, WebP)"
                 />
               )}
+
+              {/* SEO & Accessibility Optimization */}
+              <div className="p-4 bg-zinc-950/80 border border-gold/20 rounded space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-gold"></span>
+                  <h4 className="text-xs uppercase tracking-wider text-gold font-semibold">
+                    Media SEO & Google Search Indexing
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">
+                      Media SEO Title
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.seoTitle}
+                      onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
+                      placeholder="e.g. Royal Flora Luxury Perfume Banner"
+                      className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 text-xs focus:outline-none focus:border-gold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">
+                      Alt Text (For Google Image & Screen Readers)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.altText}
+                      onChange={(e) => setFormData({ ...formData, altText: e.target.value })}
+                      placeholder="e.g. Bottle of Royal Flora EDP on dark marble"
+                      className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 text-xs focus:outline-none focus:border-gold"
+                    />
+                  </div>
+                </div>
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>

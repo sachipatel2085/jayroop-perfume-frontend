@@ -53,8 +53,16 @@ export const CategoryPage = () => {
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-8 px-4 sm:px-8 max-w-7xl mx-auto">
       <SEOHead
-        title={category?.name ? `${category.name} Collection` : 'Category'}
-        description={category?.description}
+        title={
+          category?.seo?.metaTitle ||
+          (category?.name
+            ? `${category.name} Collection | Jayrup Royal Luxury`
+            : 'Category Collection | Jayrup')
+        }
+        description={category?.seo?.metaDescription || category?.description}
+        keywords={category?.seo?.metaKeywords}
+        canonical={category?.seo?.canonicalUrl}
+        image={category?.image?.url}
       />
 
       {/* Breadcrumb Navigation */}
@@ -100,7 +108,7 @@ export const CategoryPage = () => {
         ) : category?.image?.url ? (
           <img
             src={resolveMediaUrl(category.image.url)}
-            alt={category.name}
+            alt={category.image?.altText || category.name}
             className="absolute inset-0 w-full h-full object-cover opacity-20"
           />
         ) : null}
