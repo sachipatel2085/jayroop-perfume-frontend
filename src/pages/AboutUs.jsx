@@ -1,16 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, ShieldCheck, HeartHandshake, Compass, Award, ArrowRight, Droplets, Leaf } from 'lucide-react';
-import { SEOHead } from '../components/common/SEOHead.jsx';
+import { SEO } from '../components/seo/SEO.jsx';
+import { OrganizationSchema } from '../components/seo/OrganizationSchema.jsx';
+import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
 import logoImg from '../assets/jayroop-logo.webp';
 
 export const AboutUs = () => {
   return (
     <div className="bg-noir min-h-screen text-zinc-100 overflow-hidden">
-      <SEOHead
+      <SEO
         title="About Us | Jayrup (JR) Royal Fragrance & Skincare House"
         description="Discover the heritage, artisanal distillation, and Ayurvedic skincare science behind Jayrup. पिंपल्स भागे, आत्मविश्वास जागे."
-      />
+        canonicalUrl="https://jayrup.com/about"
+      >
+        <OrganizationSchema />
+        <BreadcrumbSchema
+          items={[
+            { name: 'Home', url: '/' },
+            { name: 'About Us', url: '/about' },
+          ]}
+        />
+      </SEO>
 
       {/* 1. HERO SECTION */}
       <section className="relative pt-20 pb-24 sm:pt-28 sm:pb-32 px-4 sm:px-8 border-b border-gold/20 flex flex-col items-center text-center">

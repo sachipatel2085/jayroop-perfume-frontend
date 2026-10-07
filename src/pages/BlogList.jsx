@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Clock, Calendar } from 'lucide-react';
 import { productService } from '../services/productService.js';
-import { SEOHead } from '../components/common/SEOHead.jsx';
+import { SEO } from '../components/seo/SEO.jsx';
+import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
 
 export const BlogList = () => {
   const [blogs, setBlogs] = useState([]);
@@ -20,10 +21,18 @@ export const BlogList = () => {
 
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-12 px-4 sm:px-8 max-w-7xl mx-auto">
-      <SEOHead
-        title="The Royal Blog & Editorial"
-        description="Essays, rituals, and botanical insights from the house of Jayrup."
-      />
+      <SEO
+        title="The Royal Blog & Editorial | Jayrup Fragrance House"
+        description="Essays, rituals, and botanical insights on royal Indian extraits de parfum, artisanal distillation, and Ayurvedic skincare from the house of Jayrup."
+        canonicalUrl="https://jayrup.com/blog"
+      >
+        <BreadcrumbSchema
+          items={[
+            { name: 'Home', url: '/' },
+            { name: 'The Royal Blog', url: '/blog' },
+          ]}
+        />
+      </SEO>
 
       <div className="border-b border-gold/20 pb-8 mb-12 text-center max-w-2xl mx-auto space-y-3">
         <span className="text-[10px] uppercase tracking-[0.3em] text-gold font-semibold">

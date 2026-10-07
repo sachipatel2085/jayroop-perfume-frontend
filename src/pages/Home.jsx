@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Award, Star, Compass, Play, Volume2, VolumeX } from 'lucide-react';
 import { productService } from '../services/productService.js';
 import { ProductCard } from '../components/product/ProductCard.jsx';
-import { SEOHead } from '../components/common/SEOHead.jsx';
+import { SEO } from '../components/seo/SEO.jsx';
+import { OrganizationSchema } from '../components/seo/OrganizationSchema.jsx';
+import { WebsiteSchema } from '../components/seo/WebsiteSchema.jsx';
 import VideoSEO from '../components/common/VideoSEO.jsx';
 import InspirationsSection from '../components/influencer/InspirationsSection.jsx';
 import ScentFluencerSection from '../components/influencer/ScentFluencerSection.jsx';
@@ -73,10 +75,14 @@ export const Home = () => {
 
   return (
     <div className="bg-noir min-h-screen text-zinc-100">
-      <SEOHead
-        title="Royal Fragrances & Skincare"
+      <SEO
+        title="JAYRUP (JR) | Royal Luxury Fragrance & Skincare House"
         description="Explore Jayrup (JR) handcrafted royal extraits de parfum, saffron soaps, and Jayrup Special Pimples Cream. पिंपल्स भागे, आत्मविश्वास जागे."
-      />
+        canonicalUrl="https://jayrup.com"
+      >
+        <OrganizationSchema />
+        <WebsiteSchema />
+      </SEO>
       <VideoSEO videos={influencerVideos} />
 
       {/* 1. HERO SECTION: Dynamically loaded from Advertisement DB / Uploaded Banner */}

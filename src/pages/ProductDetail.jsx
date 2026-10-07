@@ -19,7 +19,9 @@ import { FragrancePyramid } from "../components/product/FragrancePyramid.jsx";
 import { ProductSpecifications } from "../components/product/ProductSpecifications.jsx";
 import { ReviewSection } from "../components/product/ReviewSection.jsx";
 import { ProductCard } from "../components/product/ProductCard.jsx";
-import { SEOHead } from "../components/common/SEOHead.jsx";
+import { SEO } from "../components/seo/SEO.jsx";
+import { ProductSchema } from "../components/seo/ProductSchema.jsx";
+import { BreadcrumbSchema } from "../components/seo/BreadcrumbSchema.jsx";
 
 export const ProductDetail = () => {
   const { slug } = useParams();
@@ -103,9 +105,16 @@ export const ProductDetail = () => {
     navigate("/checkout?mode=instant");
   };
 
+  const breadcrumbList = [
+    { name: 'Home', url: '/' },
+    { name: 'Treasury', url: '/shop' },
+    ...(product.category ? [{ name: product.category.name, url: `/category/${product.category.slug}` }] : []),
+    { name: product.name, url: `/products/${product.slug}` },
+  ];
+
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-8 px-4 sm:px-8 max-w-7xl mx-auto">
-      <SEOHead
+      <SEO
         title={product.seo?.metaTitle || `${product.name} | Jayrup Royal Luxury`}
         description={
           product.seo?.metaDescription ||
@@ -113,38 +122,14 @@ export const ProductDetail = () => {
           product.description
         }
         keywords={product.seo?.metaKeywords}
-        canonical={product.seo?.canonicalUrl}
-        image={product.seo?.ogImage || product.images?.[0]?.url}
+        canonicalUrl={product.seo?.canonicalUrl || `/products/${product.slug}`}
+        ogImage={product.seo?.ogImage || product.images?.[0]?.url}
         ogType="product"
         searchIndexing={product.seo?.searchIndexing || 'INDEX_FOLLOW'}
-        jsonLd={{
-          '@context': 'https://schema.org/',
-          '@type': 'Product',
-          name: product.name,
-          image: product.images?.map((img) => img.url) || [],
-          description:
-            product.seo?.metaDescription ||
-            product.shortDescription ||
-            product.description,
-          brand: {
-            '@type': 'Brand',
-            name: 'Jayrup',
-          },
-          offers: {
-            '@type': 'Offer',
-            priceCurrency: 'INR',
-            price: currentSalePrice || currentPrice,
-            availability:
-              (selectedVariant?.stock ?? product.stock) > 0
-                ? 'https://schema.org/InStock'
-                : 'https://schema.org/OutOfStock',
-            seller: {
-              '@type': 'Organization',
-              name: 'Jayrup Royal Luxury',
-            },
-          },
-        }}
-      />
+      >
+        <ProductSchema product={product} />
+        <BreadcrumbSchema items={breadcrumbList} />
+      </SEO>
 
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-zinc-500 mb-8">
@@ -180,9 +165,11 @@ export const ProductDetail = () => {
               alt={
                 product.images?.find((img) => img.url === selectedImage)?.altText ||
                 product.images?.[0]?.altText ||
-                product.name
+                `${product.name} - ${product.brand || 'Jayrup'}`
               }
               className="w-full h-full object-cover object-center transition-all duration-500"
+              fetchPriority="high"
+              loading="eager"
             />
             {hasSale && (
               <span className="absolute top-4 left-4 bg-gradient-to-r from-gold-amber to-gold text-black text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-lg">

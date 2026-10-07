@@ -14,7 +14,9 @@ import {
   Phone,
   MessageSquare,
 } from 'lucide-react';
-import { SEOHead } from '../components/common/SEOHead.jsx';
+import { SEO } from '../components/seo/SEO.jsx';
+import { FAQSchema } from '../components/seo/FAQSchema.jsx';
+import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
 
 const FAQ_DATA = [
   // 1. Orders & Payment
@@ -155,10 +157,19 @@ export const FAQ = () => {
 
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-10 px-4 sm:px-8 max-w-6xl mx-auto">
-      <SEOHead
+      <SEO
         title="Frequently Asked Questions (FAQ) | Jayrup Royal House"
-        description="Find answers to common questions about Jayrup luxury perfumes, Cash on Delivery, shipping timelines, skincare benefits, and 7-day replacements."
-      />
+        description="Find authoritative answers to common questions about Jayrup luxury perfumes, Cash on Delivery, shipping timelines, skincare benefits, and 7-day replacements."
+        canonicalUrl="https://jayrup.com/faq"
+      >
+        <FAQSchema faqs={FAQ_DATA} />
+        <BreadcrumbSchema
+          items={[
+            { name: 'Home', url: '/' },
+            { name: 'Frequently Asked Questions', url: '/faq' },
+          ]}
+        />
+      </SEO>
 
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-zinc-500 mb-8">

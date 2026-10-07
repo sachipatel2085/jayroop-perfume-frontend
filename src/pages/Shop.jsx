@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import { Filter, SlidersHorizontal, Search, X } from 'lucide-react';
 import { productService } from '../services/productService.js';
 import { ProductCard } from '../components/product/ProductCard.jsx';
-import { SEOHead } from '../components/common/SEOHead.jsx';
+import { SEO } from '../components/seo/SEO.jsx';
+import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
+import { CollectionPageSchema } from '../components/seo/CollectionPageSchema.jsx';
 
 export const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -78,10 +80,24 @@ export const Shop = () => {
 
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-10 px-4 sm:px-8 max-w-7xl mx-auto">
-      <SEOHead
-        title="Royal Fragrance & Skincare Catalog"
-        description="Browse the complete catalog of Jayrup extraits, saffron soaps, and therapeutic cosmetics."
-      />
+      <SEO
+        title="Royal Fragrance & Skincare Catalog | Jayrup Treasury"
+        description="Browse the complete catalog of Jayrup handcrafted extraits de parfum, artisanal saffron soaps, and Jayrup Special skincare formulations."
+        canonicalUrl="https://jayrup.com/shop"
+      >
+        <BreadcrumbSchema
+          items={[
+            { name: 'Home', url: '/' },
+            { name: 'Treasury & Catalog', url: '/shop' },
+          ]}
+        />
+        <CollectionPageSchema
+          name="Jayrup Royal Treasury Catalog"
+          description="Browse the complete catalog of Jayrup handcrafted extraits de parfum, artisanal saffron soaps, and Jayrup Special skincare formulations."
+          url="/shop"
+          products={products}
+        />
+      </SEO>
 
       {/* Header */}
       <div className="border-b border-gold/20 pb-8 mb-8 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-4">

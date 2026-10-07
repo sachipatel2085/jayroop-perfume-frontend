@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { ChevronRight, Sparkles, Volume2, VolumeX, ArrowRight } from 'lucide-react';
 import { productService } from '../services/productService.js';
 import { ProductCard } from '../components/product/ProductCard.jsx';
-import { SEOHead } from '../components/common/SEOHead.jsx';
+import { SEO } from '../components/seo/SEO.jsx';
+import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
+import { CollectionPageSchema } from '../components/seo/CollectionPageSchema.jsx';
 
 const resolveMediaUrl = (url) => {
   if (!url) return '';
@@ -13,12 +15,24 @@ const resolveMediaUrl = (url) => {
 
 export const CategoryPage = () => {
   const { slug } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedSubCategory = searchParams.get('subCategory') || '';
+
   const [category, setCategory] = useState(null);
   const [categoryAd, setCategoryAd] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSubCategory, setSelectedSubCategory] = useState('');
   const [isMuted, setIsMuted] = useState(true);
+
+  const handleSubCategorySelect = (subSlug) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (subSlug) {
+      nextParams.set('subCategory', subSlug);
+    } else {
+      nextParams.delete('subCategory');
+    }
+    setSearchParams(nextParams);
+  };
 
   useEffect(() => {
     const fetchCategoryDetails = async () => {
@@ -50,9 +64,15 @@ export const CategoryPage = () => {
     fetchCategoryDetails();
   }, [slug, selectedSubCategory]);
 
+  const breadcrumbList = [
+    { name: 'Home', url: '/' },
+    { name: 'Treasury', url: '/shop' },
+    { name: category?.name || slug, url: `/category/${slug}` },
+  ];
+
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-8 px-4 sm:px-8 max-w-7xl mx-auto">
-      <SEOHead
+      <SEO
         title={
           category?.seo?.metaTitle ||
           (category?.name
@@ -61,9 +81,17 @@ export const CategoryPage = () => {
         }
         description={category?.seo?.metaDescription || category?.description}
         keywords={category?.seo?.metaKeywords}
-        canonical={category?.seo?.canonicalUrl}
-        image={category?.image?.url}
-      />
+        canonicalUrl={category?.seo?.canonicalUrl || `/category/${slug}`}
+        ogImage={category?.image?.url}
+      >
+        <BreadcrumbSchema items={breadcrumbList} />
+        <CollectionPageSchema
+          name={category?.name || 'Category'}
+          description={category?.description}
+          url={`/category/${slug}`}
+          products={products}
+        />
+      </SEO>
 
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-zinc-400 mb-6">
@@ -148,7 +176,7 @@ export const CategoryPage = () => {
       {category?.subcategories && category.subcategories.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mb-8">
           <button
-            onClick={() => setSelectedSubCategory('')}
+            onClick={() => handleSubCategorySelect('')}
             className={`px-4 py-2 text-xs uppercase tracking-wider font-semibold border transition-all ${
               !selectedSubCategory
                 ? 'border-gold bg-gold text-black shadow-gold-glow'
@@ -160,7 +188,7 @@ export const CategoryPage = () => {
           {category.subcategories.map((sub) => (
             <button
               key={sub._id}
-              onClick={() => setSelectedSubCategory(sub.slug)}
+              onClick={() => handleSubCategorySelect(sub.slug)}
               className={`px-4 py-2 text-xs uppercase tracking-wider font-semibold border transition-all ${
                 selectedSubCategory === sub.slug
                   ? 'border-gold bg-gold text-black shadow-gold-glow'

@@ -1,0 +1,31 @@
+# Jayrup (JR) Royal Luxury Fragrance & Skincare House
+# https://jayrup.com
+
+User-agent: *
+Allow: /
+Allow: /shop
+Allow: /category/
+Allow: /products/
+Allow: /blog/
+Allow: /about
+Allow: /contact
+Allow: /faq
+Allow: /privacy-policy
+Allow: /shipping-policy
+Allow: /return-policy
+Allow: /terms-of-service
+
+# Private & Administrative Routes
+Disallow: /admin/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /profile
+Disallow: /orders
+Disallow: /order-success/
+Disallow: /api/v1/admin/
+Disallow: /api/v1/auth/
+Disallow: /api/v1/orders/
+Disallow: /api/v1/cart/
+Disallow: /api/v1/payments/
+
+Sitemap: https://jayrup.com/sitemap.xml

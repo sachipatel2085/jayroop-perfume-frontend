@@ -15,7 +15,9 @@ import {
   HelpCircle,
   Building,
 } from 'lucide-react';
-import { SEOHead } from '../components/common/SEOHead.jsx';
+import { SEO } from '../components/seo/SEO.jsx';
+import { OrganizationSchema } from '../components/seo/OrganizationSchema.jsx';
+import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
 import { contactService } from '../services/contactService.js';
 
 export const ContactUs = () => {
@@ -61,10 +63,19 @@ export const ContactUs = () => {
 
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-10 px-4 sm:px-8 max-w-7xl mx-auto">
-      <SEOHead
+      <SEO
         title="Contact Royal Concierge | Jayrup (जयरूप) Luxury Fragrance House"
         description="Connect with Jayrup's master perfumers, customer care, and order concierge. Instant WhatsApp, phone support, and corporate gifting enquiries."
-      />
+        canonicalUrl="https://jayrup.com/contact"
+      >
+        <OrganizationSchema />
+        <BreadcrumbSchema
+          items={[
+            { name: 'Home', url: '/' },
+            { name: 'Contact Royal Concierge', url: '/contact' },
+          ]}
+        />
+      </SEO>
 
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-zinc-500 mb-8">

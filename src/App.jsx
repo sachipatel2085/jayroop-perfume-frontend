@@ -32,6 +32,7 @@ import { ContactUs } from './pages/ContactUs.jsx';
 import { FAQ } from './pages/FAQ.jsx';
 import { Login } from './pages/Auth/Login.jsx';
 import { Register } from './pages/Auth/Register.jsx';
+import { NotFound } from './pages/NotFound.jsx';
 
 // Admin Components & Pages
 import { AdminLayout } from './components/admin/AdminLayout.jsx';
@@ -116,6 +117,9 @@ export default function App() {
                   <Route path="/profile" element={<UserProfile />} />
                   <Route path="/orders" element={<OrderHistory />} />
                 </Route>
+
+                {/* 404 Fallback within Storefront Layout */}
+                <Route path="*" element={<NotFound />} />
               </Route>
 
               {/* Admin Protected Dashboard Routes */}
@@ -133,9 +137,6 @@ export default function App() {
                 <Route path="audit-logs" element={<AdminAuditLogs />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
-
-              {/* 404 Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Router>
         </WishlistProvider>

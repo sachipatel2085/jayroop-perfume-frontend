@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Clock, Calendar, ChevronRight, User, Share2, ArrowLeft } from 'lucide-react';
 import { productService } from '../services/productService.js';
-import { SEOHead } from '../components/common/SEOHead.jsx';
+import { SEO } from '../components/seo/SEO.jsx';
+import { ArticleSchema } from '../components/seo/ArticleSchema.jsx';
+import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
 
 export const BlogDetail = () => {
   const { slug } = useParams();
@@ -52,32 +54,25 @@ export const BlogDetail = () => {
     );
   }
 
+  const breadcrumbList = [
+    { name: 'Home', url: '/' },
+    { name: 'The Royal Blog', url: '/blog' },
+    { name: blog.title, url: `/blog/${blog.slug}` },
+  ];
+
   return (
     <article className="bg-noir min-h-screen text-zinc-100 py-10 px-4 sm:px-8 max-w-4xl mx-auto">
-      <SEOHead
+      <SEO
         title={blog.seo?.metaTitle || `${blog.title} | Jayrup Royal Journal`}
         description={blog.seo?.metaDescription || blog.excerpt}
         keywords={blog.seo?.metaKeywords}
-        canonical={blog.seo?.canonicalUrl}
-        image={blog.coverImage?.url}
+        canonicalUrl={blog.seo?.canonicalUrl || `/blog/${blog.slug}`}
+        ogImage={blog.coverImage?.url}
         ogType="article"
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'BlogPosting',
-          headline: blog.title,
-          image: blog.coverImage?.url ? [blog.coverImage.url] : [],
-          datePublished: blog.publishedAt,
-          author: {
-            '@type': 'Person',
-            name: blog.author || 'Jayrup Fragrance House',
-          },
-          publisher: {
-            '@type': 'Organization',
-            name: 'Jayrup Royal Luxury',
-          },
-          description: blog.seo?.metaDescription || blog.excerpt,
-        }}
-      />
+      >
+        <ArticleSchema blog={blog} />
+        <BreadcrumbSchema items={breadcrumbList} />
+      </SEO>
 
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-zinc-500 mb-8">
@@ -137,6 +132,8 @@ export const BlogDetail = () => {
           src={blog.coverImage?.url}
           alt={blog.coverImage?.altText || blog.title}
           className="w-full h-full object-cover"
+          fetchPriority="high"
+          loading="eager"
         />
       </div>
 

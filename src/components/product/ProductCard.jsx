@@ -64,9 +64,11 @@ export const ProductCard = ({ product }) => {
       <Link to={`/products/${product.slug}`} className="block relative aspect-square overflow-hidden bg-noir">
         <img
           src={primaryImage}
-          alt={product.name}
+          alt={product.images?.[0]?.altText || `${product.name} - ${product.brand || 'Jayrup'}`}
           className="w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 ease-out"
           loading="lazy"
+          width="400"
+          height="400"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-noir/80 via-transparent to-transparent opacity-40 group-hover:opacity-20 transition-opacity" />
       </Link>
