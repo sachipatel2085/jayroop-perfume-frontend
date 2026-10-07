@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, Package, Check, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Package, Check, X, Sparkles } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import { Badge } from '../../components/common/Badge.jsx';
 import { ImageDropzone } from '../../components/common/ImageDropzone.jsx';
@@ -30,11 +30,14 @@ export const AdminProducts = () => {
     imageAlt: '',
     featured: false,
     status: 'ACTIVE',
-    specKey1: 'Top Notes',
+    topNotes: '',
+    heartNotes: '',
+    baseNotes: '',
+    specKey1: 'Volume',
     specVal1: '',
-    specKey2: 'Heart Notes',
+    specKey2: 'Fragrance Family',
     specVal2: '',
-    specKey3: 'Base Notes',
+    specKey3: 'Longevity',
     specVal3: '',
     variant1Title: '50ml',
     variant1Sku: '',
@@ -92,12 +95,15 @@ export const AdminProducts = () => {
       imageAlt: '',
       featured: false,
       status: 'ACTIVE',
-      specKey1: 'Top Notes',
-      specVal1: '',
-      specKey2: 'Heart Notes',
+      topNotes: '',
+      heartNotes: '',
+      baseNotes: '',
+      specKey1: 'Volume',
+      specVal1: '50 ml',
+      specKey2: 'Fragrance Family',
       specVal2: '',
-      specKey3: 'Base Notes',
-      specVal3: '',
+      specKey3: 'Longevity',
+      specVal3: '12+ Hours Royal Sillage',
       variant1Title: '50ml',
       variant1Sku: '',
       variant1Price: '',
@@ -120,7 +126,19 @@ export const AdminProducts = () => {
 
   const handleOpenEditModal = (p) => {
     setEditingId(p._id);
-    const specs = p.specifications ? Object.entries(p.specifications) : [];
+    const specsObj = p.specifications && typeof p.specifications === 'object' && !(p.specifications instanceof Map)
+      ? p.specifications
+      : (p.specifications instanceof Map ? Object.fromEntries(p.specifications) : {});
+
+    const topNotes = p.fragranceNotes?.topNotes || specsObj['Top Notes'] || '';
+    const heartNotes = p.fragranceNotes?.heartNotes || specsObj['Heart Notes'] || '';
+    const baseNotes = p.fragranceNotes?.baseNotes || specsObj['Base Notes'] || '';
+
+    // Filter out fragrance notes from other specifications
+    const otherSpecs = Object.entries(specsObj).filter(
+      ([k]) => !['Top Notes', 'Heart Notes', 'Base Notes'].includes(k)
+    );
+
     setFormData({
       name: p.name,
       slug: p.slug,
@@ -137,12 +155,15 @@ export const AdminProducts = () => {
       imageAlt: p.images?.[0]?.altText || '',
       featured: p.featured,
       status: p.status,
-      specKey1: specs[0]?.[0] || 'Specification 1',
-      specVal1: specs[0]?.[1] || '',
-      specKey2: specs[1]?.[0] || 'Specification 2',
-      specVal2: specs[1]?.[1] || '',
-      specKey3: specs[2]?.[0] || 'Specification 3',
-      specVal3: specs[2]?.[1] || '',
+      topNotes,
+      heartNotes,
+      baseNotes,
+      specKey1: otherSpecs[0]?.[0] || 'Volume',
+      specVal1: otherSpecs[0]?.[1] || '',
+      specKey2: otherSpecs[1]?.[0] || 'Fragrance Family',
+      specVal2: otherSpecs[1]?.[1] || '',
+      specKey3: otherSpecs[2]?.[0] || 'Longevity',
+      specVal3: otherSpecs[2]?.[1] || '',
       variant1Title: p.variants?.[0]?.title || '50ml',
       variant1Sku: p.variants?.[0]?.sku || '',
       variant1Price: p.variants?.[0]?.price || '',
@@ -166,8 +187,11 @@ export const AdminProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Build specifications map
+      // Build specifications map with dedicated fragrance notes + extra specs
       const specifications = {};
+      if (formData.topNotes) specifications['Top Notes'] = formData.topNotes;
+      if (formData.heartNotes) specifications['Heart Notes'] = formData.heartNotes;
+      if (formData.baseNotes) specifications['Base Notes'] = formData.baseNotes;
       if (formData.specKey1 && formData.specVal1) specifications[formData.specKey1] = formData.specVal1;
       if (formData.specKey2 && formData.specVal2) specifications[formData.specKey2] = formData.specVal2;
       if (formData.specKey3 && formData.specVal3) specifications[formData.specKey3] = formData.specVal3;
@@ -213,6 +237,11 @@ export const AdminProducts = () => {
             ]
           : [],
         variants,
+        fragranceNotes: {
+          topNotes: formData.topNotes || '',
+          heartNotes: formData.heartNotes || '',
+          baseNotes: formData.baseNotes || '',
+        },
         specifications,
         featured: formData.featured,
         status: formData.status,
@@ -469,24 +498,85 @@ export const AdminProducts = () => {
                 />
               </div>
 
-              {/* Dynamic Specifications Editor */}
+              {/* Dedicated Olfactory Fragrance Notes Section */}
+              <div className="p-4 bg-noir border border-gold/30 rounded space-y-3">
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                  <div>
+                    <span className="font-serif text-xs uppercase tracking-wider text-gold font-semibold flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-gold" /> Olfactory Fragrance Notes (Pyramid)
+                    </span>
+                    <p className="text-[10px] text-zinc-400 mt-0.5">
+                      Separate note inputs rendered in the Royal Olfactory Pyramid on the product page.
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-zinc-400 uppercase tracking-widest bg-zinc-900 border border-zinc-800 px-2 py-0.5">
+                    Perfume Notes
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-zinc-300 uppercase tracking-wider text-[10px] mb-1 font-medium">
+                      Top Notes (Opening / Head) <span className="text-zinc-500 lowercase font-normal">(first 15–30 minutes)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.topNotes}
+                      onChange={(e) => setFormData({ ...formData, topNotes: e.target.value })}
+                      placeholder="e.g. Sparkling Bergamot, Fresh Mandarin, Crisp Citrus"
+                      className="w-full bg-noir-card border border-zinc-800 p-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-gold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-300 uppercase tracking-wider text-[10px] mb-1 font-medium">
+                      Heart Notes (Core / Middle) <span className="text-zinc-500 lowercase font-normal">(hours 2 to 6)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.heartNotes}
+                      onChange={(e) => setFormData({ ...formData, heartNotes: e.target.value })}
+                      placeholder="e.g. Velvety Royal Rose, Night-Blooming Jasmine, Neroli"
+                      className="w-full bg-noir-card border border-zinc-800 p-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-gold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-300 uppercase tracking-wider text-[10px] mb-1 font-medium">
+                      Base Notes (Dry Down / Sillage) <span className="text-zinc-500 lowercase font-normal">(hours 6 to 14+)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.baseNotes}
+                      onChange={(e) => setFormData({ ...formData, baseNotes: e.target.value })}
+                      placeholder="e.g. Golden Amber, Mysore Sandalwood, Royal White Oud"
+                      className="w-full bg-noir-card border border-zinc-800 p-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-gold"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Product Specifications */}
               <div className="p-3 bg-noir border border-zinc-800 space-y-2">
-                <span className="font-serif text-[11px] uppercase tracking-wider text-gold font-semibold block">
-                  Product Specifications / Fragrance Notes
-                </span>
+                <div className="flex items-center justify-between border-b border-zinc-850 pb-1.5">
+                  <span className="font-serif text-[11px] uppercase tracking-wider text-zinc-300 font-semibold">
+                    Additional Specifications (General / Skincare / Soaps)
+                  </span>
+                  <span className="text-[10px] text-zinc-500">Key / Value pairs</span>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
                     value={formData.specKey1}
                     onChange={(e) => setFormData({ ...formData, specKey1: e.target.value })}
-                    placeholder="Spec Name (e.g. Top Notes or Skin Type)"
+                    placeholder="Spec Name (e.g. Volume or Skin Type)"
                     className="bg-noir-card border border-zinc-850 p-2 text-zinc-100"
                   />
                   <input
                     type="text"
                     value={formData.specVal1}
                     onChange={(e) => setFormData({ ...formData, specVal1: e.target.value })}
-                    placeholder="Value (e.g. Bergamot, Saffron or Acne Prone)"
+                    placeholder="Value (e.g. 50 ml or All Skin Types)"
                     className="bg-noir-card border border-zinc-850 p-2 text-zinc-100"
                   />
                 </div>
@@ -495,14 +585,30 @@ export const AdminProducts = () => {
                     type="text"
                     value={formData.specKey2}
                     onChange={(e) => setFormData({ ...formData, specKey2: e.target.value })}
-                    placeholder="Spec Name (e.g. Heart Notes or Botanicals)"
+                    placeholder="Spec Name (e.g. Fragrance Family or Finish)"
                     className="bg-noir-card border border-zinc-850 p-2 text-zinc-100"
                   />
                   <input
                     type="text"
                     value={formData.specVal2}
                     onChange={(e) => setFormData({ ...formData, specVal2: e.target.value })}
-                    placeholder="Value"
+                    placeholder="Value (e.g. Floral Amber Woody)"
+                    className="bg-noir-card border border-zinc-850 p-2 text-zinc-100"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    value={formData.specKey3}
+                    onChange={(e) => setFormData({ ...formData, specKey3: e.target.value })}
+                    placeholder="Spec Name (e.g. Longevity or Gender)"
+                    className="bg-noir-card border border-zinc-850 p-2 text-zinc-100"
+                  />
+                  <input
+                    type="text"
+                    value={formData.specVal3}
+                    onChange={(e) => setFormData({ ...formData, specVal3: e.target.value })}
+                    placeholder="Value (e.g. 12+ Hours Royal Sillage)"
                     className="bg-noir-card border border-zinc-850 p-2 text-zinc-100"
                   />
                 </div>

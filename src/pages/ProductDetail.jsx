@@ -377,7 +377,7 @@ export const ProductDetail = () => {
       </div>
 
       {/* Fragrance Pyramid (Perfume Notes) */}
-      <FragrancePyramid specifications={product.specifications} />
+      <FragrancePyramid specifications={product.specifications} fragranceNotes={product.fragranceNotes} />
 
       {/* Skincare / Generic Product Specifications */}
       <ProductSpecifications specifications={product.specifications} />

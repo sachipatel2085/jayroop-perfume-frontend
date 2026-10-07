@@ -1,12 +1,19 @@
 import React from 'react';
 import { Sparkles, Heart, Feather } from 'lucide-react';
 
-export const FragrancePyramid = ({ specifications }) => {
-  if (!specifications) return null;
-
-  const topNotes = specifications['Top Notes'];
-  const heartNotes = specifications['Heart Notes'];
-  const baseNotes = specifications['Base Notes'];
+export const FragrancePyramid = ({ specifications, fragranceNotes }) => {
+  const topNotes =
+    fragranceNotes?.topNotes ||
+    (specifications instanceof Map ? specifications.get('Top Notes') : specifications?.['Top Notes']) ||
+    specifications?.topNotes;
+  const heartNotes =
+    fragranceNotes?.heartNotes ||
+    (specifications instanceof Map ? specifications.get('Heart Notes') : specifications?.['Heart Notes']) ||
+    specifications?.heartNotes;
+  const baseNotes =
+    fragranceNotes?.baseNotes ||
+    (specifications instanceof Map ? specifications.get('Base Notes') : specifications?.['Base Notes']) ||
+    specifications?.baseNotes;
 
   // Only render if at least one fragrance note exists
   if (!topNotes && !heartNotes && !baseNotes) return null;
