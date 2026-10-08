@@ -8,6 +8,7 @@ import { WishlistProvider } from './context/WishlistContext.jsx';
 import { Navbar } from './components/common/Navbar.jsx';
 import { Footer } from './components/common/Footer.jsx';
 import { CartDrawer } from './components/cart/CartDrawer.jsx';
+import { ScrollToTop } from './components/common/ScrollToTop.jsx';
 
 // Storefront Pages
 import { Home } from './pages/Home.jsx';
@@ -83,6 +84,7 @@ export default function App() {
       <CartProvider>
         <WishlistProvider>
           <Router>
+            <ScrollToTop />
             <Routes>
               {/* Storefront Routes */}
               <Route element={<StorefrontLayout />}>
