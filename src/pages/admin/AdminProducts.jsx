@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Search, Package, Check, X, Sparkles, Star } from '
 import { adminService } from '../../services/adminService.js';
 import { Badge } from '../../components/common/Badge.jsx';
 import { ImageDropzone } from '../../components/common/ImageDropzone.jsx';
+import { RichTextEditor } from '../../components/common/RichTextEditor.jsx';
 import { SeoFormFields } from '../../components/admin/SeoFormFields.jsx';
 
 export const AdminProducts = () => {
@@ -516,15 +517,13 @@ export const AdminProducts = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">Detailed Description (HTML supported)</label>
-                <textarea
-                  rows={4}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
-                />
-              </div>
+              <RichTextEditor
+                value={formData.description}
+                onChange={(val) => setFormData({ ...formData, description: val })}
+                label="Detailed Description (HTML supported)"
+                placeholder="Compose detailed craftsmanship notes, ingredients, story, or olfactory details..."
+                minHeight="220px"
+              />
 
               {/* Dedicated Olfactory Fragrance Notes Section */}
               <div className="p-4 bg-noir border border-gold/30 rounded space-y-3">

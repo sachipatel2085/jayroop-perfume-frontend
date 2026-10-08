@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, BookOpen, X } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import { Badge } from '../../components/common/Badge.jsx';
 import { ImageDropzone } from '../../components/common/ImageDropzone.jsx';
+import { RichTextEditor } from '../../components/common/RichTextEditor.jsx';
 import { SeoFormFields } from '../../components/admin/SeoFormFields.jsx';
 
 export const AdminBlogs = () => {
@@ -278,16 +279,14 @@ export const AdminBlogs = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">Content (HTML supported) *</label>
-                <textarea
-                  rows={6}
-                  required
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
-                />
-              </div>
+              <RichTextEditor
+                value={formData.content}
+                onChange={(val) => setFormData({ ...formData, content: val })}
+                label="Article Content (HTML supported)"
+                placeholder="Write the full editorial story, olfactory breakdowns, rituals, or craftsmanship details..."
+                minHeight="280px"
+                required={true}
+              />
 
               <div>
                 <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">Tags (Comma-separated)</label>

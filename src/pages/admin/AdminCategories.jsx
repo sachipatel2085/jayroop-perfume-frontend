@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Layers, X } from "lucide-react";
 import { adminService } from "../../services/adminService.js";
 import { Badge } from "../../components/common/Badge.jsx";
 import { ImageDropzone } from "../../components/common/ImageDropzone.jsx";
+import { RichTextEditor } from "../../components/common/RichTextEditor.jsx";
 import { SeoFormFields } from "../../components/admin/SeoFormFields.jsx";
 
 export const AdminCategories = () => {
@@ -288,19 +289,13 @@ export const AdminCategories = () => {
                 hint="Upload high-res category aesthetic banner (PNG, JPG, WebP)"
               />
 
-              <div>
-                <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">
-                  Description
-                </label>
-                <textarea
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
-                />
-              </div>
+              <RichTextEditor
+                value={formData.description}
+                onChange={(val) => setFormData({ ...formData, description: val })}
+                label="Category Description (HTML supported)"
+                placeholder="Describe this royal category collection..."
+                minHeight="140px"
+              />
 
               {/* Category Search Engine Optimization */}
               <SeoFormFields
