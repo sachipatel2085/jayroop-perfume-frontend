@@ -14,7 +14,11 @@ import logoImg from '../assets/jayroop-logo.webp';
 
 const resolveMediaUrl = (url) => {
   if (!url) return '';
-  if (url.startsWith('/uploads')) return `http://localhost:5000${url}`;
+  if (url.startsWith('/uploads')) {
+    const apiBase = import.meta.env.VITE_API_URL || '';
+    const backendOrigin = apiBase.replace(/\/api\/v1\/?$/, '');
+    return backendOrigin ? `${backendOrigin}${url}` : url;
+  }
   return url;
 };
 
@@ -45,8 +49,12 @@ export const Home = () => {
           setCampaignAd(campRes[0]);
         }
 
-        // 2. Fetch featured products
-        const prodRes = await productService.getProducts({ featured: 'true', limit: 4 });
+        // 2. Fetch featured products with fallback to latest creations
+        let prodRes = await productService.getProducts({ featured: 'true', limit: 8 });
+        if (!prodRes?.data || prodRes.data.length === 0) {
+          // If no products are explicitly marked featured, display latest creations so homepage is never empty
+          prodRes = await productService.getProducts({ limit: 8 });
+        }
         if (prodRes?.data) setFeaturedProducts(prodRes.data);
 
         // 3. Fetch categories

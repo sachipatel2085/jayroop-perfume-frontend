@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, Package, Check, X, Sparkles } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Package, Check, X, Sparkles, Star } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import { Badge } from '../../components/common/Badge.jsx';
 import { ImageDropzone } from '../../components/common/ImageDropzone.jsx';
@@ -93,7 +93,7 @@ export const AdminProducts = () => {
       stock: '25',
       imageUrl: '',
       imageAlt: '',
-      featured: false,
+      featured: true,
       status: 'ACTIVE',
       topNotes: '',
       heartNotes: '',
@@ -272,6 +272,18 @@ export const AdminProducts = () => {
     }
   };
 
+  const handleToggleFeatured = async (product) => {
+    try {
+      const nextFeatured = !product.featured;
+      await adminService.updateProduct(product._id, { featured: nextFeatured });
+      setProducts((prev) =>
+        prev.map((p) => (p._id === product._id ? { ...p, featured: nextFeatured } : p))
+      );
+    } catch (err) {
+      alert(`Failed to update homepage featured status: ${err.message}`);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -315,6 +327,7 @@ export const AdminProducts = () => {
               <th className="py-3 px-4">Base Price</th>
               <th className="py-3 px-4">Stock</th>
               <th className="py-3 px-4">Variants</th>
+              <th className="py-3 px-4 text-center">Homepage</th>
               <th className="py-3 px-4">Status</th>
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
@@ -347,6 +360,21 @@ export const AdminProducts = () => {
                 </td>
                 <td className="py-3 px-4 text-zinc-400">
                   {p.variants?.length > 0 ? `${p.variants.length} options` : 'Standard'}
+                </td>
+                <td className="py-3 px-4 text-center">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleFeatured(p)}
+                    title={p.featured ? 'Featured on Homepage (Click to toggle)' : 'Standard catalog only (Click to feature on homepage)'}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-semibold uppercase tracking-wider border transition-all ${
+                      p.featured
+                        ? 'bg-gold/15 border-gold text-gold shadow-sm'
+                        : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
+                    }`}
+                  >
+                    <Star className={`w-3 h-3 ${p.featured ? 'fill-gold text-gold' : 'text-zinc-600'}`} />
+                    <span>{p.featured ? 'Featured' : 'Standard'}</span>
+                  </button>
                 </td>
                 <td className="py-3 px-4">
                   <Badge variant={p.status === 'ACTIVE' ? 'gold' : 'noir'}>
@@ -651,23 +679,30 @@ export const AdminProducts = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer text-zinc-300">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 bg-noir border border-gold/30 rounded">
+                <label className="flex items-start gap-3 cursor-pointer text-zinc-300">
                   <input
                     type="checkbox"
                     checked={formData.featured}
                     onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                    className="accent-gold w-4 h-4"
+                    className="accent-gold w-4 h-4 mt-0.5"
                   />
-                  <span>Mark as Featured Creation</span>
+                  <div>
+                    <span className="font-semibold text-zinc-200 block text-xs">
+                      Show on Homepage (Featured Royal Creation)
+                    </span>
+                    <span className="text-[11px] text-zinc-400 block font-normal">
+                      When checked, this product is prominently showcased in the "Signature Royal Creations" section on the homepage.
+                    </span>
+                  </div>
                 </label>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-zinc-400">Status:</span>
+                  <span className="text-zinc-400 text-xs">Status:</span>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="bg-noir border border-zinc-800 p-1.5 text-zinc-200"
+                    className="bg-noir-card border border-zinc-800 p-2 text-zinc-200 text-xs focus:outline-none focus:border-gold"
                   >
                     <option value="ACTIVE">ACTIVE</option>
                     <option value="DRAFT">DRAFT</option>
