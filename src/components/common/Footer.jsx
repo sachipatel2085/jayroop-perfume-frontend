@@ -1,250 +1,122 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BrandLogo } from './BrandLogo.jsx';
-import {
-  ShieldCheck,
-  Truck,
-  RefreshCw,
-  Award,
-  Mail,
-  Phone,
-  MapPin,
-  Clock,
-  HelpCircle,
-  FileText,
-  Lock,
-} from 'lucide-react';
+import { ShieldCheck, Truck, RefreshCw, Award, Mail, Phone, MapPin, MessageCircle, Smartphone, CreditCard, Landmark, Banknote } from 'lucide-react';
+import { BRAND, fullAddress } from '../../config/site.js';
+
+const Col = ({ title, links }) => (
+  <div>
+    <h3 className="font-serif text-xs text-gold tracking-widest uppercase mb-4 font-semibold">{title}</h3>
+    <ul className="space-y-2.5 text-xs">
+      {links.map(([to, label]) => (
+        <li key={to}>
+          <Link to={to} className="hover:text-gold transition-colors">{label}</Link>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
 
 export const Footer = () => {
+  const [email, setEmail] = useState('');
+  const [joined, setJoined] = useState(false);
+
   return (
-    <footer className="bg-noir border-t border-gold/20 text-zinc-400 text-xs">
-      {/* Royal Guarantees Bar */}
+    <footer className="bg-noir border-t border-gold/20 text-zinc-400 text-xs" role="contentinfo">
+      {/* Trust bar */}
       <div className="border-b border-zinc-900 py-8 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div className="flex flex-col items-center">
-            <Truck className="w-6 h-6 text-gold mb-2" />
-            <h4 className="font-semibold text-zinc-100 uppercase tracking-wider text-[11px]">
-              Royal Express Transit
-            </h4>
-            <p className="text-[10px] text-zinc-500 mt-1">Complimentary across India above ₹999</p>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <Award className="w-6 h-6 text-gold mb-2" />
-            <h4 className="font-semibold text-zinc-100 uppercase tracking-wider text-[11px]">
-              100% Authentic Formulation
-            </h4>
-            <p className="text-[10px] text-zinc-500 mt-1">High-potency 30%+ Extrait de Parfum</p>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <ShieldCheck className="w-6 h-6 text-gold mb-2" />
-            <h4 className="font-semibold text-zinc-100 uppercase tracking-wider text-[11px]">
-              Secured Razorpay Payments
-            </h4>
-            <p className="text-[10px] text-zinc-500 mt-1">256-bit bank-grade encryption</p>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <RefreshCw className="w-6 h-6 text-gold mb-2" />
-            <h4 className="font-semibold text-zinc-100 uppercase tracking-wider text-[11px]">
-              7-Day Patron Assurance
-            </h4>
-            <p className="text-[10px] text-zinc-500 mt-1">Hassle-free replacement for transit claims</p>
-          </div>
+          {[
+            [Truck, 'Delivery across India', 'Free above ₹999 · 7–10 business days'],
+            [Award, 'Genuine products', 'Direct from the Jayrup brand'],
+            [ShieldCheck, 'Secure PhonePe payments', 'UPI · Cards · Net Banking · COD'],
+            [RefreshCw, 'Easy support', 'Damaged item? Report within 3 days'],
+          ].map(([Icon, t, s]) => (
+            <div key={t} className="flex flex-col items-center">
+              <Icon className="w-6 h-6 text-gold mb-2" />
+              <p className="font-semibold text-zinc-100 uppercase tracking-wider text-[11px]">{t}</p>
+              <p className="text-[10px] text-zinc-500 mt-1">{s}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Main Footer Links */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10">
-        {/* Col 1: Brand & Heritage Bio (lg:col-span-2) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10">
         <div className="lg:col-span-2 space-y-4">
           <BrandLogo size="normal" showTagline={true} />
-          <p className="text-zinc-400 text-xs leading-relaxed max-w-sm mt-3">
-            Jayrup (जयरूप) is a distinguished Indian house of regal perfumery and specialized herbal cosmetics. We distill time-honored heritage with uncompromising botanical purity to awaken enduring confidence.
-          </p>
+          <p className="text-zinc-400 text-xs leading-relaxed max-w-sm">{BRAND.description}</p>
+          <span className="inline-block bg-gradient-to-r from-gold-amber via-gold to-gold-amber text-black text-[10px] font-bold px-3 py-1 rounded-full tracking-wider">
+            {BRAND.tagline}
+          </span>
+          <address className="not-italic pt-2 text-[11px] text-zinc-500 space-y-2">
+            <p className="flex gap-2"><MapPin className="w-3.5 h-3.5 text-gold flex-shrink-0 mt-0.5" /><span>{BRAND.tradeName}, {fullAddress()}</span></p>
+            <p className="flex gap-2"><Phone className="w-3.5 h-3.5 text-gold flex-shrink-0" /><a href={BRAND.phoneHref} className="hover:text-gold">{BRAND.phone}</a></p>
+            <p className="flex gap-2"><Mail className="w-3.5 h-3.5 text-gold flex-shrink-0" /><a href={`mailto:${BRAND.email}`} className="hover:text-gold">{BRAND.email}</a></p>
+            <p className="flex gap-2"><MessageCircle className="w-3.5 h-3.5 text-gold flex-shrink-0" /><a href={BRAND.whatsappHref} target="_blank" rel="noopener noreferrer" className="hover:text-gold">WhatsApp us</a></p>
+          </address>
+        </div>
 
-          <div className="inline-block pt-1">
-            <span className="bg-gradient-to-r from-gold-amber via-gold to-gold-amber text-black text-[10px] font-bold px-3 py-1 rounded-full tracking-wider shadow-sm">
-              पिंपल्स भागे, आत्मविश्वास जागे
-            </span>
+        <Col title="Quick Links" links={[['/', 'Home'], ['/shop', 'Shop All'], ['/about', 'About'], ['/blog', 'Skincare Journal'], ['/faq', 'FAQs']]} />
+        <Col title="My Account" links={[['/account', 'My Account'], ['/account/orders', 'Orders & Invoices'], ['/track-order', 'Track Order'], ['/wishlist', 'Wishlist'], ['/contact-us', 'Contact Us']]} />
+        <Col
+          title="More"
+          links={[
+            ['/terms-and-conditions', 'Terms and Conditions'],
+            ['/privacy-policy', 'Privacy Policy'],
+            ['/shipping-policy', 'Shipping Policy'],
+            ['/refund-return-policy', 'Refund & Return Policy'],
+          ]}
+        />
+
+        <div>
+          <h3 className="font-serif text-xs text-gold tracking-widest uppercase mb-4 font-semibold">Stay in touch</h3>
+          <p className="text-zinc-400 text-xs mb-3">New launches, skincare tips and member-only offers.</p>
+          {joined ? (
+            <p className="text-emerald-300 text-xs">Thank you for subscribing!</p>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (email) setJoined(true);
+              }}
+              className="space-y-2"
+            >
+              <label htmlFor="footer-email" className="sr-only">E-mail address</label>
+              <input
+                id="footer-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Your e-mail"
+                required
+                className="w-full bg-zinc-900/80 border border-gold/30 rounded-lg px-3 py-2 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-gold"
+              />
+              <button type="submit" className="w-full btn-gold rounded-lg text-[10px] !py-2">Subscribe</button>
+            </form>
+          )}
+          <div className="mt-6">
+            <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">We accept</p>
+            <div className="flex flex-wrap gap-2 text-zinc-300">
+              {[
+                [Smartphone, 'UPI'],
+                [CreditCard, 'Cards'],
+                [Landmark, 'Net Banking'],
+                [Banknote, 'COD'],
+              ].map(([Icon, l]) => (
+                <span key={l} className="inline-flex items-center gap-1 text-[10px] border border-zinc-800 rounded-md px-2 py-1"><Icon className="w-3 h-3 text-gold" />{l}</span>
+              ))}
+            </div>
+            <p className="text-[10px] text-zinc-600 mt-2">Payments secured by PhonePe Payment Gateway</p>
           </div>
-
-          <div className="pt-2 text-[11px] text-zinc-500 space-y-1.5">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-3.5 h-3.5 text-gold flex-shrink-0" />
-              <span>Atelier: Nariman Point, Mumbai • Kannauj • Bangalore</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Phone className="w-3.5 h-3.5 text-gold flex-shrink-0" />
-              <span>Royal Helpline & WhatsApp: +91 98765 43210</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Mail className="w-3.5 h-3.5 text-gold flex-shrink-0" />
-              <span>Patron Care: care@jayrup.com</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Col 2: Treasury Collections */}
-        <div>
-          <h4 className="font-serif text-xs text-gold tracking-widest uppercase mb-4 font-semibold">
-            Collections
-          </h4>
-          <ul className="space-y-2.5 text-xs">
-            <li>
-              <Link to="/category/perfumes" className="hover:text-gold transition-colors">
-                Royal Extraits de Parfum
-              </Link>
-            </li>
-            <li>
-              <Link to="/category/skincare" className="hover:text-gold transition-colors">
-                Jayrup Special Skincare
-              </Link>
-            </li>
-            <li>
-              <Link to="/category/soaps" className="hover:text-gold transition-colors">
-                Artisanal Saffron Soaps
-              </Link>
-            </li>
-            <li>
-              <Link to="/shop" className="hover:text-gold transition-colors">
-                Complete Treasury Catalog
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        {/* Col 3: Royal Concierge */}
-        <div>
-          <h4 className="font-serif text-xs text-gold tracking-widest uppercase mb-4 font-semibold">
-            Concierge Desk
-          </h4>
-          <ul className="space-y-2.5 text-xs">
-            <li>
-              <Link to="/contact" className="hover:text-gold transition-colors">
-                Contact Concierge
-              </Link>
-            </li>
-            <li>
-              <Link to="/faq" className="hover:text-gold transition-colors">
-                Frequently Asked Questions
-              </Link>
-            </li>
-            <li>
-              <Link to="/track-order" className="hover:text-gold transition-colors">
-                Track Your Parcel
-              </Link>
-            </li>
-            <li>
-              <Link to="/about" className="hover:text-gold transition-colors">
-                About House of Jayrup
-              </Link>
-            </li>
-            <li>
-              <Link to="/blog" className="hover:text-gold transition-colors">
-                The Royal Journal & Blog
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        {/* Col 4: Policies & Regulatory */}
-        <div>
-          <h4 className="font-serif text-xs text-gold tracking-widest uppercase mb-4 font-semibold">
-            Policies & Charter
-          </h4>
-          <ul className="space-y-2.5 text-xs">
-            <li>
-              <Link to="/privacy-policy" className="hover:text-gold transition-colors">
-                Privacy Policy Charter
-              </Link>
-            </li>
-            <li>
-              <Link to="/shipping-policy" className="hover:text-gold transition-colors">
-                Shipping & Delivery Terms
-              </Link>
-            </li>
-            <li>
-              <Link to="/return-policy" className="hover:text-gold transition-colors">
-                Return & Refund Policy
-              </Link>
-            </li>
-            <li>
-              <Link to="/terms-of-service" className="hover:text-gold transition-colors">
-                Terms of Service Covenant
-              </Link>
-            </li>
-            <li>
-              <Link to="/cancellation-policy" className="hover:text-gold transition-colors">
-                Cancellation Charter
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        {/* Col 5: Private Circle Newsletter */}
-        <div>
-          <h4 className="font-serif text-xs text-gold tracking-widest uppercase mb-4 font-semibold">
-            Private Circle
-          </h4>
-          <p className="text-zinc-400 text-xs mb-3">
-            Receive private harvest announcements and limited batch invitations.
-          </p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert('Welcome to the Jayrup Royal Private Circle!');
-            }}
-            className="space-y-2"
-          >
-            <input
-              type="email"
-              placeholder="Your royal email"
-              required
-              className="w-full bg-zinc-900/80 border border-gold/30 px-3 py-2 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-gold"
-            />
-            <button type="submit" className="w-full btn-gold text-[10px] py-2">
-              Subscribe
-            </button>
-          </form>
         </div>
       </div>
 
-      {/* Legal & Policy Quick Link Navigation Bar */}
-      <div className="border-t border-zinc-900 py-4 px-4 bg-zinc-950/40">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] text-zinc-500">
-          <Link to="/privacy-policy" className="hover:text-gold transition-colors">
-            Privacy Policy
-          </Link>
-          <span>•</span>
-          <Link to="/shipping-policy" className="hover:text-gold transition-colors">
-            Shipping Policy
-          </Link>
-          <span>•</span>
-          <Link to="/return-policy" className="hover:text-gold transition-colors">
-            Return & Refund Policy
-          </Link>
-          <span>•</span>
-          <Link to="/terms-of-service" className="hover:text-gold transition-colors">
-            Terms of Service
-          </Link>
-          <span>•</span>
-          <Link to="/contact" className="hover:text-gold transition-colors">
-            Contact Us
-          </Link>
-          <span>•</span>
-          <Link to="/faq" className="hover:text-gold transition-colors">
-            FAQs
-          </Link>
-        </div>
-      </div>
-
-      {/* Copyright & Seal */}
-      <div className="border-t border-zinc-900 py-6 px-4 text-center text-zinc-500 text-[11px]">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© {new Date().getFullYear()} JAYRUP (JR) ROYAL LUXURY HOUSE. All rights reserved.</p>
-          <p className="text-gold/80 font-medium">पिंपल्स भागे, आत्मविश्वास जागे • Handcrafted in India</p>
+      <div className="border-t border-zinc-900 py-6 px-4 text-zinc-500 text-[11px]">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center">
+          <p>
+            Copyright © {new Date().getFullYear()} jayrup.in · {BRAND.tradeName} (under {BRAND.legalName} – {BRAND.registration}). All rights reserved.
+          </p>
+          <p className="text-gold/80">Made in India 🇮🇳</p>
         </div>
       </div>
     </footer>

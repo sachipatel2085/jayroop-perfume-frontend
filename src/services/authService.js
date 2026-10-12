@@ -41,6 +41,33 @@ export const authService = {
     return res.data;
   },
 
+  updateAddress: async (addressId, address) => {
+    const res = await api.put(`/auth/addresses/${addressId}`, address);
+    return res.data;
+  },
+
+  setDefaultAddress: async (addressId) => {
+    const res = await api.put(`/auth/addresses/${addressId}/default`);
+    return res.data;
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    const res = await api.put('/auth/password', { currentPassword, newPassword });
+    if (res.data?.token) localStorage.setItem('jayrup_token', res.data.token);
+    return res.data;
+  },
+
+  forgotPassword: async (email) => api.post('/auth/forgot-password', { email }),
+
+  resetPassword: async (token, password) => {
+    const res = await api.post(`/auth/reset-password/${token}`, { password });
+    if (res.data?.token) {
+      localStorage.setItem('jayrup_token', res.data.token);
+      localStorage.setItem('jayrup_user', JSON.stringify(res.data));
+    }
+    return res.data;
+  },
+
   deleteAddress: async (addressId) => {
     const res = await api.delete(`/auth/addresses/${addressId}`);
     return res.data;

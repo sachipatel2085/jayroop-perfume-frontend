@@ -1,117 +1,102 @@
 import React from 'react';
 import { StructuredData } from './StructuredData.jsx';
+import { returnPolicySchema } from './OrganizationSchema.jsx';
+import { SITE_URL } from '../../config/site.js';
+
+const strip = (s = '') => String(s).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+const abs = (u) => (!u ? '' : /^https?:\/\//.test(u) ? u : `${SITE_URL}${u.startsWith('/') ? '' : '/'}${u}`);
+
+const shipping = (price, threshold = 999, fee = 100) => ({
+  '@type': 'OfferShippingDetails',
+  shippingRate: { '@type': 'MonetaryAmount', value: price >= threshold ? 0 : fee, currency: 'INR' },
+  shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'IN' },
+  deliveryTime: {
+    '@type': 'ShippingDeliveryTime',
+    handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 2, unitCode: 'DAY' },
+    transitTime: { '@type': 'QuantitativeValue', minValue: 3, maxValue: 8, unitCode: 'DAY' },
+  },
+});
 
 /**
- * Generates Schema.org Product structured data compliant with Google Search Rich Results guidelines.
- * Strictly avoids fake ratings or fabricated attributes.
+ * Google-compliant Product rich result: offers (incl. variants), shipping, return policy,
+ * GTIN, aggregate rating & reviews ONLY when real reviews exist.
  */
-export const ProductSchema = ({ product }) => {
+export const ProductSchema = ({ product, reviews = [], shippingRules = {} }) => {
   if (!product) return null;
+  const url = `${SITE_URL}/products/${product.slug}`;
+  const images = (product.images || []).map((i) => abs(i.url)).filter(Boolean);
+  const priceValidUntil = `${new Date().getFullYear() + 1}-12-31`;
+  const threshold = shippingRules.freeShippingThreshold ?? 999;
+  const fee = shippingRules.flatShippingFee ?? 100;
 
-  const baseUrl = 'https://jayrup.com';
-  const productUrl = `${baseUrl}/products/${product.slug}`;
-  const images = (product.images || [])
-    .map((img) => img.url)
-    .filter(Boolean)
-    .map((url) => (url.startsWith('http') ? url : `${baseUrl}${url}`));
+  const offer = (name, sku, price, stock, barcode) => ({
+    '@type': 'Offer',
+    url,
+    ...(name ? { name } : {}),
+    sku,
+    ...(/^\d{8,14}$/.test(barcode || '') ? { gtin: barcode } : {}),
+    price: Number(price).toFixed(2),
+    priceCurrency: 'INR',
+    priceValidUntil,
+    availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    itemCondition: 'https://schema.org/NewCondition',
+    seller: { '@id': `${SITE_URL}/#organization` },
+    shippingDetails: shipping(price, threshold, fee),
+    hasMerchantReturnPolicy: returnPolicySchema(),
+  });
 
-  // Fallback brand logo image if product has no images
-  if (images.length === 0) {
-    images.push(`${baseUrl}/src/assets/jayroop-logo.webp`);
-  }
-
-  const description =
-    product.seo?.metaDescription ||
-    product.shortDescription ||
-    product.description ||
-    `${product.name} handcrafted by Jayrup Royal Luxury House.`;
-
-  // Base Schema
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
+    '@id': `${url}#product`,
     name: product.name,
-    image: images,
-    description: description.replace(/\s+/g, ' ').trim(),
+    url,
+    image: images.length ? images : [`${SITE_URL}/logo-512.png`],
+    description: strip(product.seo?.metaDescription || product.shortDescription || product.description).slice(0, 500),
     sku: product.sku,
     mpn: product.sku,
-    brand: {
-      '@type': 'Brand',
-      name: product.brand || 'Jayrup',
-    },
-    category: product.category?.name || 'Luxury Perfumes',
+    ...(/^\d{8,14}$/.test(product.barcode || '') ? { gtin: product.barcode } : {}),
+    brand: { '@type': 'Brand', name: product.brand || 'Jayrup' },
+    ...(product.category?.name ? { category: product.category.name } : {}),
+    countryOfOrigin: product.countryOfOrigin || 'India',
+    ...(product.netQuantity ? { size: product.netQuantity } : {}),
   };
 
-  // Determine Offers (Single Offer vs AggregateOffer for Variants)
-  if (product.variants && product.variants.length > 0) {
-    const validVariants = product.variants.filter((v) => typeof v.price === 'number');
-    const prices = validVariants.map((v) =>
-      typeof v.salePrice === 'number' && v.salePrice < v.price ? v.salePrice : v.price
+  if (product.variants?.length) {
+    const offers = product.variants.map((v) =>
+      offer(`${product.name} – ${v.title}`, v.sku, v.salePrice && v.salePrice < v.price ? v.salePrice : v.price, v.stock, v.barcode)
     );
-    const lowPrice = Math.min(...prices);
-    const highPrice = Math.max(...prices);
-
+    const prices = offers.map((o) => Number(o.price));
     schema.offers = {
       '@type': 'AggregateOffer',
       priceCurrency: 'INR',
-      lowPrice: lowPrice,
-      highPrice: highPrice,
-      offerCount: validVariants.length,
-      offers: validVariants.map((v) => {
-        const vPrice =
-          typeof v.salePrice === 'number' && v.salePrice < v.price ? v.salePrice : v.price;
-        const vInStock = typeof v.stock === 'number' ? v.stock > 0 : product.stock > 0;
-
-        return {
-          '@type': 'Offer',
-          name: `${product.name} - ${v.title}`,
-          sku: v.sku || `${product.sku}-${v.title}`,
-          price: vPrice,
-          priceCurrency: 'INR',
-          availability: vInStock
-            ? 'https://schema.org/InStock'
-            : 'https://schema.org/OutOfStock',
-          url: productUrl,
-          itemCondition: 'https://schema.org/NewCondition',
-          seller: {
-            '@type': 'Organization',
-            name: 'Jayrup Royal Luxury',
-          },
-        };
-      }),
+      lowPrice: Math.min(...prices).toFixed(2),
+      highPrice: Math.max(...prices).toFixed(2),
+      offerCount: offers.length,
+      offers,
     };
   } else {
-    const activePrice =
-      product.salePrice && product.salePrice < product.price
-        ? product.salePrice
-        : product.price;
-
-    schema.offers = {
-      '@type': 'Offer',
-      price: activePrice,
-      priceCurrency: 'INR',
-      availability:
-        product.stock > 0
-          ? 'https://schema.org/InStock'
-          : 'https://schema.org/OutOfStock',
-      url: productUrl,
-      itemCondition: 'https://schema.org/NewCondition',
-      seller: {
-        '@type': 'Organization',
-        name: 'Jayrup Royal Luxury',
-      },
-    };
+    const price = product.salePrice && product.salePrice < product.price ? product.salePrice : product.price;
+    schema.offers = offer(null, product.sku, price, product.stock, product.barcode);
   }
 
-  // AggregateRating ONLY if genuine reviews exist
   if (product.numReviews > 0 && product.averageRating > 0) {
     schema.aggregateRating = {
       '@type': 'AggregateRating',
-      ratingValue: Number(product.averageRating.toFixed(1)),
+      ratingValue: Number(product.averageRating).toFixed(1),
       reviewCount: product.numReviews,
       bestRating: 5,
       worstRating: 1,
     };
+    if (reviews.length) {
+      schema.review = reviews.slice(0, 5).map((r) => ({
+        '@type': 'Review',
+        reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 },
+        author: { '@type': 'Person', name: (r.user?.name || 'Verified Buyer').split(' ')[0] },
+        datePublished: new Date(r.createdAt).toISOString().slice(0, 10),
+        reviewBody: strip(r.comment).slice(0, 500),
+      }));
+    }
   }
 
   return <StructuredData id="product-schema-jsonld" data={schema} />;

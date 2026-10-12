@@ -1,4 +1,5 @@
 import api from './api.js';
+import { downloadFile } from '../utils/download.js';
 
 export const adminService = {
   // Analytics & Inventory
@@ -7,13 +8,37 @@ export const adminService = {
   updateInventoryStock: async (id, data) => (await api.put(`/admin/inventory/${id}`, data)).data,
   getAuditLogs: async (params) => (await api.get('/admin/audit-logs', { params })).data,
 
-  // Orders & Manual Tracking ID
+  getCustomers: async (params) => api.get('/admin/customers', { params }),
+  setCustomerStatus: async (id, isActive) => (await api.put(`/admin/customers/${id}/status`, { isActive })).data,
+
+  // Orders, invoices, labels & PhonePe
   getOrders: async (params) => (await api.get('/orders', { params })),
+  getOrder: async (id) => (await api.get(`/orders/admin/${id}`)).data,
   updateOrderStatus: async (id, statusData) => (await api.put(`/orders/${id}/status`, statusData)).data,
   updateOrderTracking: async (id, trackingData) => (await api.put(`/orders/${id}/tracking`, trackingData)).data,
+  updateOrderNote: async (id, adminNote) => (await api.put(`/orders/${id}/note`, { adminNote })).data,
+  generateInvoice: async (id) => (await api.post(`/orders/${id}/invoice`)).data,
+  openInvoice: (id, copy) => downloadFile(`/orders/${id}/invoice?inline=1${copy ? `&copy=${copy}` : ''}`, { open: true }),
+  downloadInvoice: (id, number) => downloadFile(`/orders/${id}/invoice`, { filename: `Invoice-${number || id}.pdf` }),
+  openLabel: (id) => downloadFile(`/orders/${id}/label`, { open: true }),
+  syncPayment: async (id) => (await api.post(`/payments/admin/${id}/sync`)).data,
+  refundOrder: async (id, payload) => (await api.post(`/payments/admin/${id}/refund`, payload)).data,
+  syncRefund: async (id, refundId) => (await api.post(`/payments/admin/${id}/refunds/${refundId}/sync`)).data,
+  getGatewayInfo: async () => (await api.get('/payments/admin/gateway')).data,
+
+  // Reports
+  getReportOverview: async (params) => (await api.get('/admin/reports/overview', { params })).data,
+  previewReport: async (type, params) => (await api.get(`/admin/reports/${type}`, { params })).data,
+  exportReport: (type, format, params) =>
+    downloadFile(`/admin/reports/${type}/export`, { params: { ...params, format }, filename: `Jayrup-${type}-report.${format}` }),
+
+  // Contact inquiries
+  getInquiries: async (params) => api.get('/contact', { params }),
+  updateInquiry: async (id, data) => (await api.patch(`/contact/${id}`, data)).data,
 
   // Products
-  getProducts: async (params) => (await api.get('/products', { params })),
+  getProducts: async (params) => (await api.get('/products/admin/list', { params })),
+  getProduct: async (id) => (await api.get(`/products/admin/${id}`)).data,
   createProduct: async (productData) => (await api.post('/products', productData)).data,
   updateProduct: async (id, productData) => (await api.put(`/products/${id}`, productData)).data,
   deleteProduct: async (id) => (await api.delete(`/products/${id}`)).data,

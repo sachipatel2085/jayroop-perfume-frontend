@@ -5,19 +5,19 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
-    chunkSizeWarningLimit: 1000,
+    target: 'es2020',
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'vendor-react';
-            }
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            return 'vendor-libs';
-          }
+        // Rolldown chunk groups (higher priority wins). The admin-only rich editor never loads on the storefront.
+        advancedChunks: {
+          groups: [
+            { name: 'vendor-react', test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/, priority: 30 },
+            { name: 'vendor-editor', test: /[\\/]node_modules[\\/](@tiptap|prosemirror-[^\\/]+|linkifyjs|@floating-ui|orderedmap|rope-sequence|w3c-keyname)[\\/]/, priority: 20 },
+            { name: 'vendor-icons', test: /[\\/]node_modules[\\/]lucide-react[\\/]/, priority: 10 },
+            { name: 'vendor-libs', test: /[\\/]node_modules[\\/](axios|@tanstack)[\\/]/, priority: 5 },
+          ],
         },
       },
     },

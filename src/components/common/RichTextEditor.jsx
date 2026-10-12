@@ -1,576 +1,668 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
+import { Node, mergeAttributes } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
+import TextAlign from '@tiptap/extension-text-align';
+import { TableKit } from '@tiptap/extension-table';
+import { TextStyle, Color } from '@tiptap/extension-text-style';
+import Highlight from '@tiptap/extension-highlight';
+import Youtube from '@tiptap/extension-youtube';
+import { TaskList, TaskItem } from '@tiptap/extension-list';
+import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
+import { Placeholder, CharacterCount } from '@tiptap/extensions';
 import {
   Bold,
   Italic,
-  Underline,
+  Underline as UnderlineIcon,
   Strikethrough,
   Heading2,
   Heading3,
   Heading4,
+  Pilcrow,
   List,
   ListOrdered,
+  ListChecks,
   Quote,
   Minus,
   AlignLeft,
   AlignCenter,
   AlignRight,
+  AlignJustify,
   Link2,
   Unlink,
-  Undo,
-  Redo,
+  Undo2,
+  Redo2,
   Eraser,
+  Code,
   Code2,
+  Image as ImageIcon,
+  Video as YoutubeIcon,
+  Table as TableIcon,
+  Highlighter,
+  Palette,
+  Maximize2,
+  Minimize2,
+  FileCode2,
   Eye,
-  Edit3,
-  Sparkles,
+  PenLine,
+  Info,
+  Lightbulb,
+  AlertTriangle,
+  Subscript as SubIcon,
+  Superscript as SupIcon,
+  Rows3,
+  Columns3,
+  Trash2,
   X,
+  Loader2,
 } from 'lucide-react';
+import { adminService } from '../../services/adminService.js';
+import { sanitizeHtml } from '../../utils/sanitizeHtml.js';
+
+// ───────────── Custom "Callout" block (Tip / Info / Warning boxes, like Notion) ─────────────
+const Callout = Node.create({
+  name: 'callout',
+  group: 'block',
+  content: 'block+',
+  defining: true,
+  addAttributes() {
+    return { variant: { default: 'tip', parseHTML: (el) => el.getAttribute('data-callout') || 'tip' } };
+  },
+  parseHTML() {
+    return [{ tag: 'div[data-callout]' }];
+  },
+  renderHTML({ node, HTMLAttributes }) {
+    return ['div', mergeAttributes(HTMLAttributes, { 'data-callout': node.attrs.variant, class: `callout callout-${node.attrs.variant}` }), 0];
+  },
+  addCommands() {
+    return {
+      toggleCallout:
+        (variant = 'tip') =>
+        ({ commands, editor }) =>
+          editor.isActive('callout') ? commands.lift('callout') : commands.wrapIn('callout', { variant }),
+    };
+  },
+});
+
+const COLORS = ['#D4AF37', '#F5D77F', '#EF4444', '#F97316', '#22C55E', '#0EA5E9', '#A855F7', '#E4E4E7', '#71717A'];
+const HIGHLIGHTS = ['#FDE68A', '#BBF7D0', '#BAE6FD', '#FBCFE8', '#FED7AA'];
+
+const SLASH_ITEMS = [
+  { key: 'h2', label: 'Heading 2', hint: 'Section title', icon: Heading2, run: (e) => e.chain().focus().setHeading({ level: 2 }).run() },
+  { key: 'h3', label: 'Heading 3', hint: 'Sub-section', icon: Heading3, run: (e) => e.chain().focus().setHeading({ level: 3 }).run() },
+  { key: 'p', label: 'Paragraph', hint: 'Plain text', icon: Pilcrow, run: (e) => e.chain().focus().setParagraph().run() },
+  { key: 'bullet', label: 'Bullet list', hint: '• Benefits, features', icon: List, run: (e) => e.chain().focus().toggleBulletList().run() },
+  { key: 'number', label: 'Numbered list', hint: '1. Step by step', icon: ListOrdered, run: (e) => e.chain().focus().toggleOrderedList().run() },
+  { key: 'todo', label: 'Checklist', hint: '☑ How to use', icon: ListChecks, run: (e) => e.chain().focus().toggleTaskList().run() },
+  { key: 'quote', label: 'Quote', hint: 'Testimonial / highlight', icon: Quote, run: (e) => e.chain().focus().toggleBlockquote().run() },
+  { key: 'tip', label: 'Tip box', hint: 'Green callout', icon: Lightbulb, run: (e) => e.chain().focus().toggleCallout('tip').run() },
+  { key: 'info', label: 'Info box', hint: 'Blue callout', icon: Info, run: (e) => e.chain().focus().toggleCallout('info').run() },
+  { key: 'warning', label: 'Warning box', hint: 'Precautions', icon: AlertTriangle, run: (e) => e.chain().focus().toggleCallout('warning').run() },
+  { key: 'table', label: 'Table', hint: '3 × 3 grid', icon: TableIcon, run: (e) => e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() },
+  { key: 'divider', label: 'Divider', hint: 'Horizontal line', icon: Minus, run: (e) => e.chain().focus().setHorizontalRule().run() },
+  { key: 'code', label: 'Code block', hint: 'Monospace', icon: Code2, run: (e) => e.chain().focus().toggleCodeBlock().run() },
+  { key: 'image', label: 'Image', hint: 'Upload or URL', icon: ImageIcon, run: (e, api) => api.openImage() },
+  { key: 'youtube', label: 'YouTube video', hint: 'Embed a video', icon: YoutubeIcon, run: (e, api) => api.openVideo() },
+];
+
+const Btn = ({ onClick, active, disabled, title, children }) => (
+  <button
+    type="button"
+    onMouseDown={(e) => e.preventDefault()}
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    aria-label={title}
+    aria-pressed={active || undefined}
+    className={`p-1.5 rounded-md transition-colors flex-shrink-0 ${
+      active ? 'bg-gold text-black' : 'text-zinc-400 hover:text-gold hover:bg-white/5'
+    } disabled:opacity-30 disabled:cursor-not-allowed`}
+  >
+    {children}
+  </button>
+);
+
+const Sep = () => <span className="w-px h-5 bg-zinc-800 mx-1 flex-shrink-0" aria-hidden="true" />;
 
 export const RichTextEditor = ({
   value = '',
   onChange,
-  label = 'Detailed Content (HTML Supported)',
-  placeholder = 'Craft your rich luxury description or article content here...',
-  minHeight = '240px',
-  hint = 'Supports rich headings, bullet lists, blockquotes, and HTML formatting.',
+  label = 'Detailed Content',
+  placeholder = 'Start writing… type “/” for headings, lists, tables, images, videos and more',
+  minHeight = '320px',
+  hint = 'Type “/” for blocks · Select text for quick formatting · Drag & drop or paste images',
   required = false,
+  uploadFolder = 'editor',
 }) => {
-  const [activeTab, setActiveTab] = useState('visual'); // 'visual' | 'code' | 'preview'
-  const [htmlContent, setHtmlContent] = useState(value || '');
-  const [showLinkModal, setShowLinkModal] = useState(false);
-  const [linkUrl, setLinkUrl] = useState('');
-  const [linkText, setLinkText] = useState('');
-  const [openInNewTab, setOpenInNewTab] = useState(true);
+  const [mode, setMode] = useState('write'); // write | html | preview
+  const [html, setHtml] = useState(value || '');
+  const [fullscreen, setFullscreen] = useState(false);
+  const [modal, setModal] = useState(null); // { type: 'link' | 'image' | 'video', ... }
+  const [uploading, setUploading] = useState(false);
+  const [slash, setSlash] = useState(null); // { query, from, to, top, left, index }
+  const slashRef = useRef(null);
+  const fileRef = useRef(null);
+  const lastEmitted = useRef(value || '');
+  // Always call the latest onChange (avoids stale parent state inside TipTap callbacks)
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const emit = (v) => onChangeRef.current?.(v);
+
+  const uploadImage = useCallback(
+    async (file) => {
+      if (!file || !file.type.startsWith('image/')) return null;
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Image must be smaller than 10 MB');
+        return null;
+      }
+      setUploading(true);
+      try {
+        const res = await adminService.uploadMedia(file, uploadFolder);
+        return res?.url || res?.data?.url || null;
+      } catch (err) {
+        alert(`Upload failed: ${err.message}`);
+        return null;
+      } finally {
+        setUploading(false);
+      }
+    },
+    [uploadFolder]
+  );
+
+  const editor = useEditor({
+    shouldRerenderOnTransaction: true,
+    immediatelyRender: true,
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [2, 3, 4] },
+        link: { openOnClick: false, autolink: true, HTMLAttributes: { rel: 'noopener noreferrer' } },
+      }),
+      Image.configure({ HTMLAttributes: { loading: 'lazy', decoding: 'async' } }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      TableKit.configure({ table: { resizable: false, HTMLAttributes: { class: 'rc-table' } } }),
+      TextStyle,
+      Color,
+      Highlight.configure({ multicolor: true }),
+      Youtube.configure({ nocookie: true, width: 640, height: 360, HTMLAttributes: { class: 'rc-video' } }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      Subscript,
+      Superscript,
+      Callout,
+      Placeholder.configure({ placeholder }),
+      CharacterCount,
+    ],
+    content: value || '',
+    editorProps: {
+      attributes: { class: 'rich-content rich-editor focus:outline-none', spellcheck: 'true' },
+      handleKeyDown: (view, event) => {
+        const s = slashRef.current;
+        if (!s) return false;
+        const items = filterSlash(s.query);
+        if (event.key === 'ArrowDown') {
+          setSlash((p) => p && { ...p, index: (p.index + 1) % Math.max(items.length, 1) });
+          return true;
+        }
+        if (event.key === 'ArrowUp') {
+          setSlash((p) => p && { ...p, index: (p.index - 1 + items.length) % Math.max(items.length, 1) });
+          return true;
+        }
+        if (event.key === 'Enter') {
+          if (items[s.index]) {
+            runSlash(items[s.index]);
+            return true;
+          }
+        }
+        if (event.key === 'Escape') {
+          setSlash(null);
+          return true;
+        }
+        return false;
+      },
+      handleDrop: (view, event, slice, moved) => {
+        if (moved || !event.dataTransfer?.files?.length) return false;
+        const file = event.dataTransfer.files[0];
+        if (!file.type.startsWith('image/')) return false;
+        event.preventDefault();
+        const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
+        uploadImage(file).then((url) => {
+          if (url && editorRef.current) editorRef.current.chain().focus().insertContentAt(pos ?? editorRef.current.state.selection.from, { type: 'image', attrs: { src: url, alt: file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ') } }).run();
+        });
+        return true;
+      },
+      handlePaste: (view, event) => {
+        const file = [...(event.clipboardData?.files || [])].find((f) => f.type.startsWith('image/'));
+        if (!file) return false;
+        event.preventDefault();
+        uploadImage(file).then((url) => {
+          if (url && editorRef.current) editorRef.current.chain().focus().setImage({ src: url, alt: '' }).run();
+        });
+        return true;
+      },
+    },
+    onUpdate: ({ editor: ed }) => {
+      const out = ed.isEmpty ? '' : ed.getHTML();
+      lastEmitted.current = out;
+      setHtml(out);
+      emit(out);
+      detectSlash(ed);
+    },
+    onSelectionUpdate: ({ editor: ed }) => detectSlash(ed),
+  });
 
   const editorRef = useRef(null);
-  const savedSelectionRef = useRef(null);
+  editorRef.current = editor;
 
-  // Synchronize when value prop updates from parent (e.g., initial open or edit modal load)
-  useEffect(() => {
-    const nextVal = value || '';
-    setHtmlContent(nextVal);
-    if (editorRef.current && editorRef.current.innerHTML !== nextVal) {
-      editorRef.current.innerHTML = nextVal;
-    }
-  }, [value]);
-
-  // Synchronize visual editor typing to state and parent onChange
-  const handleVisualInput = useCallback(() => {
-    if (!editorRef.current) return;
-    let html = editorRef.current.innerHTML;
-    // Treat empty breaks as empty string
-    if (html === '<br>' || html === '<p><br></p>' || html.trim() === '') {
-      html = '';
-    }
-    setHtmlContent(html);
-    if (onChange) onChange(html);
-  }, [onChange]);
-
-  // Direct editing inside HTML Code tab
-  const handleCodeChange = (e) => {
-    const nextHtml = e.target.value;
-    setHtmlContent(nextHtml);
-    if (onChange) onChange(nextHtml);
-    if (editorRef.current) {
-      editorRef.current.innerHTML = nextHtml;
-    }
+  // ── slash menu helpers ──
+  const filterSlash = (q) => {
+    const query = (q || '').toLowerCase();
+    return SLASH_ITEMS.filter((i) => !query || i.label.toLowerCase().includes(query) || i.key.includes(query));
   };
 
-  // Safe tab switching ensuring no content is ever lost
-  const handleTabSwitch = (newTab) => {
-    if (activeTab === 'visual') {
-      // Immediately commit whatever was typed in the visual editor
-      if (editorRef.current) {
-        let html = editorRef.current.innerHTML;
-        if (html === '<br>' || html === '<p><br></p>' || html.trim() === '') {
-          html = '';
-        }
-        setHtmlContent(html);
-        if (onChange) onChange(html);
-      }
-    } else if (activeTab === 'code' && newTab === 'visual') {
-      // Sync latest HTML changes into the visual editor DOM
-      if (editorRef.current) {
-        editorRef.current.innerHTML = htmlContent || '';
-      }
-    }
-    setActiveTab(newTab);
-  };
-
-  const saveSelection = () => {
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
-      savedSelectionRef.current = sel.getRangeAt(0).cloneRange();
-    }
-  };
-
-  const restoreSelection = () => {
-    if (savedSelectionRef.current) {
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(savedSelectionRef.current);
-    }
-  };
-
-  const exec = (command, valueArg = null) => {
-    if (activeTab !== 'visual') return;
-    editorRef.current?.focus();
-    document.execCommand(command, false, valueArg);
-    handleVisualInput();
-  };
-
-  const handleFormatBlock = (tag) => {
-    if (activeTab !== 'visual') return;
-    editorRef.current?.focus();
-    document.execCommand('formatBlock', false, tag);
-    handleVisualInput();
-  };
-
-  const handleInsertGoldSpan = () => {
-    if (activeTab !== 'visual') return;
-    editorRef.current?.focus();
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
-      const selectedText = sel.toString();
-      document.execCommand(
-        'insertHTML',
-        false,
-        `<span style="color: #D4AF37; font-weight: 600;">${selectedText}</span>`
-      );
-    } else {
-      document.execCommand(
-        'insertHTML',
-        false,
-        `<span style="color: #D4AF37; font-weight: 600;">Royal Luxury</span>`
-      );
-    }
-    handleVisualInput();
-  };
-
-  const handleOpenLinkModal = () => {
-    saveSelection();
-    const sel = window.getSelection();
-    setLinkText(sel ? sel.toString() : '');
-    setLinkUrl('');
-    setShowLinkModal(true);
-  };
-
-  const handleApplyLink = (e) => {
-    e.preventDefault();
-    if (!linkUrl) {
-      setShowLinkModal(false);
+  function detectSlash(ed) {
+    const { $from, empty } = ed.state.selection;
+    if (!empty || !$from.parent.isTextblock) {
+      slashRef.current = null;
+      setSlash(null);
       return;
     }
-
-    restoreSelection();
-    editorRef.current?.focus();
-
-    const formattedUrl =
-      linkUrl.startsWith('http://') || linkUrl.startsWith('https://') || linkUrl.startsWith('/')
-        ? linkUrl
-        : `https://${linkUrl}`;
-
-    if (linkText && savedSelectionRef.current?.collapsed) {
-      const targetAttr = openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : '';
-      document.execCommand(
-        'insertHTML',
-        false,
-        `<a href="${formattedUrl}"${targetAttr} style="color: #D4AF37; text-decoration: underline;">${linkText}</a>`
-      );
-    } else {
-      document.execCommand('createLink', false, formattedUrl);
-      if (openInNewTab && editorRef.current) {
-        const anchors = editorRef.current.querySelectorAll(`a[href="${formattedUrl}"]`);
-        anchors.forEach((a) => {
-          a.setAttribute('target', '_blank');
-          a.setAttribute('rel', 'noopener noreferrer');
-          a.style.color = '#D4AF37';
-          a.style.textDecoration = 'underline';
-        });
-      }
+    const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '￼');
+    const m = /(?:^|\s)\/([a-z0-9 ]{0,20})$/i.exec(textBefore);
+    if (!m) {
+      slashRef.current = null;
+      setSlash(null);
+      return;
     }
+    const from = $from.pos - m[1].length - 1;
+    const coords = ed.view.coordsAtPos($from.pos);
+    const box = ed.view.dom.closest('[data-editor-shell]')?.getBoundingClientRect();
+    const next = {
+      query: m[1],
+      from,
+      to: $from.pos,
+      top: coords.bottom - (box?.top || 0) + 6,
+      left: Math.max(8, coords.left - (box?.left || 0)),
+      index: slashRef.current?.query === m[1] ? slashRef.current.index : 0,
+    };
+    slashRef.current = next;
+    setSlash(next);
+  }
 
-    setShowLinkModal(false);
-    handleVisualInput();
+  const api = useMemo(
+    () => ({
+      openImage: () => setModal({ type: 'image', url: '', alt: '' }),
+      openVideo: () => setModal({ type: 'video', url: '' }),
+    }),
+    []
+  );
+
+  function runSlash(item) {
+    const ed = editorRef.current;
+    const s = slashRef.current;
+    if (!ed || !s) return;
+    ed.chain().focus().deleteRange({ from: s.from, to: s.to }).run();
+    slashRef.current = null;
+    setSlash(null);
+    item.run(ed, api);
+  }
+
+  // Sync external value changes (e.g. opening another product in the modal)
+  useEffect(() => {
+    if (!editor) return;
+    const incoming = value || '';
+    if (incoming !== lastEmitted.current) {
+      editor.commands.setContent(incoming, { emitUpdate: false });
+      lastEmitted.current = incoming;
+      setHtml(incoming);
+    }
+  }, [value, editor]);
+
+  useEffect(() => {
+    if (!fullscreen) return undefined;
+    const onKey = (e) => e.key === 'Escape' && setFullscreen(false);
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [fullscreen]);
+
+  if (!editor) return null;
+
+  const switchMode = (next) => {
+    if (mode === 'html' && next !== 'html') {
+      const clean = sanitizeHtml(html);
+      editor.commands.setContent(clean, { emitUpdate: false });
+      lastEmitted.current = clean;
+      emit(clean);
+    }
+    setMode(next);
   };
 
-  const handleCleanFormatting = () => {
-    exec('removeFormat');
-    handleFormatBlock('<p>');
+  const blockValue = editor.isActive('heading', { level: 2 })
+    ? 'h2'
+    : editor.isActive('heading', { level: 3 })
+      ? 'h3'
+      : editor.isActive('heading', { level: 4 })
+        ? 'h4'
+        : 'p';
+
+  const words = editor.storage.characterCount?.words?.() || 0;
+  const chars = editor.storage.characterCount?.characters?.() || 0;
+  const inTable = editor.isActive('table');
+  const slashItems = slash ? filterSlash(slash.query) : [];
+
+  const applyLink = (e) => {
+    e.preventDefault();
+    const url = modal.url.trim();
+    if (!url) {
+      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+    } else {
+      const href = /^(https?:|mailto:|tel:|\/)/i.test(url) ? url : `https://${url}`;
+      const attrs = { href, target: modal.newTab ? '_blank' : null, rel: modal.newTab ? 'noopener noreferrer' : null };
+      if (editor.state.selection.empty && modal.text) {
+        editor.chain().focus().insertContent({ type: 'text', text: modal.text, marks: [{ type: 'link', attrs }] }).run();
+      } else {
+        editor.chain().focus().extendMarkRange('link').setLink(attrs).run();
+      }
+    }
+    setModal(null);
+  };
+
+  const applyImage = (e) => {
+    e.preventDefault();
+    if (modal.url) editor.chain().focus().setImage({ src: modal.url.trim(), alt: modal.alt?.trim() || '', title: modal.alt?.trim() || undefined }).run();
+    setModal(null);
+  };
+
+  const applyVideo = (e) => {
+    e.preventDefault();
+    if (modal.url) editor.chain().focus().setYoutubeVideo({ src: modal.url.trim() }).run();
+    setModal(null);
   };
 
   return (
-    <div className="space-y-1.5 w-full">
-      {/* Header & Mode Switcher */}
-      <div className="flex items-center justify-between">
-        <label className="block text-zinc-300 uppercase tracking-wider text-[10px] font-medium">
-          {label} {required && <span className="text-gold">*</span>}
-        </label>
-
-        <div className="flex items-center bg-noir border border-zinc-800 p-0.5 rounded text-[10px]">
-          <button
-            type="button"
-            onClick={() => handleTabSwitch('visual')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded transition-colors ${
-              activeTab === 'visual'
-                ? 'bg-gold/20 text-gold-light font-semibold border border-gold/40'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <Edit3 className="w-3 h-3" />
-            <span>Visual</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabSwitch('code')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded transition-colors ${
-              activeTab === 'code'
-                ? 'bg-gold/20 text-gold-light font-semibold border border-gold/40'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <Code2 className="w-3 h-3" />
-            <span>HTML Code</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabSwitch('preview')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded transition-colors ${
-              activeTab === 'preview'
-                ? 'bg-gold/20 text-gold-light font-semibold border border-gold/40'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <Eye className="w-3 h-3" />
-            <span>Preview</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Editor Container */}
-      <div className="border border-zinc-800 focus-within:border-gold bg-noir-card transition-colors relative">
-        {/* Toolbar (Only visible in Visual Mode) */}
-        {activeTab === 'visual' && (
-          <div className="flex flex-wrap items-center gap-1 p-2 bg-[#0c1017] border-b border-zinc-850 select-none text-zinc-300">
-            {/* Paragraph / Headings */}
-            <div className="flex items-center gap-0.5 border-r border-zinc-800 pr-1.5 mr-1">
-              <button
-                type="button"
-                onClick={() => handleFormatBlock('<p>')}
-                title="Normal Paragraph"
-                className="px-2 py-1 text-[11px] font-sans rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                P
-              </button>
-              <button
-                type="button"
-                onClick={() => handleFormatBlock('<h2>')}
-                title="Heading 2 (Major Section)"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Heading2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => handleFormatBlock('<h3>')}
-                title="Heading 3 (Sub-heading)"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Heading3 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => handleFormatBlock('<h4>')}
-                title="Heading 4 (Minor heading)"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Heading4 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Inline Styles */}
-            <div className="flex items-center gap-0.5 border-r border-zinc-800 pr-1.5 mr-1">
-              <button
-                type="button"
-                onClick={() => exec('bold')}
-                title="Bold (Ctrl+B)"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Bold className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => exec('italic')}
-                title="Italic (Ctrl+I)"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Italic className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => exec('underline')}
-                title="Underline (Ctrl+U)"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Underline className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => exec('strikeThrough')}
-                title="Strikethrough"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Strikethrough className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={handleInsertGoldSpan}
-                title="Gold Luxury Highlight"
-                className="p-1 rounded hover:bg-zinc-800 text-gold flex items-center gap-0.5 text-[10px]"
-              >
-                <Sparkles className="w-3 h-3" />
-              </button>
-            </div>
-
-            {/* Lists */}
-            <div className="flex items-center gap-0.5 border-r border-zinc-800 pr-1.5 mr-1">
-              <button
-                type="button"
-                onClick={() => exec('insertUnorderedList')}
-                title="Bullet List"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <List className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => exec('insertOrderedList')}
-                title="Numbered List"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <ListOrdered className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Alignment */}
-            <div className="flex items-center gap-0.5 border-r border-zinc-800 pr-1.5 mr-1">
-              <button
-                type="button"
-                onClick={() => exec('justifyLeft')}
-                title="Align Left"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <AlignLeft className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => exec('justifyCenter')}
-                title="Align Center"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <AlignCenter className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => exec('justifyRight')}
-                title="Align Right"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <AlignRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Quote & Horizontal Line */}
-            <div className="flex items-center gap-0.5 border-r border-zinc-800 pr-1.5 mr-1">
-              <button
-                type="button"
-                onClick={() => handleFormatBlock('<blockquote>')}
-                title="Blockquote"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Quote className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => exec('insertHorizontalRule')}
-                title="Horizontal Divider"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Links */}
-            <div className="flex items-center gap-0.5 border-r border-zinc-800 pr-1.5 mr-1">
-              <button
-                type="button"
-                onClick={handleOpenLinkModal}
-                title="Insert Link"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Link2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => exec('unlink')}
-                title="Remove Link"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Unlink className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Clean & History */}
-            <div className="flex items-center gap-0.5 ml-auto">
-              <button
-                type="button"
-                onClick={() => exec('undo')}
-                title="Undo (Ctrl+Z)"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Undo className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => exec('redo')}
-                title="Redo (Ctrl+Y)"
-                className="p-1 rounded hover:bg-zinc-800 hover:text-gold"
-              >
-                <Redo className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={handleCleanFormatting}
-                title="Clear Formatting"
-                className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-red-400"
-              >
-                <Eraser className="w-3.5 h-3.5" />
+    <div className={fullscreen ? 'fixed inset-0 z-[80] bg-noir p-4 sm:p-8 overflow-y-auto' : ''}>
+      <div className={fullscreen ? 'max-w-4xl mx-auto' : ''}>
+        {label && (
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[11px] uppercase tracking-wider text-zinc-400 font-medium">
+              {label}
+              {required && <span className="text-gold ml-0.5">*</span>}
+            </span>
+            <div className="flex items-center gap-1 text-[11px]">
+              {[
+                ['write', 'Write', PenLine],
+                ['preview', 'Preview', Eye],
+                ['html', 'HTML', FileCode2],
+              ].map(([k, l, Icon]) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => switchMode(k)}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md ${mode === k ? 'bg-gold/15 text-gold' : 'text-zinc-500 hover:text-zinc-200'}`}
+                >
+                  <Icon className="w-3.5 h-3.5" /> {l}
+                </button>
+              ))}
+              <button type="button" onClick={() => setFullscreen((f) => !f)} className="ml-1 p-1 rounded-md text-zinc-500 hover:text-gold" title={fullscreen ? 'Exit full screen (Esc)' : 'Full screen'}>
+                {fullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </button>
             </div>
           </div>
         )}
 
-        {/* Tab 1: Visual Editable Area - Kept continuously mounted in DOM to prevent text loss */}
-        <div
-          ref={editorRef}
-          contentEditable
-          onInput={handleVisualInput}
-          onBlur={handleVisualInput}
-          style={{ minHeight }}
-          data-placeholder={placeholder}
-          className={`p-4 text-zinc-100 text-xs sm:text-sm font-sans leading-relaxed focus:outline-none overflow-y-auto max-h-[500px] prose prose-invert max-w-none empty:before:content-[attr(data-placeholder)] empty:before:text-zinc-600 empty:before:pointer-events-none ${
-            activeTab === 'visual' ? 'block' : 'hidden'
-          }`}
-        />
+        <div data-editor-shell className="relative border border-zinc-800 rounded-xl bg-noir focus-within:border-gold/60 transition-colors">
+          {mode === 'write' && (
+            <div className="sticky top-0 z-10 flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-zinc-800 bg-noir-card/95 backdrop-blur rounded-t-xl">
+              <Btn title="Undo (Ctrl+Z)" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="w-4 h-4" /></Btn>
+              <Btn title="Redo (Ctrl+Shift+Z)" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo2 className="w-4 h-4" /></Btn>
+              <Sep />
+              <select
+                value={blockValue}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === 'p') editor.chain().focus().setParagraph().run();
+                  else editor.chain().focus().setHeading({ level: Number(v.slice(1)) }).run();
+                }}
+                className="bg-noir border border-zinc-800 rounded-md text-xs text-zinc-300 px-2 py-1 focus:outline-none focus:border-gold"
+                aria-label="Text style"
+              >
+                <option value="p">Paragraph</option>
+                <option value="h2">Heading 2</option>
+                <option value="h3">Heading 3</option>
+                <option value="h4">Heading 4</option>
+              </select>
+              <Sep />
+              <Btn title="Bold (Ctrl+B)" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="w-4 h-4" /></Btn>
+              <Btn title="Italic (Ctrl+I)" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="w-4 h-4" /></Btn>
+              <Btn title="Underline (Ctrl+U)" active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon className="w-4 h-4" /></Btn>
+              <Btn title="Strikethrough" active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="w-4 h-4" /></Btn>
+              <Btn title="Inline code" active={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}><Code className="w-4 h-4" /></Btn>
+              <Btn title="Subscript" active={editor.isActive('subscript')} onClick={() => editor.chain().focus().toggleSubscript().run()}><SubIcon className="w-4 h-4" /></Btn>
+              <Btn title="Superscript" active={editor.isActive('superscript')} onClick={() => editor.chain().focus().toggleSuperscript().run()}><SupIcon className="w-4 h-4" /></Btn>
 
-        {/* Tab 2: Raw HTML Source Code Mode */}
-        <div className={activeTab === 'code' ? 'block' : 'hidden'}>
-          <div className="bg-[#06090e] px-3 py-1.5 border-b border-zinc-850 text-[10px] text-zinc-500 font-mono flex justify-between items-center">
-            <span>Raw HTML Source Mode</span>
-            <span className="text-gold">Live Synced HTML</span>
-          </div>
-          <textarea
-            value={htmlContent}
-            onChange={handleCodeChange}
-            style={{ minHeight }}
-            placeholder="<p>Enter raw HTML tags here...</p>"
-            className="w-full bg-[#080c12] text-amber-100 font-mono text-xs p-4 leading-relaxed focus:outline-none resize-y max-h-[500px]"
-          />
-        </div>
+              <div className="relative group">
+                <Btn title="Text colour"><Palette className="w-4 h-4" /></Btn>
+                <div className="absolute left-0 top-full mt-1 hidden group-hover:flex group-focus-within:flex gap-1 p-2 bg-noir-card border border-zinc-800 rounded-lg shadow-xl z-20">
+                  {COLORS.map((c) => (
+                    <button key={c} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editor.chain().focus().setColor(c).run()} className="w-5 h-5 rounded-full border border-white/10" style={{ background: c }} aria-label={`Colour ${c}`} />
+                  ))}
+                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editor.chain().focus().unsetColor().run()} className="w-5 h-5 rounded-full border border-zinc-600 text-[9px] text-zinc-400" aria-label="Remove colour">✕</button>
+                </div>
+              </div>
+              <div className="relative group">
+                <Btn title="Highlight" active={editor.isActive('highlight')}><Highlighter className="w-4 h-4" /></Btn>
+                <div className="absolute left-0 top-full mt-1 hidden group-hover:flex group-focus-within:flex gap-1 p-2 bg-noir-card border border-zinc-800 rounded-lg shadow-xl z-20">
+                  {HIGHLIGHTS.map((c) => (
+                    <button key={c} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editor.chain().focus().toggleHighlight({ color: c }).run()} className="w-5 h-5 rounded border border-white/10" style={{ background: c }} aria-label={`Highlight ${c}`} />
+                  ))}
+                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editor.chain().focus().unsetHighlight().run()} className="w-5 h-5 rounded border border-zinc-600 text-[9px] text-zinc-400" aria-label="Remove highlight">✕</button>
+                </div>
+              </div>
+              <Sep />
+              <Btn title="Align left" active={editor.isActive({ textAlign: 'left' })} onClick={() => editor.chain().focus().setTextAlign('left').run()}><AlignLeft className="w-4 h-4" /></Btn>
+              <Btn title="Align centre" active={editor.isActive({ textAlign: 'center' })} onClick={() => editor.chain().focus().setTextAlign('center').run()}><AlignCenter className="w-4 h-4" /></Btn>
+              <Btn title="Align right" active={editor.isActive({ textAlign: 'right' })} onClick={() => editor.chain().focus().setTextAlign('right').run()}><AlignRight className="w-4 h-4" /></Btn>
+              <Btn title="Justify" active={editor.isActive({ textAlign: 'justify' })} onClick={() => editor.chain().focus().setTextAlign('justify').run()}><AlignJustify className="w-4 h-4" /></Btn>
+              <Sep />
+              <Btn title="Bullet list" active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()}><List className="w-4 h-4" /></Btn>
+              <Btn title="Numbered list" active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered className="w-4 h-4" /></Btn>
+              <Btn title="Checklist" active={editor.isActive('taskList')} onClick={() => editor.chain().focus().toggleTaskList().run()}><ListChecks className="w-4 h-4" /></Btn>
+              <Btn title="Quote" active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="w-4 h-4" /></Btn>
+              <Btn title="Tip box" active={editor.isActive('callout')} onClick={() => editor.chain().focus().toggleCallout('tip').run()}><Lightbulb className="w-4 h-4" /></Btn>
+              <Btn title="Code block" active={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()}><Code2 className="w-4 h-4" /></Btn>
+              <Btn title="Divider" onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="w-4 h-4" /></Btn>
+              <Sep />
+              <Btn
+                title="Link (Ctrl+K)"
+                active={editor.isActive('link')}
+                onClick={() =>
+                  setModal({
+                    type: 'link',
+                    url: editor.getAttributes('link').href || '',
+                    newTab: editor.getAttributes('link').target === '_blank',
+                    text: '',
+                    needsText: editor.state.selection.empty && !editor.isActive('link'),
+                  })
+                }
+              >
+                <Link2 className="w-4 h-4" />
+              </Btn>
+              <Btn title="Remove link" disabled={!editor.isActive('link')} onClick={() => editor.chain().focus().extendMarkRange('link').unsetLink().run()}><Unlink className="w-4 h-4" /></Btn>
+              <Btn title="Image" onClick={api.openImage}>{uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}</Btn>
+              <Btn title="YouTube video" onClick={api.openVideo}><YoutubeIcon className="w-4 h-4" /></Btn>
+              <Btn title="Insert table" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><TableIcon className="w-4 h-4" /></Btn>
+              <Sep />
+              <Btn title="Clear formatting" onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}><Eraser className="w-4 h-4" /></Btn>
 
-        {/* Tab 3: Live Preview Mode */}
-        <div className={activeTab === 'preview' ? 'block' : 'hidden'}>
-          <div className="bg-[#06090e] px-3 py-1.5 border-b border-zinc-850 text-[10px] text-zinc-500 flex justify-between items-center">
-            <span>Live Storefront Render Preview</span>
-            <span className="text-gold">Actual Visual Appearance</span>
-          </div>
-          <div
-            style={{ minHeight }}
-            className="p-5 text-zinc-200 text-xs sm:text-sm leading-relaxed overflow-y-auto max-h-[500px] prose prose-invert max-w-none bg-noir/50"
-          >
-            {htmlContent ? (
-              <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-            ) : (
-              <div className="text-zinc-600 italic">No content to preview yet.</div>
-            )}
+              {inTable && (
+                <div className="w-full flex flex-wrap items-center gap-1 pt-1.5 mt-1 border-t border-zinc-800 text-[11px] text-zinc-400">
+                  <span className="mr-1 uppercase tracking-wider">Table:</span>
+                  <Btn title="Add row below" onClick={() => editor.chain().focus().addRowAfter().run()}><Rows3 className="w-4 h-4" /></Btn>
+                  <Btn title="Add column right" onClick={() => editor.chain().focus().addColumnAfter().run()}><Columns3 className="w-4 h-4" /></Btn>
+                  <button type="button" className="px-2 py-1 rounded hover:text-gold" onClick={() => editor.chain().focus().deleteRow().run()}>− row</button>
+                  <button type="button" className="px-2 py-1 rounded hover:text-gold" onClick={() => editor.chain().focus().deleteColumn().run()}>− column</button>
+                  <button type="button" className="px-2 py-1 rounded hover:text-gold" onClick={() => editor.chain().focus().toggleHeaderRow().run()}>header row</button>
+                  <button type="button" className="px-2 py-1 rounded hover:text-gold" onClick={() => editor.chain().focus().mergeOrSplit().run()}>merge/split</button>
+                  <Btn title="Delete table" onClick={() => editor.chain().focus().deleteTable().run()}><Trash2 className="w-4 h-4" /></Btn>
+                </div>
+              )}
+            </div>
+          )}
+
+          {mode === 'write' && (
+            <BubbleMenu editor={editor} shouldShow={({ editor: ed, state }) => !state.selection.empty && !ed.isActive('image') && !ed.isActive('codeBlock')}>
+              <div className="flex items-center gap-0.5 p-1 bg-noir-card border border-gold/30 rounded-lg shadow-2xl">
+                <Btn title="Bold" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="w-4 h-4" /></Btn>
+                <Btn title="Italic" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="w-4 h-4" /></Btn>
+                <Btn title="Underline" active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon className="w-4 h-4" /></Btn>
+                <Btn title="Highlight" active={editor.isActive('highlight')} onClick={() => editor.chain().focus().toggleHighlight({ color: HIGHLIGHTS[0] }).run()}><Highlighter className="w-4 h-4" /></Btn>
+                <Btn title="Heading 2" active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="w-4 h-4" /></Btn>
+                <Btn title="Heading 3" active={editor.isActive('heading', { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="w-4 h-4" /></Btn>
+                <Btn title="Heading 4" active={editor.isActive('heading', { level: 4 })} onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}><Heading4 className="w-4 h-4" /></Btn>
+                <Btn
+                  title="Link"
+                  active={editor.isActive('link')}
+                  onClick={() => setModal({ type: 'link', url: editor.getAttributes('link').href || '', newTab: editor.getAttributes('link').target === '_blank' })}
+                >
+                  <Link2 className="w-4 h-4" />
+                </Btn>
+              </div>
+            </BubbleMenu>
+          )}
+
+          {mode === 'write' && (
+            <div className="px-5 py-4 overflow-y-auto" style={{ minHeight, maxHeight: fullscreen ? 'none' : '70vh' }} onClick={() => editor.chain().focus().run()}>
+              <EditorContent editor={editor} />
+            </div>
+          )}
+
+          {mode === 'preview' && (
+            <div className="px-5 py-4 rich-content" style={{ minHeight }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) || '<p style="opacity:.5">Nothing to preview yet.</p>' }} />
+          )}
+
+          {mode === 'html' && (
+            <textarea
+              value={html}
+              onChange={(e) => {
+                setHtml(e.target.value);
+                lastEmitted.current = e.target.value;
+                emit(e.target.value);
+              }}
+              spellCheck={false}
+              className="w-full bg-transparent px-5 py-4 font-mono text-xs text-emerald-200/90 leading-relaxed focus:outline-none rounded-xl"
+              style={{ minHeight }}
+              aria-label="HTML source"
+            />
+          )}
+
+          {slash && mode === 'write' && slashItems.length > 0 && (
+            <div className="absolute z-30 w-64 max-h-72 overflow-y-auto bg-noir-card border border-gold/30 rounded-xl shadow-2xl p-1" style={{ top: slash.top, left: Math.min(slash.left, 9999) }} role="listbox">
+              <p className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-widest text-zinc-500">Insert block</p>
+              {slashItems.map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    role="option"
+                    aria-selected={i === slash.index}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      runSlash(item);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${i === slash.index ? 'bg-gold/15' : 'hover:bg-white/5'}`}
+                  >
+                    <span className="w-8 h-8 rounded-md bg-noir border border-zinc-800 flex items-center justify-center text-gold"><Icon className="w-4 h-4" /></span>
+                    <span>
+                      <span className="block text-sm text-zinc-100">{item.label}</span>
+                      <span className="block text-[11px] text-zinc-500">{item.hint}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-t border-zinc-800 text-[10px] text-zinc-500">
+            <span>{hint}</span>
+            <span>
+              {words} words · {chars} characters · ~{Math.max(1, Math.round(words / 200))} min read
+            </span>
           </div>
         </div>
       </div>
 
-      {hint && <p className="text-[10px] text-zinc-500">{hint}</p>}
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+        className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          e.target.value = '';
+          const url = await uploadImage(file);
+          if (url) setModal((m) => ({ ...(m || { type: 'image' }), type: 'image', url, alt: m?.alt || file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ') }));
+        }}
+      />
 
-      {/* Insert Link Modal */}
-      {showLinkModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-noir-card border border-gold/40 p-5 max-w-md w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-              <span className="font-serif text-xs uppercase tracking-wider text-gold font-semibold flex items-center gap-1.5">
-                <Link2 className="w-3.5 h-3.5 text-gold" /> Insert Royal Link
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowLinkModal(false)}
-                className="text-zinc-400 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      {modal && (
+        <div className="fixed inset-0 z-[90] bg-black/70 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+          <form
+            onSubmit={modal.type === 'link' ? applyLink : modal.type === 'image' ? applyImage : applyVideo}
+            className="w-full max-w-md bg-noir-card border border-gold/30 rounded-2xl p-5 space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h4 className="font-serif text-sm uppercase tracking-[0.2em] text-gold">
+                {modal.type === 'link' ? 'Insert link' : modal.type === 'image' ? 'Insert image' : 'Embed YouTube video'}
+              </h4>
+              <button type="button" onClick={() => setModal(null)} aria-label="Close"><X className="w-4 h-4 text-zinc-400" /></button>
             </div>
 
-            <form onSubmit={handleApplyLink} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">
-                  Destination URL *
+            {modal.type === 'link' && (
+              <>
+                {modal.needsText && (
+                  <input autoFocus value={modal.text} onChange={(e) => setModal({ ...modal, text: e.target.value })} placeholder="Link text" className="w-full bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold" />
+                )}
+                <input autoFocus={!modal.needsText} value={modal.url} onChange={(e) => setModal({ ...modal, url: e.target.value })} placeholder="https://… or /products/slug" className="w-full bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold" />
+                <label className="flex items-center gap-2 text-xs text-zinc-400">
+                  <input type="checkbox" className="accent-[#D4AF37]" checked={Boolean(modal.newTab)} onChange={(e) => setModal({ ...modal, newTab: e.target.checked })} />
+                  Open in new tab
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={linkUrl}
-                  onChange={(e) => setLinkUrl(e.target.value)}
-                  placeholder="https://example.com or /shop"
-                  className="w-full bg-noir border border-zinc-800 p-2 text-zinc-100 focus:outline-none focus:border-gold"
-                  autoFocus
-                />
-              </div>
+                <p className="text-[11px] text-zinc-500">Tip: link to your own products & articles (e.g. /products/jayrup-pimples-cream) for better SEO.</p>
+              </>
+            )}
 
-              <div>
-                <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">
-                  Anchor / Display Text (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={linkText}
-                  onChange={(e) => setLinkText(e.target.value)}
-                  placeholder="Click here"
-                  className="w-full bg-noir border border-zinc-800 p-2 text-zinc-100 focus:outline-none focus:border-gold"
-                />
-              </div>
-
-              <label className="flex items-center gap-2 cursor-pointer text-zinc-300 pt-1">
-                <input
-                  type="checkbox"
-                  checked={openInNewTab}
-                  onChange={(e) => setOpenInNewTab(e.target.checked)}
-                  className="accent-gold w-3.5 h-3.5"
-                />
-                <span className="text-[11px]">Open link in new browser tab</span>
-              </label>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-zinc-800">
-                <button
-                  type="button"
-                  onClick={() => setShowLinkModal(false)}
-                  className="px-3 py-1.5 border border-zinc-800 text-zinc-400 hover:text-white text-xs"
-                >
-                  Cancel
+            {modal.type === 'image' && (
+              <>
+                <button type="button" onClick={() => fileRef.current?.click()} className="w-full border border-dashed border-gold/40 rounded-xl py-6 text-sm text-gold hover:bg-gold/5 flex items-center justify-center gap-2">
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+                  {uploading ? 'Uploading…' : 'Upload from computer'}
                 </button>
-                <button type="submit" className="btn-gold py-1.5 px-4 text-xs">
-                  Apply Link
-                </button>
-              </div>
-            </form>
-          </div>
+                <input value={modal.url} onChange={(e) => setModal({ ...modal, url: e.target.value })} placeholder="…or paste image URL" className="w-full bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold" />
+                {modal.url && <img src={modal.url} alt="" className="max-h-40 mx-auto rounded-lg border border-zinc-800" />}
+                <input value={modal.alt} onChange={(e) => setModal({ ...modal, alt: e.target.value })} placeholder="Alt text (describe the image for SEO & accessibility)" className="w-full bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold" />
+              </>
+            )}
+
+            {modal.type === 'video' && (
+              <input autoFocus value={modal.url} onChange={(e) => setModal({ ...modal, url: e.target.value })} placeholder="https://www.youtube.com/watch?v=…" className="w-full bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold" />
+            )}
+
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setModal(null)} className="px-4 py-2 rounded-lg border border-zinc-700 text-xs text-zinc-300">Cancel</button>
+              <button type="submit" className="btn-gold rounded-lg !py-2">Insert</button>
+            </div>
+          </form>
         </div>
       )}
     </div>
   );
 };
+
+export default RichTextEditor;

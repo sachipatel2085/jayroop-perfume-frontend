@@ -7,7 +7,7 @@ export const OrderTimeline = ({ order }) => {
   const steps = [
     { key: 'PENDING_PAYMENT', label: 'Order Placed', icon: Clock },
     { key: 'PAID', label: 'Payment Confirmed', icon: CheckCircle2 },
-    { key: 'PROCESSING', label: 'Processing & Bottling', icon: PackageCheck },
+    { key: 'PROCESSING', label: 'Processing & Packing', icon: PackageCheck },
     { key: 'SHIPPED', label: 'Shipped via Courier', icon: Truck },
     { key: 'DELIVERED', label: 'Delivered', icon: CheckCircle2 },
   ];
@@ -41,7 +41,7 @@ export const OrderTimeline = ({ order }) => {
           Order {isCancelled ? 'Cancelled' : 'Refunded'}
         </h4>
         <p className="text-xs text-zinc-400 mt-1">
-          This order has been {isCancelled ? 'cancelled' : 'refunded'}. Please reach out to Royal Concierge if you need assistance.
+          This order has been {isCancelled ? 'cancelled' : 'refunded'}. Please contact care@jayrup.in if you need assistance.
         </p>
       </div>
     );

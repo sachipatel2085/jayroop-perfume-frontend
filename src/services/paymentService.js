@@ -1,19 +1,21 @@
 import api from './api.js';
 
 export const paymentService = {
-  createPaymentOrder: async (checkoutPayload) => {
-    const res = await api.post('/payments/create-order', checkoutPayload);
-    return res.data || res;
+  /** Unified checkout. paymentMethod: 'ONLINE' (PhonePe) | 'COD' */
+  checkout: async (payload) => {
+    const res = await api.post('/payments/checkout', payload);
+    return res.data;
   },
 
-  createCodOrder: async (checkoutPayload) => {
-    const res = await api.post('/payments/create-cod-order', checkoutPayload);
-    return res.data || res;
+  /** Verify payment with PhonePe (server-to-server) after the customer returns */
+  getStatus: async (orderNumber, params = {}) => {
+    const res = await api.get(`/payments/status/${encodeURIComponent(orderNumber)}`, { params });
+    return res.data;
   },
 
-  verifyPayment: async (verificationPayload) => {
-    const res = await api.post('/payments/verify', verificationPayload);
-    return res.data || res;
+  retry: async (orderNumber) => {
+    const res = await api.post(`/payments/${encodeURIComponent(orderNumber)}/retry`);
+    return res.data;
   },
 
   getPublicSettings: async () => {

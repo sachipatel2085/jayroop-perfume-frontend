@@ -1,32 +1,24 @@
 import { useEffect } from 'react';
 
 /**
- * Injects or updates a Schema.org JSON-LD structured data script in <head>.
- * Automatically cleans up or updates on prop change.
+ * Injects / replaces a JSON-LD <script> in <head>. Uses the same ids as the server-rendered tags,
+ * so hydration replaces them instead of duplicating.
  */
 export const StructuredData = ({ id = 'schema-json-ld', data }) => {
+  const json = data ? JSON.stringify(data).replace(/</g, '\\u003c') : null;
   useEffect(() => {
-    if (!data) return;
-
-    let scriptTag = document.getElementById(id);
-    if (!scriptTag) {
-      scriptTag = document.createElement('script');
-      scriptTag.id = id;
-      scriptTag.type = 'application/ld+json';
-      document.head.appendChild(scriptTag);
+    if (!json) return undefined;
+    let tag = document.getElementById(id);
+    if (!tag) {
+      tag = document.createElement('script');
+      tag.id = id;
+      tag.type = 'application/ld+json';
+      document.head.appendChild(tag);
     }
-
-    try {
-      scriptTag.text = JSON.stringify(data);
-    } catch (err) {
-      console.error('Failed to stringify structured data', err);
-    }
-
+    tag.textContent = json;
     return () => {
-      const el = document.getElementById(id);
-      if (el) el.remove();
+      document.getElementById(id)?.remove();
     };
-  }, [id, data]);
-
+  }, [id, json]);
   return null;
 };

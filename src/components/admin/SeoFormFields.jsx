@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Info,
 } from 'lucide-react';
+import { SITE_URL } from '../../config/site.js';
 
 export const SeoFormFields = ({
   seoData = {},
@@ -41,7 +42,7 @@ export const SeoFormFields = ({
     fallbackDescription ||
     'Discover exquisite handcrafted Extraits de Parfum and Ayurvedic skincare from Jayrup Royal House. पिंपल्स भागे, आत्मविश्वास जागे.';
   const displaySlug = fallbackSlug ? fallbackSlug.toLowerCase().replace(/\s+/g, '-') : 'item';
-  const previewUrl = `https://jayrup.com/${itemType}/${displaySlug}`;
+  const previewUrl = `${SITE_URL}/${itemType}/${displaySlug}`;
 
   // Character lengths & status badges
   const titleLen = metaTitle.length;
@@ -277,7 +278,7 @@ export const SeoFormFields = ({
                 type="text"
                 value={canonicalUrl}
                 onChange={(e) => handleFieldChange('canonicalUrl', e.target.value)}
-                placeholder={`e.g. https://jayrup.com/${itemType}/${displaySlug}`}
+                placeholder={`e.g. ${SITE_URL}/${itemType}/${displaySlug}`}
                 className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold"
               />
               <p className="text-[10px] text-zinc-500">

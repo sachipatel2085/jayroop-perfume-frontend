@@ -1,25 +1,23 @@
 import React from 'react';
 import { StructuredData } from './StructuredData.jsx';
 
-/**
- * Generates Schema.org FAQPage structured data for genuine visible FAQs.
- * @param {Array<{ question: string, answer: string }>} faqs
- */
-export const FAQSchema = ({ faqs = [] }) => {
-  if (!faqs || faqs.length === 0) return null;
+const strip = (s = '') => String(s).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map((faq) => ({
-      '@type': 'Question',
-      name: faq.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.answer,
-      },
-    })),
-  };
-
-  return <StructuredData id="faq-schema-jsonld" data={schema} />;
+export const FAQSchema = ({ faqs = [], id = 'faq-schema-jsonld' }) => {
+  const items = faqs.filter((f) => (f.question || f.q) && (f.answer || f.a));
+  if (!items.length) return null;
+  return (
+    <StructuredData
+      id={id}
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: items.map((f) => ({
+          '@type': 'Question',
+          name: strip(f.question || f.q),
+          acceptedAnswer: { '@type': 'Answer', text: strip(f.answer || f.a) },
+        })),
+      }}
+    />
+  );
 };

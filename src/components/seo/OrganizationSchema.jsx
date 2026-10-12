@@ -1,40 +1,52 @@
 import React from 'react';
 import { StructuredData } from './StructuredData.jsx';
+import { SITE_URL, BRAND } from '../../config/site.js';
 
-export const OrganizationSchema = () => {
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'Jayrup (JR) Royal Luxury House',
-    alternateName: 'Jayrup',
-    legalName: 'Jayrup Luxury Fragrances & Cosmetics Pvt Ltd',
-    url: 'https://jayrup.com',
-    logo: 'https://jayrup.com/src/assets/jayroop-logo.webp',
-    slogan: 'पिंपल्स भागे, आत्मविश्वास जागे',
-    description:
-      'Premier Indian royal fragrance and skincare house creating high-concentration extraits de parfum, artisanal soaps, and Ayurvedic skincare.',
-    address: {
-      '@type': 'PostalAddress',
-      addressCountry: 'IN',
-      addressRegion: 'Rajasthan',
-      addressLocality: 'Jodhpur',
+export const returnPolicySchema = () => ({
+  '@type': 'MerchantReturnPolicy',
+  applicableCountry: 'IN',
+  returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+  merchantReturnDays: 3,
+  returnMethod: 'https://schema.org/ReturnByMail',
+  itemCondition: 'https://schema.org/DamagedCondition',
+  url: `${SITE_URL}/refund-return-policy`,
+});
+
+export const organizationData = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'OnlineStore',
+  '@id': `${SITE_URL}/#organization`,
+  name: BRAND.name,
+  alternateName: [BRAND.tradeName, 'जयरूप'],
+  legalName: BRAND.legalName,
+  url: SITE_URL,
+  logo: { '@type': 'ImageObject', url: BRAND.logo, width: 512, height: 512 },
+  image: BRAND.ogImage,
+  email: BRAND.email,
+  telephone: BRAND.phone,
+  slogan: BRAND.tagline,
+  description: BRAND.description,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: `${BRAND.address.line1}, ${BRAND.address.line2}`,
+    addressLocality: BRAND.address.city,
+    addressRegion: BRAND.address.state,
+    postalCode: BRAND.address.postalCode,
+    addressCountry: 'IN',
+  },
+  contactPoint: [
+    {
+      '@type': 'ContactPoint',
+      telephone: BRAND.phone,
+      email: BRAND.email,
+      contactType: 'customer service',
+      areaServed: 'IN',
+      availableLanguage: ['English', 'Hindi', 'Gujarati'],
     },
-    contactPoint: [
-      {
-        '@type': 'ContactPoint',
-        telephone: '+91-9988776655',
-        contactType: 'Customer Care',
-        email: 'care@jayrup.com',
-        areaServed: 'IN',
-        availableLanguage: ['en', 'hi'],
-      },
-    ],
-    sameAs: [
-      'https://www.instagram.com/jayrup_luxury',
-      'https://www.facebook.com/jayrupluxury',
-      'https://www.youtube.com/@jayrupluxury',
-    ],
-  };
+  ],
+  areaServed: { '@type': 'Country', name: 'India' },
+  hasMerchantReturnPolicy: returnPolicySchema(),
+  ...(Object.values(BRAND.social).some(Boolean) ? { sameAs: Object.values(BRAND.social).filter(Boolean) } : {}),
+});
 
-  return <StructuredData id="organization-schema-jsonld" data={schema} />;
-};
+export const OrganizationSchema = () => <StructuredData id="organization-schema-jsonld" data={organizationData()} />;

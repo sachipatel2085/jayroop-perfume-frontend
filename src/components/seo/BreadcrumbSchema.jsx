@@ -1,28 +1,23 @@
 import React from 'react';
 import { StructuredData } from './StructuredData.jsx';
+import { SITE_URL } from '../../config/site.js';
 
-/**
- * Generates Schema.org BreadcrumbList structured data.
- * @param {Array<{ name: string, url: string }>} items - Breadcrumb hierarchy
- */
+/** @param {Array<{ name: string, url: string }>} items */
 export const BreadcrumbSchema = ({ items = [] }) => {
-  if (!items || items.length === 0) return null;
-
-  const baseUrl = 'https://jayrup.com';
-
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: items.map((item, index) => {
-      const fullUrl = item.url.startsWith('http') ? item.url : `${baseUrl}${item.url}`;
-      return {
-        '@type': 'ListItem',
-        position: index + 1,
-        name: item.name,
-        item: fullUrl,
-      };
-    }),
-  };
-
-  return <StructuredData id="breadcrumb-schema-jsonld" data={schema} />;
+  if (!items.length) return null;
+  return (
+    <StructuredData
+      id="breadcrumb-schema-jsonld"
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: items.map((item, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.name,
+          item: item.url.startsWith('http') ? item.url : `${SITE_URL}${item.url}`,
+        })),
+      }}
+    />
+  );
 };

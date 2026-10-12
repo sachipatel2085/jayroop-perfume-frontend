@@ -209,7 +209,7 @@ export const Navbar = () => {
             </Link>
 
             <Link
-              to="/contact"
+              to="/contact-us"
               className="hover:text-gold transition-colors duration-200"
             >
               Contact
@@ -291,18 +291,18 @@ export const Navbar = () => {
                       )}
 
                       <Link
-                        to="/profile"
+                        to="/account/profile"
                         onClick={() => setUserDropdownOpen(false)}
                         className="block px-4 py-2 text-zinc-300 hover:text-gold hover:bg-white/5 transition-colors"
                       >
-                        My Profile & Addresses
+                        My Account
                       </Link>
                       <Link
-                        to="/orders"
+                        to="/account/orders"
                         onClick={() => setUserDropdownOpen(false)}
                         className="block px-4 py-2 text-zinc-300 hover:text-gold hover:bg-white/5 transition-colors"
                       >
-                        Order History & Tracking
+                        My Orders & Invoices
                       </Link>
                       <button
                         onClick={() => {
@@ -466,21 +466,21 @@ export const Navbar = () => {
                       )}
 
                       <Link
-                        to="/profile"
+                        to="/account/profile"
                         onClick={() => setMobileAccountOpen(false)}
                         className="flex items-center gap-2 p-2 text-zinc-300 hover:text-gold hover:bg-white/5 transition-colors"
                       >
                         <UserIcon className="w-3.5 h-3.5 text-zinc-500" />
-                        <span>My Profile & Addresses</span>
+                        <span>My Account</span>
                       </Link>
 
                       <Link
-                        to="/orders"
+                        to="/account/orders"
                         onClick={() => setMobileAccountOpen(false)}
                         className="flex items-center gap-2 p-2 text-zinc-300 hover:text-gold hover:bg-white/5 transition-colors"
                       >
                         <Package className="w-3.5 h-3.5 text-zinc-500" />
-                        <span>Order History & Tracking</span>
+                        <span>My Orders & Invoices</span>
                       </Link>
 
                       <button
@@ -550,7 +550,7 @@ export const Navbar = () => {
               About Us
             </Link>
             <Link
-              to="/contact"
+              to="/contact-us"
               onClick={() => setMobileMenuOpen(false)}
               className="py-1.5 px-2 hover:text-gold hover:bg-white/5 transition-colors"
             >

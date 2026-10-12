@@ -4,6 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -12,7 +13,12 @@ const api = axios.create({
 // Auto-inject JWT token if present
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jayrup_token') || localStorage.getItem('jayroop_token');
+    let token = null;
+    try {
+      token = localStorage.getItem('jayrup_token') || localStorage.getItem('jayroop_token');
+    } catch {
+      token = null;
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -21,22 +27,47 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle session expiration gracefully
+const readBlobError = async (data) => {
+  try {
+    const text = await data.text();
+    return JSON.parse(text)?.message;
+  } catch {
+    return null;
+  }
+};
+
+// Unwrap JSON payloads; keep full response for binary downloads (rawResponse: true)
 api.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
+  (response) => (response.config?.rawResponse ? response : response.data),
+  async (error) => {
     if (error.response?.status === 401) {
-      // If token expired, clear invalid session
-      localStorage.removeItem('jayrup_token');
-      localStorage.removeItem('jayrup_user');
-      localStorage.removeItem('jayroop_token');
-      localStorage.removeItem('jayroop_user');
+      const url = error.config?.url || '';
+      // Only clear the session for authenticated calls (not for guest order-tracking verification)
+      if (!url.startsWith('/orders/JR-') && !url.includes('/auth/login')) {
+        try {
+          localStorage.removeItem('jayrup_token');
+          localStorage.removeItem('jayrup_user');
+          localStorage.removeItem('jayroop_token');
+          localStorage.removeItem('jayroop_user');
+        } catch {
+          /* storage unavailable */
+        }
+      }
     }
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      'An unexpected error occurred';
-    return Promise.reject(new Error(message));
+    let message = error.response?.data?.message;
+    if (!message && error.response?.data instanceof Blob) message = await readBlobError(error.response.data);
+    if (!message) {
+      message =
+        error.code === 'ECONNABORTED'
+          ? 'The server took too long to respond. Please try again.'
+          : !error.response
+            ? 'Cannot reach the server. Please check your internet connection.'
+            : error.message || 'An unexpected error occurred';
+    }
+    const e = new Error(message);
+    e.status = error.response?.status;
+    e.data = error.response?.data;
+    return Promise.reject(e);
   }
 );
 

@@ -207,7 +207,7 @@ export const CartPage = () => {
 
             <div className="pt-2 text-[10px] text-zinc-500 text-center flex items-center justify-center gap-2">
               <ShieldCheck className="w-4 h-4 text-gold" />
-              <span>Razorpay Secured Bank-Grade Checkout</span>
+              <span>Secure checkout · PhonePe UPI, Cards, Net Banking & COD</span>
             </div>
           </div>
         </div>

@@ -1,0 +1,77 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Jayrup storefront – Apache / Hostinger configuration
+# Upload the contents of dist/ (including this file) to public_html.
+# ─────────────────────────────────────────────────────────────────────────────
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+DirectorySlash Off
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # 1) Force HTTPS and the non-www canonical host
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP_HOST} ^www\. [NC]
+  RewriteRule ^ https://jayrup.in%{REQUEST_URI} [L,R=301,NE]
+
+  # 2) Remove trailing slash (canonical URLs have none)
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.+)/$ /$1 [L,R=301]
+
+  # 3) Old WordPress / WooCommerce URLs → new URLs (keeps Google rankings)
+  RewriteRule ^store$ /shop [L,R=301]
+  RewriteRule ^product/([^/]+)$ /products/$1 [L,R=301]
+  RewriteRule ^product-category/(?:[^/]+/)*([^/]+)$ /category/$1 [L,R=301]
+  RewriteRule ^contact$ /contact-us [L,R=301]
+  RewriteRule ^about-us$ /about [L,R=301]
+  RewriteRule ^(return-policy|refund-policy|cancellation-policy)$ /refund-return-policy [L,R=301]
+  RewriteRule ^terms-of-service$ /terms-and-conditions [L,R=301]
+  RewriteRule ^pravicy-policy$ /privacy-policy [L,R=301]
+  RewriteRule ^my-account/orders$ /account/orders [L,R=301]
+  RewriteRule ^my-account/edit-address$ /account/addresses [L,R=301]
+  RewriteRule ^my-account/edit-account$ /account/profile [L,R=301]
+  RewriteRule ^my-account/lost-password$ /forgot-password [L,R=301]
+  RewriteRule ^my-account(/.*)?$ /account [L,R=301]
+  RewriteRule ^(wp-admin|wp-login\.php)(/.*)?$ /login [L,R=301]
+  RewriteRule ^(feed|comments/feed)(/.*)?$ /blog [L,R=301]
+  RewriteRule ^wp-content/.*$ - [G]
+
+  # 4) Serve pre-rendered SEO pages (products/xyz.html etc.) when they exist
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^(.+)$ $1.html [L]
+
+  # 5) SPA fallback (app.html = plain app shell written by the prerender step; index.html = home page)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{DOCUMENT_ROOT}/app.html -f
+  RewriteRule ^ app.html [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/xml application/javascript application/json image/svg+xml application/manifest+json
+</IfModule>
+
+# Caching: hashed assets forever, HTML always fresh
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|woff2?|webp|avif|jpe?g|png|gif|svg|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(html|xml|txt|webmanifest)$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
+  AddType image/avif .avif
+</IfModule>

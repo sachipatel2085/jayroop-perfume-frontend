@@ -41,10 +41,7 @@ export const productService = {
     return res.data;
   },
 
-  submitReview: async (reviewData) => {
-    const res = await api.post('/reviews', reviewData);
-    return res.data;
-  },
+  submitReview: async (reviewData) => api.post('/reviews', reviewData), // { success, message, data }
 
   getInfluencerVideos: async (params = {}) => {
     const res = await api.get('/influencers', { params });

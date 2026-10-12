@@ -83,7 +83,7 @@ export const Shop = () => {
       <SEO
         title="Royal Fragrance & Skincare Catalog | Jayrup Treasury"
         description="Browse the complete catalog of Jayrup handcrafted extraits de parfum, artisanal saffron soaps, and Jayrup Special skincare formulations."
-        canonicalUrl="https://jayrup.com/shop"
+        canonicalUrl="/shop"
       >
         <BreadcrumbSchema
           items={[

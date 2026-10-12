@@ -1,98 +1,102 @@
 import React, { useEffect } from 'react';
+import { SITE_URL, DEFAULT_SEO, BRAND } from '../../config/site.js';
 
-const BASE_URL = 'https://jayrup.com';
-const DEFAULT_TITLE = 'JAYRUP (JR) | Royal Luxury Fragrance & Skincare House';
-const DEFAULT_DESC =
-  'Jayrup (जयरूप) - Royal Indian Luxury House of High-Potency Extraits de Parfum and Ayurvedic Skincare. पिंपल्स भागे, आत्मविश्वास जागे.';
-const DEFAULT_KEYWORDS =
-  'luxury perfume, extrait de parfum, oud, kannauj rose, ayurvedic skincare, pimples soap, cosmetics, jayrup';
-const DEFAULT_IMAGE = `${BASE_URL}/src/assets/jayroop-logo.webp`;
+const DEFAULT_IMAGE = `${SITE_URL}/og-image.jpg`;
+
+const setMeta = (attr, key, content) => {
+  let el = document.head.querySelector(`meta[${attr}="${key}"]`);
+  if (!content) {
+    if (el) el.remove();
+    return;
+  }
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, key);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+};
+
+const setLink = (rel, href, extra = {}) => {
+  const selector = `link[rel="${rel}"]${extra.hreflang ? `[hreflang="${extra.hreflang}"]` : ''}`;
+  let el = document.head.querySelector(selector);
+  if (!el) {
+    el = document.createElement('link');
+    el.setAttribute('rel', rel);
+    Object.entries(extra).forEach(([k, v]) => el.setAttribute(k, v));
+    document.head.appendChild(el);
+  }
+  el.setAttribute('href', href);
+};
+
+const clean = (s = '', max = 300) =>
+  String(s)
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
 
 /**
- * Unified Central SEO Engine
- * Manages document.title, standard meta tags, robots directives, canonical tags,
- * OpenGraph, Twitter Cards, and renders any nested Schema.org child components.
+ * Client-side SEO manager – keeps <title>, description, robots, canonical, hreflang,
+ * Open Graph, Twitter and product/article meta in sync on every route change.
+ * The server (or build-time prerender) emits the same tags for crawlers that do not run JS.
  */
 export const SEO = ({
   title,
-  description = DEFAULT_DESC,
-  keywords = DEFAULT_KEYWORDS,
+  description = DEFAULT_SEO.description,
+  keywords = DEFAULT_SEO.keywords,
   canonicalUrl,
   ogImage = DEFAULT_IMAGE,
   ogType = 'website',
   searchIndexing = 'INDEX_FOLLOW',
+  product,
+  article,
   children,
 }) => {
   useEffect(() => {
-    // 1. Formatted Title
-    const formattedTitle = title
-      ? title.includes('JAYRUP') || title.includes('Jayrup')
-        ? title
-        : `${title} | JAYRUP Royal Luxury`
-      : DEFAULT_TITLE;
-    document.title = formattedTitle;
+    const fullTitle = title ? (/jayrup/i.test(title) ? title : `${title} | ${BRAND.name}`) : DEFAULT_SEO.title;
+    document.title = fullTitle;
+    const desc = clean(description, 300);
 
-    // Helper to set or create meta tag
-    const setMetaTag = (attrName, attrValue, content) => {
-      if (!content) return;
-      let el = document.querySelector(`meta[${attrName}="${attrValue}"]`);
-      if (!el) {
-        el = document.createElement('meta');
-        el.setAttribute(attrName, attrValue);
-        document.head.appendChild(el);
-      }
-      el.setAttribute('content', content);
-    };
+    setMeta('name', 'description', desc);
+    setMeta('name', 'keywords', keywords);
+    setMeta(
+      'name',
+      'robots',
+      searchIndexing === 'NOINDEX_NOFOLLOW' ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+    );
 
-    // 2. Standard Meta Tags
-    setMetaTag('name', 'description', description);
-    setMetaTag('name', 'keywords', keywords);
+    let canonical = canonicalUrl;
+    if (!canonical) canonical = `${SITE_URL}${window.location.pathname.replace(/\/+$/, '') || '/'}`;
+    else if (!/^https?:\/\//.test(canonical)) canonical = `${SITE_URL}${canonical.startsWith('/') ? '' : '/'}${canonical}`;
+    setLink('canonical', canonical);
+    setLink('alternate', canonical, { hreflang: 'en-IN' });
+    setLink('alternate', canonical, { hreflang: 'x-default' });
 
-    // 3. Robots Directive
-    const robotsDirective =
-      searchIndexing === 'NOINDEX_NOFOLLOW'
-        ? 'noindex, nofollow'
-        : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
-    setMetaTag('name', 'robots', robotsDirective);
+    const image = ogImage ? (/^https?:\/\//.test(ogImage) ? ogImage : `${SITE_URL}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`) : DEFAULT_IMAGE;
+    setMeta('property', 'og:site_name', BRAND.name);
+    setMeta('property', 'og:locale', 'en_IN');
+    setMeta('property', 'og:title', fullTitle);
+    setMeta('property', 'og:description', desc);
+    setMeta('property', 'og:type', ogType);
+    setMeta('property', 'og:url', canonical);
+    setMeta('property', 'og:image', image);
+    setMeta('property', 'og:image:alt', fullTitle);
+    setMeta('name', 'twitter:card', 'summary_large_image');
+    setMeta('name', 'twitter:title', fullTitle);
+    setMeta('name', 'twitter:description', desc);
+    setMeta('name', 'twitter:image', image);
 
-    // 4. Canonical URL Normalization
-    // If not provided, normalize current pathname (strip tracking/filter query strings)
-    let cleanCanonical = canonicalUrl;
-    if (!cleanCanonical) {
-      cleanCanonical = `${BASE_URL}${window.location.pathname.replace(/\/+$/, '') || '/'}`;
-    } else if (!cleanCanonical.startsWith('http')) {
-      cleanCanonical = `${BASE_URL}${cleanCanonical}`;
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', cleanCanonical);
-
-    // 5. OpenGraph Tags
-    const fullImageUrl = ogImage.startsWith('http') ? ogImage : `${BASE_URL}${ogImage}`;
-    setMetaTag('property', 'og:title', formattedTitle);
-    setMetaTag('property', 'og:description', description);
-    setMetaTag('property', 'og:type', ogType);
-    setMetaTag('property', 'og:url', cleanCanonical);
-    setMetaTag('property', 'og:site_name', 'Jayrup (JR) Royal Luxury House');
-    setMetaTag('property', 'og:image', fullImageUrl);
-    setMetaTag('property', 'og:image:alt', formattedTitle);
-    setMetaTag('property', 'og:locale', 'en_IN');
-
-    // 6. Twitter Card Tags
-    setMetaTag('name', 'twitter:card', 'summary_large_image');
-    setMetaTag('name', 'twitter:title', formattedTitle);
-    setMetaTag('name', 'twitter:description', description);
-    setMetaTag('name', 'twitter:image', fullImageUrl);
-    setMetaTag('name', 'twitter:site', '@jayrup_luxury');
-  }, [title, description, keywords, canonicalUrl, ogImage, ogType, searchIndexing]);
+    setMeta('property', 'product:price:amount', product?.price ? String(product.price) : '');
+    setMeta('property', 'product:price:currency', product?.price ? 'INR' : '');
+    setMeta('property', 'product:availability', product ? (product.inStock ? 'in stock' : 'out of stock') : '');
+    setMeta('property', 'product:brand', product?.brand || '');
+    setMeta('property', 'product:condition', product ? 'new' : '');
+    setMeta('property', 'article:published_time', article?.published ? new Date(article.published).toISOString() : '');
+    setMeta('property', 'article:modified_time', article?.modified ? new Date(article.modified).toISOString() : '');
+  }, [title, description, keywords, canonicalUrl, ogImage, ogType, searchIndexing, product, article]);
 
   return <>{children}</>;
 };
 
-// Re-export for backward compatibility
 export default SEO;

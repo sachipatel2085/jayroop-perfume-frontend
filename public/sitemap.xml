@@ -1,53 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <url>
-    <loc>https://jayrup.com/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://jayrup.com/shop</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://jayrup.com/about</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://jayrup.com/contact</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://jayrup.com/faq</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://jayrup.com/blog</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://jayrup.com/shipping-policy</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  <url>
-    <loc>https://jayrup.com/return-policy</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  <url>
-    <loc>https://jayrup.com/privacy-policy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://jayrup.com/terms-of-service</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
+<!-- Fallback sitemap. `npm run build` (scripts/prerender-seo.mjs) replaces this with the live sitemap from the API,
+     including every product, category and blog post with image tags. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://jayrup.in/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://jayrup.in/shop</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://jayrup.in/about</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jayrup.in/contact-us</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jayrup.in/faq</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jayrup.in/blog</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jayrup.in/shipping-policy</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://jayrup.in/refund-return-policy</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://jayrup.in/privacy-policy</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://jayrup.in/terms-and-conditions</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>

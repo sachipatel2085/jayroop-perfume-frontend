@@ -3,26 +3,34 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Search, Truck, MapPin, Calendar, Clock, AlertCircle } from 'lucide-react';
 import { orderService } from '../services/orderService.js';
 import { OrderTimeline } from '../components/tracking/OrderTimeline.jsx';
-import { SEOHead } from '../components/common/SEOHead.jsx';
+import { SEO } from '../components/seo/SEO.jsx';
 
 export const OrderTrackingPage = () => {
   const { orderNumber } = useParams();
   const navigate = useNavigate();
 
   const [inputNumber, setInputNumber] = useState(orderNumber || '');
+  const [phone, setPhone] = useState('');
+  const [needsPhone, setNeedsPhone] = useState(false);
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchOrder = async (refNum) => {
+  const fetchOrder = async (refNum, mobile = phone) => {
     if (!refNum) return;
     try {
       setLoading(true);
       setError(null);
-      const data = await orderService.getOrderByIdentifier(refNum.trim());
+      const data = await orderService.getOrderByIdentifier(refNum.trim().toUpperCase(), mobile || undefined);
       setOrder(data);
+      setNeedsPhone(false);
     } catch (err) {
-      setError(err.message || 'Order not found. Please check your reference number.');
+      if (err.data?.requiresVerification) {
+        setNeedsPhone(true);
+        if (mobile) setError('The mobile number does not match this order.');
+      } else {
+        setError(err.message || 'Order not found. Please check your order number.');
+      }
       setOrder(null);
     } finally {
       setLoading(false);
@@ -39,43 +47,64 @@ export const OrderTrackingPage = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (inputNumber.trim()) {
-      navigate(`/track-order/${inputNumber.trim()}`);
-      fetchOrder(inputNumber.trim());
+      const ref = inputNumber.trim().toUpperCase();
+      if (ref !== orderNumber) navigate(`/track-order/${ref}`);
+      fetchOrder(ref);
     }
   };
 
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-12 px-4 sm:px-8 max-w-4xl mx-auto">
-      <SEOHead title="Track Royal Dispatch & Courier" />
+      <SEO title="Track Your Order" description="Track your Jayrup order and courier shipment status." searchIndexing="NOINDEX_NOFOLLOW" />
 
       <div className="text-center max-w-xl mx-auto mb-10 space-y-2">
         <span className="text-[10px] uppercase tracking-[0.3em] text-gold font-semibold">
           Dispatch & Logistics
         </span>
         <h1 className="font-serif text-2xl sm:text-4xl uppercase tracking-wider font-bold text-zinc-100">
-          Track Your Royal Order
+          Track Your Order
         </h1>
         <p className="text-xs text-zinc-400 font-light">
-          Monitor your precious cargo from our bottling laboratory to your doorstep.
+          Enter your order number (e.g. JR-261012-48213). Guests will be asked for the mobile number used on the order.
         </p>
       </div>
 
       {/* Reference Number Search Bar */}
       <div className="bg-noir-card border border-gold/25 p-5 mb-8 shadow-xl">
-        <form onSubmit={handleSearch} className="flex gap-2">
+        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             required
             value={inputNumber}
             onChange={(e) => setInputNumber(e.target.value)}
-            placeholder="Enter Royal Order Number (e.g. JR-2026-8941)"
-            className="flex-1 bg-noir border border-zinc-800 p-3 text-xs uppercase tracking-wider text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold font-mono"
+            placeholder="Order number (e.g. JR-261012-48213)"
+            aria-label="Order number"
+            className="flex-1 bg-noir border border-zinc-800 rounded-lg p-3 text-xs uppercase tracking-wider text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold font-mono"
           />
+          {needsPhone && (
+            <input
+              type="tel"
+              inputMode="numeric"
+              required
+              maxLength={10}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+              placeholder="Mobile used on order"
+              aria-label="Mobile number used on the order"
+              className="sm:w-56 bg-noir border border-gold/40 rounded-lg p-3 text-xs tracking-wider text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold"
+            />
+          )}
           <button type="submit" disabled={loading} className="btn-gold py-3 px-6 text-xs">
             <span>{loading ? 'Locating...' : 'Track'}</span>
           </button>
         </form>
       </div>
+
+      {needsPhone && !error && (
+        <div className="p-4 bg-gold/10 border border-gold/30 text-gold text-xs mb-8 rounded-lg">
+          For your privacy, please enter the 10-digit mobile number used on this order (or sign in to see it instantly).
+        </div>
+      )}
 
       {error && (
         <div className="p-4 bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2 mb-8">

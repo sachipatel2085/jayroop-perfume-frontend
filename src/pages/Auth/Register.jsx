@@ -1,30 +1,30 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Lock, Mail, User, Phone, AlertCircle } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { BrandLogo } from '../../components/common/BrandLogo.jsx';
-import { SEOHead } from '../../components/common/SEOHead.jsx';
+import { Input, Alert } from '../../components/ui/Field.jsx';
+import { AuthShell, safeRedirect } from './AuthShell.jsx';
 
 export const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const redirect = safeRedirect(params.get('redirect'), '/account');
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-  });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', marketingOptIn: true });
+  const [agree, setAgree] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.password.length < 8) return setError('Password must be at least 8 characters.');
+    if (form.phone && !/^[6-9]\d{9}$/.test(form.phone)) return setError('Please enter a valid 10-digit mobile number.');
+    if (!agree) return setError('Please accept the Terms and Privacy Policy.');
     try {
       setLoading(true);
       setError(null);
-      await register(formData);
-      navigate('/');
+      await register({ ...form, email: form.email.trim() });
+      navigate(redirect, { replace: true });
     } catch (err) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -33,112 +33,50 @@ export const Register = () => {
   };
 
   return (
-    <div className="bg-noir min-h-screen text-zinc-100 flex items-center justify-center py-16 px-4">
-      <SEOHead title="Join the Royal House of Jayrup" />
-
-      <div className="w-full max-w-md bg-noir-card border border-gold/30 p-8 shadow-2xl space-y-6">
-        <div className="text-center space-y-3">
-          <BrandLogo size="large" showTagline={false} />
-          <h2 className="font-serif text-xl sm:text-2xl uppercase tracking-wider font-bold text-zinc-100">
-            Create Patron Account
-          </h2>
-          <p className="text-xs text-zinc-400 font-light">
-            Receive exclusive royal releases, bespoke offers, and complimentary shipping
-          </p>
-        </div>
-
-        {error && (
-          <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-          <div>
-            <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1.5 font-medium">
-              Full Name *
-            </label>
-            <div className="relative">
-              <User className="w-4 h-4 text-zinc-500 absolute left-3 top-3" />
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Maharaja Rohan Sharma"
-                className="w-full bg-noir border border-zinc-800 p-2.5 pl-10 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1.5 font-medium">
-              Email Address *
-            </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-zinc-500 absolute left-3 top-3" />
-              <input
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="patron@gmail.com"
-                className="w-full bg-noir border border-zinc-800 p-2.5 pl-10 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1.5 font-medium">
-              Phone Number
-            </label>
-            <div className="relative">
-              <Phone className="w-4 h-4 text-zinc-500 absolute left-3 top-3" />
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+91 98765 43210"
-                className="w-full bg-noir border border-zinc-800 p-2.5 pl-10 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1.5 font-medium">
-              Choose Password * (Min 6 Characters)
-            </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-zinc-500 absolute left-3 top-3" />
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="••••••••"
-                className="w-full bg-noir border border-zinc-800 p-2.5 pl-10 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full btn-gold py-3 text-xs tracking-widest font-bold"
-          >
-            {loading ? 'Registering...' : 'Register Royal Account'}
-          </button>
-        </form>
-
-        <div className="text-center text-xs text-zinc-400 border-t border-zinc-800 pt-4">
-          <span>Already registered? </span>
-          <Link to="/login" className="text-gold hover:underline font-semibold">
-            Sign In Here
+    <AuthShell
+      title="Create account"
+      seoTitle="Create your account"
+      subtitle="Faster checkout, order tracking and GST invoices in one place"
+      footer={
+        <>
+          Already registered?{' '}
+          <Link to={`/login${params.get('redirect') ? `?redirect=${encodeURIComponent(redirect)}` : ''}`} className="text-gold hover:underline font-semibold">
+            Sign in
           </Link>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      {error && <Alert>{error}</Alert>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input label="Full name" name="name" autoComplete="name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <Input label="E-mail" type="email" name="email" autoComplete="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        <Input
+          label="Mobile number"
+          name="phone"
+          type="tel"
+          inputMode="numeric"
+          autoComplete="tel-national"
+          maxLength={10}
+          hint="For delivery updates"
+          value={form.phone}
+          onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+        />
+        <Input label="Password" type="password" name="password" autoComplete="new-password" required minLength={8} hint="Min 8 characters" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+        <label className="flex items-start gap-2 text-[11px] text-zinc-400">
+          <input type="checkbox" className="mt-0.5 accent-[#D4AF37]" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+          <span>
+            I agree to the <Link to="/terms-and-conditions" className="text-gold hover:underline">Terms and Conditions</Link> and{' '}
+            <Link to="/privacy-policy" className="text-gold hover:underline">Privacy Policy</Link>.
+          </span>
+        </label>
+        <label className="flex items-center gap-2 text-[11px] text-zinc-400">
+          <input type="checkbox" className="accent-[#D4AF37]" checked={form.marketingOptIn} onChange={(e) => setForm({ ...form, marketingOptIn: e.target.checked })} />
+          Send me offers and launch updates
+        </label>
+        <button type="submit" disabled={loading} className="w-full btn-gold rounded-lg py-3.5">
+          {loading ? 'Creating account…' : 'Create account'}
+        </button>
+      </form>
+    </AuthShell>
   );
 };

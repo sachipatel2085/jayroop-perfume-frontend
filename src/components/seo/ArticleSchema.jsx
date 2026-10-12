@@ -1,45 +1,30 @@
 import React from 'react';
 import { StructuredData } from './StructuredData.jsx';
+import { SITE_URL, BRAND } from '../../config/site.js';
 
-/**
- * Generates Schema.org Article / BlogPosting structured data.
- */
+const abs = (u) => (!u ? `${SITE_URL}/og-image.jpg` : /^https?:\/\//.test(u) ? u : `${SITE_URL}${u.startsWith('/') ? '' : '/'}${u}`);
+
 export const ArticleSchema = ({ blog }) => {
   if (!blog) return null;
-
-  const baseUrl = 'https://jayrup.com';
-  const articleUrl = `${baseUrl}/blog/${blog.slug}`;
-  const imageUrl = blog.coverImage?.url
-    ? blog.coverImage.url.startsWith('http')
-      ? blog.coverImage.url
-      : `${baseUrl}${blog.coverImage.url}`
-    : `${baseUrl}/src/assets/jayroop-logo.webp`;
-
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
-    headline: blog.title,
-    description: blog.seo?.metaDescription || blog.excerpt,
-    image: [imageUrl],
-    datePublished: blog.publishedAt || blog.createdAt || new Date().toISOString(),
-    dateModified: blog.updatedAt || blog.publishedAt || new Date().toISOString(),
-    author: {
-      '@type': 'Person',
-      name: blog.author || 'Jayrup Editorial House',
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'Jayrup (JR) Royal Luxury House',
-      logo: {
-        '@type': 'ImageObject',
-        url: `${baseUrl}/src/assets/jayroop-logo.webp`,
-      },
-    },
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': articleUrl,
-    },
-  };
-
-  return <StructuredData id="article-schema-jsonld" data={schema} />;
+  const url = `${SITE_URL}/blog/${blog.slug}`;
+  return (
+    <StructuredData
+      id="article-schema-jsonld"
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: String(blog.title || '').slice(0, 110),
+        description: blog.seo?.metaDescription || blog.excerpt,
+        image: [abs(blog.coverImage?.url)],
+        datePublished: new Date(blog.publishedAt || blog.createdAt || Date.now()).toISOString(),
+        dateModified: new Date(blog.updatedAt || blog.publishedAt || Date.now()).toISOString(),
+        author: { '@type': 'Organization', name: blog.author || BRAND.name, url: SITE_URL },
+        publisher: { '@id': `${SITE_URL}/#organization`, '@type': 'Organization', name: BRAND.name, logo: { '@type': 'ImageObject', url: BRAND.logo } },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+        articleSection: blog.category,
+        keywords: (blog.tags || []).join(', '),
+        inLanguage: 'en-IN',
+      }}
+    />
+  );
 };

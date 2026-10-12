@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { orderService } from '../services/orderService.js';
+import { trackAddToCart } from '../utils/analytics.js';
 
 const CartContext = createContext();
 
@@ -89,16 +90,22 @@ export const CartProvider = ({ children }) => {
   }, [recalculate]);
 
   const addToCart = (product, selectedVariant = null, quantity = 1) => {
+    const qtyToAdd = Math.max(1, Math.floor(Number(quantity) || 1));
+    const unitPrice =
+      selectedVariant?.salePrice && selectedVariant.salePrice < selectedVariant.price
+        ? selectedVariant.salePrice
+        : selectedVariant?.price || (product.salePrice && product.salePrice < product.price ? product.salePrice : product.price);
+    trackAddToCart({ productId: product._id, name: product.name, variantSku: selectedVariant?.sku, variantTitle: selectedVariant?.title, price: unitPrice, quantity: qtyToAdd });
     setItems((prevItems) => {
       const variantSku = selectedVariant?.sku || '';
       const existingIndex = prevItems.findIndex(
-        (i) => i.productId === product._id && i.variantSku === variantSku
+        (i) => String(i.productId) === String(product._id) && (i.variantSku || '') === variantSku
       );
 
       if (existingIndex > -1) {
-        const updated = [...prevItems];
-        updated[existingIndex].quantity += quantity;
-        return updated;
+        return prevItems.map((it, idx) =>
+          idx === existingIndex ? { ...it, quantity: Math.min(it.quantity + qtyToAdd, product.maxPerOrder || 10) } : it
+        );
       } else {
         return [
           ...prevItems,
@@ -107,10 +114,10 @@ export const CartProvider = ({ children }) => {
             name: product.name,
             slug: product.slug,
             image: product.images?.[0]?.url || product.images?.[0] || '',
-            price: selectedVariant?.salePrice || selectedVariant?.price || product.salePrice || product.price,
+            price: unitPrice,
             variantSku,
             variantTitle: selectedVariant?.title || '',
-            quantity,
+            quantity: Math.min(qtyToAdd, product.maxPerOrder || 10),
           },
         ];
       }
@@ -163,7 +170,10 @@ export const CartProvider = ({ children }) => {
       name: product.name,
       slug: product.slug,
       image: product.images?.[0]?.url || product.images?.[0] || '',
-      price: selectedVariant?.salePrice || selectedVariant?.price || product.salePrice || product.price,
+      price:
+        selectedVariant?.salePrice && selectedVariant.salePrice < selectedVariant.price
+          ? selectedVariant.salePrice
+          : selectedVariant?.price || (product.salePrice && product.salePrice < product.price ? product.salePrice : product.price),
       variantSku,
       variantTitle: selectedVariant?.title || '',
       quantity: Math.max(1, Number(quantity) || 1),

@@ -5,6 +5,7 @@ import { productService } from '../services/productService.js';
 import { SEO } from '../components/seo/SEO.jsx';
 import { ArticleSchema } from '../components/seo/ArticleSchema.jsx';
 import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
+import { sanitizeHtml } from '../utils/sanitizeHtml.js';
 
 export const BlogDetail = () => {
   const { slug } = useParams();
@@ -93,7 +94,7 @@ export const BlogDetail = () => {
             {blog.readTime}
           </span>
           <span>•</span>
-          <span>{new Date(blog.publishedAt).toLocaleDateString()}</span>
+          <time dateTime={blog.publishedAt}>{new Date(blog.publishedAt || blog.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</time>
         </div>
 
         <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl uppercase tracking-wider font-bold text-zinc-100 leading-tight">
@@ -114,8 +115,7 @@ export const BlogDetail = () => {
               if (navigator.share) {
                 navigator.share({ title: blog.title, url: window.location.href });
               } else {
-                navigator.clipboard.writeText(window.location.href);
-                alert('Article URL copied to clipboard');
+                navigator.clipboard?.writeText(window.location.href).catch(() => {});
               }
             }}
             className="flex items-center gap-1.5 text-zinc-400 hover:text-gold transition-colors"
@@ -139,8 +139,8 @@ export const BlogDetail = () => {
 
       {/* Content */}
       <div
-        className="text-zinc-300 text-sm sm:text-base leading-relaxed space-y-6 font-light prose prose-invert max-w-none border-b border-zinc-800 pb-12"
-        dangerouslySetInnerHTML={{ __html: blog.content }}
+        className="rich-content text-zinc-300 text-sm sm:text-base leading-relaxed max-w-none border-b border-zinc-800 pb-12"
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(blog.content) }}
       />
 
       {/* Tags */}

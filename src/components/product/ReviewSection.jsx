@@ -30,13 +30,13 @@ export const ReviewSection = ({ productId }) => {
     try {
       setSubmitting(true);
       setMessage(null);
-      await productService.submitReview({
+      const res = await productService.submitReview({
         productId,
         rating,
         title,
         comment,
       });
-      setMessage({ type: 'success', text: 'Thank you! Your royal review has been submitted.' });
+      setMessage({ type: 'success', text: res?.message || 'Thank you! Your review has been submitted.' });
       setTitle('');
       setComment('');
       // Reload reviews
@@ -50,14 +50,14 @@ export const ReviewSection = ({ productId }) => {
   };
 
   return (
-    <div className="border-t border-gold/20 pt-10 my-10">
+    <div id="reviews" className="border-t border-gold/20 pt-10 my-10 scroll-mt-24">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h3 className="font-serif text-xl sm:text-2xl text-zinc-100 tracking-wider uppercase">
-            Client Impressions & Reviews
+            Customer Reviews
           </h3>
           <p className="text-xs text-zinc-400 mt-1">
-            Experiences from verified patrons across India
+            Honest reviews from customers across India
           </p>
         </div>
       </div>

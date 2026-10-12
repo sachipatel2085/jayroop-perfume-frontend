@@ -24,7 +24,7 @@ export const BlogList = () => {
       <SEO
         title="The Royal Blog & Editorial | Jayrup Fragrance House"
         description="Essays, rituals, and botanical insights on royal Indian extraits de parfum, artisanal distillation, and Ayurvedic skincare from the house of Jayrup."
-        canonicalUrl="https://jayrup.com/blog"
+        canonicalUrl="/blog"
       >
         <BreadcrumbSchema
           items={[

@@ -86,7 +86,7 @@ export const Home = () => {
       <SEO
         title="JAYRUP (JR) | Royal Luxury Fragrance & Skincare House"
         description="Explore Jayrup (JR) handcrafted royal extraits de parfum, saffron soaps, and Jayrup Special Pimples Cream. पिंपल्स भागे, आत्मविश्वास जागे."
-        canonicalUrl="https://jayrup.com"
+        canonicalUrl="/"
       >
         <OrganizationSchema />
         <WebsiteSchema />

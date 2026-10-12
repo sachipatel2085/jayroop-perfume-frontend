@@ -1,143 +1,136 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle2, Truck, Package, ArrowRight, Download } from 'lucide-react';
+import { CheckCircle2, Truck, FileDown, ShoppingBag, Mail, Package } from 'lucide-react';
 import { orderService } from '../services/orderService.js';
-import { SEOHead } from '../components/common/SEOHead.jsx';
+import { SEO } from '../components/seo/SEO.jsx';
+import { PageLoader, Alert } from '../components/ui/Field.jsx';
+import { formatINR, formatDate } from '../config/site.js';
+import { trackPurchase } from '../utils/analytics.js';
 
 export const OrderSuccessPage = () => {
   const { orderNumber } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (orderNumber) {
-      orderService
-        .getOrderByIdentifier(orderNumber)
-        .then((data) => {
-          setOrder(data);
-        })
-        .catch((err) => console.error(err))
-        .finally(() => setLoading(false));
-    }
+    orderService
+      .getMyOrder(orderNumber)
+      .then((o) => {
+        setOrder(o);
+        if (o && (o.paymentStatus === 'PAID' || o.paymentMethod === 'COD')) trackPurchase(o);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
   }, [orderNumber]);
 
+  const handleInvoice = async () => {
+    try {
+      setDownloading(true);
+      await orderService.downloadInvoice(orderNumber);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  if (loading) return <PageLoader label="Loading your order" />;
+
+  const isCod = order?.paymentMethod === 'COD';
+  const eta = new Date(Date.now() + 8 * 86400000);
+
   return (
-    <div className="bg-noir min-h-screen text-zinc-100 py-16 px-4 sm:px-8 max-w-4xl mx-auto text-center">
-      <SEOHead title="Royal Order Confirmed" />
+    <div className="bg-noir min-h-screen text-zinc-100 py-14 px-4 sm:px-8 max-w-3xl mx-auto">
+      <SEO title="Order confirmed" searchIndexing="NOINDEX_NOFOLLOW" />
 
-      {/* Royal Success Badge */}
-      <div className="w-16 h-16 rounded-full bg-gold/20 border-2 border-gold flex items-center justify-center mx-auto mb-6 shadow-gold-glow animate-bounce">
-        <CheckCircle2 className="w-8 h-8 text-gold" />
-      </div>
-
-      <span className="text-[11px] uppercase tracking-[0.3em] text-gold font-semibold">
-        {order?.paymentMethod === 'COD'
-          ? 'Royal Order Confirmed • Cash on Delivery'
-          : 'Payment & Royal Seal Verified'}
-      </span>
-
-      <h1 className="font-serif text-3xl sm:text-4xl uppercase tracking-wider font-bold text-zinc-100 mt-2 mb-3">
-        Thank You for Your Patronage
-      </h1>
-
-      <p className="text-zinc-400 text-xs sm:text-sm max-w-lg mx-auto font-light leading-relaxed mb-8">
-        Your creation has entered the royal distillation and packaging chamber. An email notification and tracking details have been generated.
-      </p>
-
-      {/* Order Summary Card */}
-      <div className="p-6 sm:p-8 bg-noir-card border border-gold/30 text-left mb-8 shadow-2xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
-          <div>
-            <span className="text-[10px] uppercase tracking-widest text-zinc-500">
-              Royal Reference Number
-            </span>
-            <h3 className="font-mono text-lg font-bold text-gold tracking-widest">
-              {orderNumber}
-            </h3>
-          </div>
-
-          <Link
-            to={`/track-order/${orderNumber}`}
-            className="btn-gold text-[10px] py-2.5 px-4 flex items-center justify-center gap-1.5"
-          >
-            <Truck className="w-3.5 h-3.5" />
-            <span>Track Live Dispatch</span>
-          </Link>
+      <div className="text-center">
+        <div className="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-400/60 flex items-center justify-center mx-auto mb-6">
+          <CheckCircle2 className="w-10 h-10 text-emerald-400" />
         </div>
+        <p className="text-[11px] uppercase tracking-[0.3em] text-gold font-semibold">
+          {isCod ? 'Order placed · Cash on Delivery' : 'Payment received · Order confirmed'}
+        </p>
+        <h1 className="font-serif text-3xl sm:text-4xl uppercase tracking-wider font-bold mt-2 mb-3">Thank you!</h1>
+        <p className="text-zinc-400 text-sm max-w-lg mx-auto">
+          We’ve received your order and will start packing it right away. A confirmation has been sent to{' '}
+          <span className="text-zinc-200">{order?.customerEmail || 'your e-mail'}</span>.
+        </p>
+      </div>
 
-        {/* Order Details */}
-        {order && (
-          <div className="space-y-4">
-            <h4 className="font-serif text-xs uppercase tracking-widest text-zinc-300 font-semibold">
-              Items in this Creation Batch
-            </h4>
-            <div className="divide-y divide-zinc-800/80">
-              {order.items?.map((item, idx) => (
-                <div key={idx} className="py-3 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-12 h-12 object-cover border border-zinc-800"
-                    />
-                    <div>
-                      <p className="font-semibold text-zinc-200">{item.name}</p>
-                      <p className="text-[11px] text-zinc-500">
-                        Qty: {item.quantity} {item.variant?.title && `• ${item.variant.title}`}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="font-bold text-zinc-200">
-                    ₹{item.price * item.quantity}
-                  </span>
-                </div>
-              ))}
-            </div>
+      {error && <Alert className="mt-6">{error}</Alert>}
 
-            <div className="border-t border-zinc-800 pt-4 flex flex-col sm:flex-row justify-between text-xs gap-4">
-              <div>
-                <p className="text-zinc-500 uppercase tracking-wider text-[10px]">
-                  Shipping Address
-                </p>
-                <p className="text-zinc-300 font-medium mt-0.5">
-                  {order.shippingAddress?.fullName}
-                </p>
-                <p className="text-zinc-400 text-[11px]">
-                  {order.shippingAddress?.addressLine1}, {order.shippingAddress?.city},{' '}
-                  {order.shippingAddress?.postalCode}
-                </p>
+      {order && (
+        <div className="mt-10 bg-noir-card border border-gold/25 rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-800/70">
+            {[
+              ['Order no.', <span key="o" className="font-mono text-gold">{order.orderNumber}</span>],
+              ['Date', formatDate(order.createdAt)],
+              [isCod ? 'Pay on delivery' : 'Paid', formatINR(order.total)],
+              ['Est. delivery', `By ${formatDate(eta)}`],
+            ].map(([k, v]) => (
+              <div key={k} className="bg-noir-card p-4">
+                <p className="text-[10px] uppercase tracking-wider text-zinc-500">{k}</p>
+                <p className="text-sm font-semibold text-zinc-100 mt-1">{v}</p>
               </div>
-
-              <div className="sm:text-right">
-                <p className="text-zinc-500 uppercase tracking-wider text-[10px]">
-                  {order.paymentMethod === 'COD' ? 'Amount Due on Delivery' : 'Total Paid'}
-                </p>
-                <p className="text-gold font-sans text-xl font-bold mt-0.5">
-                  ₹{order.total}
-                </p>
-                {order.paymentMethod === 'COD' ? (
-                  <span className="inline-block text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full mt-1 font-semibold uppercase tracking-wider">
-                    PAY CASH / UPI ON DELIVERY
-                  </span>
-                ) : (
-                  <span className="inline-block text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full mt-1 font-semibold uppercase tracking-wider">
-                    PAID VIA RAZORPAY
-                  </span>
-                )}
-              </div>
-            </div>
+            ))}
           </div>
+
+          <ul className="divide-y divide-zinc-800/80 px-5">
+            {order.items.map((item, idx) => (
+              <li key={idx} className="py-4 flex items-center gap-4">
+                <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover border border-zinc-800" />
+                <div className="flex-1 min-w-0">
+                  <Link to={`/products/${item.slug}`} className="text-sm font-medium text-zinc-100 hover:text-gold line-clamp-1">{item.name}</Link>
+                  <p className="text-xs text-zinc-500">Qty {item.quantity}{item.variant?.title ? ` · ${item.variant.title}` : ''}</p>
+                </div>
+                <span className="text-sm font-semibold">{formatINR(item.subtotal)}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="px-5 py-4 border-t border-zinc-800 grid sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Delivering to</p>
+              <p className="text-zinc-200">{order.shippingAddress?.fullName}</p>
+              <p className="text-zinc-400 text-xs leading-relaxed">
+                {order.shippingAddress?.addressLine1}
+                {order.shippingAddress?.addressLine2 ? `, ${order.shippingAddress.addressLine2}` : ''}, {order.shippingAddress?.city},{' '}
+                {order.shippingAddress?.state} – {order.shippingAddress?.postalCode}
+              </p>
+            </div>
+            <dl className="space-y-1 text-xs sm:text-right">
+              <div className="flex sm:justify-end gap-4 text-zinc-400"><dt>Subtotal</dt><dd>{formatINR(order.subtotal)}</dd></div>
+              {order.discount > 0 && <div className="flex sm:justify-end gap-4 text-emerald-300"><dt>Discount</dt><dd>-{formatINR(order.discount)}</dd></div>}
+              <div className="flex sm:justify-end gap-4 text-zinc-400"><dt>Shipping</dt><dd>{order.shipping ? formatINR(order.shipping) : 'FREE'}</dd></div>
+              {order.codFee > 0 && <div className="flex sm:justify-end gap-4 text-zinc-400"><dt>COD fee</dt><dd>{formatINR(order.codFee)}</dd></div>}
+              <div className="flex sm:justify-end gap-4 text-base font-bold text-gold pt-1"><dt>Total</dt><dd>{formatINR(order.total)}</dd></div>
+            </dl>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-8 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3">
+        <Link to={`/account/orders/${orderNumber}`} className="btn-gold">
+          <Package className="w-4 h-4 mr-2" /> View order details
+        </Link>
+        {order?.hasInvoice && (
+          <button onClick={handleInvoice} disabled={downloading} className="btn-outline-gold">
+            <FileDown className="w-4 h-4 mr-2" /> {downloading ? 'Preparing…' : 'Download invoice'}
+          </button>
         )}
+        <Link to={`/track-order/${orderNumber}`} className="btn-outline-gold">
+          <Truck className="w-4 h-4 mr-2" /> Track order
+        </Link>
+        <Link to="/shop" className="text-xs text-zinc-400 hover:text-gold uppercase tracking-wider inline-flex items-center gap-1.5">
+          <ShoppingBag className="w-4 h-4" /> Continue shopping
+        </Link>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <Link to={`/track-order/${orderNumber}`} className="btn-outline-gold text-xs py-3 px-8">
-          View Step-by-Step Live Tracking
-        </Link>
-        <Link to="/shop" className="text-xs text-zinc-400 hover:text-gold uppercase tracking-wider font-semibold">
-          Return to Treasury
-        </Link>
-      </div>
+      <p className="mt-10 text-center text-xs text-zinc-500 flex items-center justify-center gap-2">
+        <Mail className="w-4 h-4" /> Questions? Write to <a href="mailto:care@jayrup.in" className="text-gold">care@jayrup.in</a> or call +91 94081 33100
+      </p>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -18,9 +18,14 @@ import {
   X,
   Shield,
   Settings,
+  BarChart3,
+  Users,
+  Inbox,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { BrandLogo } from '../common/BrandLogo.jsx';
+import { PageLoader } from '../ui/Field.jsx';
+import { SEO } from '../seo/SEO.jsx';
 
 export const AdminLayout = () => {
   const { user, logout } = useAuth();
@@ -30,9 +35,12 @@ export const AdminLayout = () => {
 
   const navItems = [
     { label: 'Overview', path: '/admin', icon: LayoutDashboard },
-    { label: 'Products & Variants', path: '/admin/products', icon: Package },
+    { label: 'Orders & Invoices', path: '/admin/orders', icon: ShoppingBag },
+    { label: 'Reports & GST', path: '/admin/reports', icon: BarChart3 },
+    { label: 'Products', path: '/admin/products', icon: Package },
     { label: 'Categories', path: '/admin/categories', icon: Layers },
-    { label: 'Orders & Tracking', path: '/admin/orders', icon: ShoppingBag },
+    { label: 'Customers', path: '/admin/customers', icon: Users },
+    { label: 'Messages', path: '/admin/messages', icon: Inbox },
     { label: 'Hero Ads & Videos', path: '/admin/ads', icon: Video },
     { label: 'Influencer Videos', path: '/admin/influencers', icon: Sparkles },
     { label: 'Coupons', path: '/admin/coupons', icon: Tag },
@@ -40,7 +48,7 @@ export const AdminLayout = () => {
     { label: 'Client Reviews', path: '/admin/reviews', icon: MessageSquare },
     { label: 'Editorial Blogs', path: '/admin/blogs', icon: BookOpen },
     { label: 'Security Audit Logs', path: '/admin/audit-logs', icon: FileText },
-    { label: 'Store Settings (COD)', path: '/admin/settings', icon: Settings },
+    { label: 'Store Settings', path: '/admin/settings', icon: Settings },
   ];
 
   return (
@@ -58,7 +66,7 @@ export const AdminLayout = () => {
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-3 space-y-1 text-xs">
+          <nav className="p-3 space-y-1 text-xs overflow-y-auto max-h-[calc(100vh-220px)]">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive =
@@ -119,7 +127,7 @@ export const AdminLayout = () => {
           </button>
 
           <div className="hidden sm:block text-xs uppercase tracking-wider text-zinc-400">
-            Jayroop Architecture Console • <span className="text-gold">Version 1.0 Production</span>
+            Jayrup Admin • <span className="text-gold">jayrup.in</span>
           </div>
 
           <div className="flex items-center gap-4 text-xs">
@@ -150,7 +158,10 @@ export const AdminLayout = () => {
 
         {/* Page Content */}
         <main className="p-6 lg:p-8 flex-1 overflow-y-auto">
-          <Outlet />
+          <SEO title="Admin" searchIndexing="NOINDEX_NOFOLLOW" />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
