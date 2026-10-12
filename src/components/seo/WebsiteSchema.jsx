@@ -10,7 +10,7 @@ export const WebsiteSchema = () => (
       '@type': 'WebSite',
       '@id': `${SITE_URL}/#website`,
       name: BRAND.name,
-      alternateName: [BRAND.tradeName, 'jayrup.in'],
+      alternateName: [SITE_URL.replace(/^https?:\/\//, '')],
       url: SITE_URL,
       inLanguage: 'en-IN',
       publisher: { '@id': `${SITE_URL}/#organization` },

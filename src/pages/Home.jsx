@@ -11,6 +11,7 @@ import InspirationsSection from '../components/influencer/InspirationsSection.js
 import ScentFluencerSection from '../components/influencer/ScentFluencerSection.jsx';
 import defaultHeroBanner from '../assets/jayrup-hero-banner.jpg';
 import logoImg from '../assets/jayroop-logo.webp';
+import { DEFAULT_SEO } from '../config/site.js';
 
 const resolveMediaUrl = (url) => {
   if (!url) return '';
@@ -84,8 +85,9 @@ export const Home = () => {
   return (
     <div className="bg-noir min-h-screen text-zinc-100">
       <SEO
-        title="JAYRUP (JR) | Royal Luxury Fragrance & Skincare House"
-        description="Explore Jayrup (JR) handcrafted royal extraits de parfum, saffron soaps, and Jayrup Special Pimples Cream. पिंपल्स भागे, आत्मविश्वास जागे."
+        title={DEFAULT_SEO.title}
+        description={DEFAULT_SEO.description}
+        keywords={DEFAULT_SEO.keywords}
         canonicalUrl="/"
       >
         <OrganizationSchema />
@@ -202,36 +204,39 @@ export const Home = () => {
             </Link>
 
             <Link
-              to="/products/jayrup-special-pimples-cream"
+              to={heroAd?.ctaUrl && heroAd.ctaUrl !== '/shop' ? '/shop' : categories[0] ? `/category/${categories[0].slug}` : '/shop'}
               className="btn-outline-gold text-xs py-3.5 px-7 flex items-center gap-2 bg-noir/50 backdrop-blur-sm"
             >
-              <span>Jayrup Special Skincare</span>
+              <span>{heroAd?.ctaUrl && heroAd.ctaUrl !== '/shop' ? 'Shop All Products' : categories[0] ? `Shop ${categories[0].name}` : 'Shop All Products'}</span>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* 2. ICONIC SLOGAN BANNER (From uploaded logo) */}
+      {/* 2. SHOP-BY-CATEGORY STRIP – built from the live catalogue (new product lines appear automatically) */}
       <section className="bg-gradient-to-r from-noir via-[#1c1809] to-noir border-y border-gold/30 py-5 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-4 text-center lg:text-left">
+          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
             <span className="bg-gradient-to-r from-gold-amber via-gold to-gold-amber text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
-              JAYRUP SPECIAL
+              Shop by category
             </span>
-            <span className="font-serif text-base sm:text-lg text-gold-light tracking-wide font-semibold">
-              पिंपल्स भागे, आत्मविश्वास जागे
-            </span>
+            {categories.slice(0, 6).map((c) => (
+              <Link
+                key={c._id}
+                to={`/category/${c.slug}`}
+                className="text-xs sm:text-sm font-serif text-gold-light hover:text-white border border-gold/30 hover:border-gold rounded-full px-3 py-1 tracking-wide transition-colors"
+              >
+                {c.name}
+              </Link>
+            ))}
           </div>
 
           <div className="text-xs text-zinc-400 tracking-wider">
-            Natural Herbal Clarity • 100% Guaranteed Purity • Ancient Ayurvedic Legacy
+            100% Genuine • Secure PhonePe Payments • Cash on Delivery • Pan-India Delivery
           </div>
 
-          <Link
-            to="/products/jayrup-special-pimples-cream"
-            className="text-xs text-gold hover:text-white uppercase font-semibold tracking-widest inline-flex items-center gap-1 group"
-          >
-            <span>Learn More</span>
+          <Link to="/shop" className="text-xs text-gold hover:text-white uppercase font-semibold tracking-widest inline-flex items-center gap-1 group">
+            <span>Shop All</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -343,20 +348,22 @@ export const Home = () => {
               An Olfactory & Botanical Legacy Built on Regal Distinction
             </h2>
             <p className="text-zinc-300 text-sm leading-relaxed font-light">
-              Founded on the belief that scent and radiance are extensions of the soul, <strong>Jayrup (JR)</strong> fuses traditional copper-still ittar distillation with dermatologically revered Ayurvedic herbals.
+              Founded on the belief that scent and radiance are extensions of the soul, <strong>Jayrup (JR)</strong> brings together the heritage of Indian perfumery and
+              time-honoured botanical skincare with modern cosmetic science.
             </p>
             <p className="text-zinc-400 text-sm leading-relaxed font-light">
-              Every drop of our <em>Royal Oud Extrait</em> is aged in seasoned casks, while our signature <em>Jayrup Special Pimples Cream</em> harnesses authentic cooling botanicals to restore pristine skin confidence.
+              From long-lasting perfumes to effective everyday skincare, every Jayrup product is made in India, crafted by licensed manufacturers and checked for quality,
+              safety and consistency before it reaches you.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
               <div>
-                <h4 className="font-serif text-xl text-gold font-bold">14+ Hrs</h4>
-                <p className="text-[11px] text-zinc-400 uppercase tracking-wider mt-1">Parfum Longevity</p>
+                <h4 className="font-serif text-xl text-gold font-bold">Made in India</h4>
+                <p className="text-[11px] text-zinc-400 uppercase tracking-wider mt-1">For Indian Skin &amp; Climate</p>
               </div>
               <div>
                 <h4 className="font-serif text-xl text-gold font-bold">100%</h4>
-                <p className="text-[11px] text-zinc-400 uppercase tracking-wider mt-1">Botanical Purity</p>
+                <p className="text-[11px] text-zinc-400 uppercase tracking-wider mt-1">Genuine Products</p>
               </div>
               <div>
                 <h4 className="font-serif text-xl text-gold font-bold">Pan-India</h4>

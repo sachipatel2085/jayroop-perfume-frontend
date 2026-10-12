@@ -471,6 +471,17 @@ export const CheckoutPage = () => {
               </div>
             </dl>
 
+            {calc?.estimatedDeliveryText && (
+              <p className="mt-3 text-[11px] text-zinc-400">
+                Estimated delivery: <span className="text-zinc-200">{calc.estimatedDeliveryText}</span>
+                {calc.surfaceOnly && ' · perfumes ship by surface transport as per courier safety rules'}
+              </p>
+            )}
+            {calc?.items?.some((i) => i.returnable === false) && (
+              <p className="mt-1 text-[11px] text-zinc-500">
+                {calc.items.filter((i) => i.returnable === false).map((i) => i.name).join(', ')} – not returnable once opened; replaced if damaged, leaking or wrong.
+              </p>
+            )}
             {stockErrors.length > 0 && <Alert tone="warn" className="mt-4">{stockErrors.join(' ')}</Alert>}
 
             <label className="mt-4 flex items-start gap-2 text-[11px] text-zinc-400 cursor-pointer">

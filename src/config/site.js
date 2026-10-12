@@ -5,12 +5,12 @@ export const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://jayrup.in').r
 
 export const BRAND = {
   name: 'Jayrup',
-  tradeName: 'Jayrup Pimples Cream',
+  tradeName: 'Jayrup',
   legalName: 'FITJAYESH',
   registration: 'MSME Registered',
-  tagline: 'पिंपल्स भागे, आत्मविश्वास जागे',
+  tagline: 'Skincare · Fragrances · Personal Care',
   description:
-    'Jayrup creates safe, effective and affordable Ayurvedic-inspired cosmetic skincare and long-lasting perfumes, made in India for Indian skin.',
+    'Jayrup creates safe, effective and affordable skincare and long-lasting fragrances, made in India – combining traditional wisdom with modern cosmetic science.',
   email: 'care@jayrup.in',
   phone: '+91 94081 33100',
   phoneHref: 'tel:+919408133100',
@@ -33,15 +33,19 @@ export const BRAND = {
   },
 };
 
+// Legal identity line used in policies & footer, e.g. "Jayrup (under FITJAYESH – MSME Registered)"
+export const legalIdentity = () =>
+  `${BRAND.tradeName}${BRAND.legalName ? ` (under ${BRAND.legalName}${BRAND.registration ? ` – ${BRAND.registration}` : ''})` : ''}`;
+
 export const fullAddress = (a = BRAND.address) =>
   [a.line1, a.line2, a.city, a.district, `${a.state} – ${a.postalCode}`, a.country].filter(Boolean).join(', ');
 
 export const DEFAULT_SEO = {
-  title: 'Jayrup | Pimples Cream, Ayurvedic Skincare & Luxury Perfumes Online India',
+  title: 'Jayrup | Skincare & Luxury Perfumes – Shop Online in India',
   description:
-    'Shop Jayrup online – Ayurvedic-inspired Pimples Cream for acne & marks, skincare and long-lasting luxury perfumes. Made in India. Secure PhonePe & COD checkout, delivery across India.',
+    'Shop Jayrup online – effective skincare and long-lasting luxury perfumes, made in India. Genuine products, secure PhonePe & COD checkout, delivery across India.',
   keywords:
-    'jayrup, jayrup pimples cream, pimple cream, anti acne cream, acne marks cream, ayurvedic skincare, luxury perfume india, eau de parfum',
+    'jayrup, jayrup perfume, jayrup skincare, luxury perfume india, eau de parfum, long lasting perfume, skincare india, jayrup pimples cream',
 };
 
 export const INDIA_STATES = [

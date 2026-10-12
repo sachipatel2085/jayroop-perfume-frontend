@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { PolicyLayout } from '../components/common/PolicyLayout.jsx';
-import { BRAND } from '../config/site.js';
+import { BRAND, legalIdentity, fullAddress } from '../config/site.js';
 
 const sections = [
   {
@@ -34,6 +34,22 @@ const sections = [
       <ul>
         <li>Estimated delivery time is 7–10 business days from the date of shipment.</li>
         <li>Delivery timelines may vary depending on your location, courier partner, and local conditions.</li>
+        <li>The expected delivery time for every product is shown on its product page and again at checkout.</li>
+      </ul>
+    ),
+  },
+  {
+    id: 'perfumes',
+    heading: 'Perfumes & other restricted items',
+    content: (
+      <ul>
+        <li>
+          Alcohol-based perfumes, deodorants and similar products are classified as flammable goods by courier companies. As per courier safety rules these items are
+          shipped only by surface (road / rail) transport and cannot be sent by air.
+        </li>
+        <li>Orders containing such items may therefore take 2–3 additional business days; the product page and checkout show the updated estimate.</li>
+        <li>A small number of remote PIN codes may not be serviceable for these items. If so, we will inform you and refund the amount in full.</li>
+        <li>All fragrance bottles are packed with protective cushioning and sealed to prevent leakage during transit.</li>
       </ul>
     ),
   },
@@ -65,8 +81,11 @@ const sections = [
     heading: 'Damaged or lost shipments',
     content: (
       <ul>
-        <li>If your order arrives damaged, leaking, or tampered, please contact us within 48 hours of delivery with photos of the product and packaging.</li>
-        <li>Jayrup Pimples Cream is not responsible for delays or damage caused by courier partners beyond our control, but we will assist you in resolving the issue.</li>
+        <li>
+          If your order arrives damaged, leaking, or tampered, please contact us within 48 hours of delivery with photos of the product and packaging (an unboxing video
+          helps us resolve it faster). You can also raise the request from <Link to="/account/orders">My Orders</Link>.
+        </li>
+        <li>{BRAND.name} is not responsible for delays or damage caused by courier partners beyond our control, but we will assist you in resolving the issue.</li>
       </ul>
     ),
   },
@@ -92,17 +111,17 @@ const sections = [
         </ul>
         <div className="callout callout-info">
           <p>
-            <strong>Jayrup Pimples Cream</strong>
+            <strong>{BRAND.tradeName}</strong>
             <br />
-            G-28, Metropolis Complex
+            {BRAND.address.line1}
             <br />
-            Gambhoi–Bhiloda Road
+            {BRAND.address.line2}
             <br />
-            Gambhoi, Himatnagar
+            {BRAND.address.city}, {BRAND.address.district}
             <br />
-            Sabarkantha, Gujarat – 383030
+            {BRAND.address.state} – {BRAND.address.postalCode}
             <br />
-            India
+            {BRAND.address.country}
           </p>
         </div>
       </>
@@ -113,8 +132,8 @@ const sections = [
     heading: 'Contact us',
     content: (
       <p>
-        For any shipping-related questions or support, please contact us: <strong>Jayrup Pimples Cream</strong> (Under FITJAYESH – MSME Registered), G-28, Metropolis
-        Complex, Gambhoi–Bhiloda Road, Gambhoi, Himatnagar, Sabarkantha, Gujarat – 383030. Email: <a href={`mailto:${BRAND.email}`}>{BRAND.email}</a> · Phone:{' '}
+        For any shipping-related questions or support, please contact us: <strong>{legalIdentity()}</strong>, {fullAddress()}. Email:{' '}
+        <a href={`mailto:${BRAND.email}`}>{BRAND.email}</a> · Phone:{' '}
         <a href={BRAND.phoneHref}>{BRAND.phone}</a>
       </p>
     ),
@@ -125,9 +144,9 @@ export const ShippingPolicy = () => (
   <PolicyLayout
     title="Shipping Policy"
     path="/shipping-policy"
-    updated="November 01, 2025"
-    intro="Thank you for choosing Jayrup Pimples Cream. We are committed to delivering your orders safely, efficiently, and on time. Please review our shipping policy to understand how we process and deliver orders."
-    seoDescription="Jayrup ships across India via registered courier partners. Orders are delivered in 7–10 business days. Read about charges, tracking and damaged shipments."
+    updated="October 12, 2026"
+    intro="Thank you for choosing Jayrup. We are committed to delivering your orders safely, efficiently, and on time. Please review our shipping policy to understand how we process and deliver orders."
+    seoDescription="Jayrup ships across India via registered courier partners. Orders are delivered in 7–10 business days (perfumes travel by surface). Read about charges, tracking and damaged shipments."
     sections={sections}
   />
 );

@@ -56,7 +56,7 @@ export const Footer = () => {
           </address>
         </div>
 
-        <Col title="Quick Links" links={[['/', 'Home'], ['/shop', 'Shop All'], ['/about', 'About'], ['/blog', 'Skincare Journal'], ['/faq', 'FAQs']]} />
+        <Col title="Quick Links" links={[['/', 'Home'], ['/shop', 'Shop All'], ['/about', 'About'], ['/blog', 'Journal'], ['/faq', 'FAQs']]} />
         <Col title="My Account" links={[['/account', 'My Account'], ['/account/orders', 'Orders & Invoices'], ['/track-order', 'Track Order'], ['/wishlist', 'Wishlist'], ['/contact-us', 'Contact Us']]} />
         <Col
           title="More"
@@ -70,7 +70,7 @@ export const Footer = () => {
 
         <div>
           <h3 className="font-serif text-xs text-gold tracking-widest uppercase mb-4 font-semibold">Stay in touch</h3>
-          <p className="text-zinc-400 text-xs mb-3">New launches, skincare tips and member-only offers.</p>
+          <p className="text-zinc-400 text-xs mb-3">New launches, beauty & fragrance tips and member-only offers.</p>
           {joined ? (
             <p className="text-emerald-300 text-xs">Thank you for subscribing!</p>
           ) : (

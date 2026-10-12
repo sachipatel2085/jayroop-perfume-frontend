@@ -17,7 +17,7 @@ export const organizationData = () => ({
   '@type': 'OnlineStore',
   '@id': `${SITE_URL}/#organization`,
   name: BRAND.name,
-  alternateName: [BRAND.tradeName, 'जयरूप'],
+  alternateName: [...new Set([BRAND.tradeName, 'जयरूप'].filter((n) => n && n !== BRAND.name))],
   legalName: BRAND.legalName,
   url: SITE_URL,
   logo: { '@type': 'ImageObject', url: BRAND.logo, width: 512, height: 512 },

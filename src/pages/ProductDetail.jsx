@@ -65,6 +65,7 @@ export const ProductDetail = () => {
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const [product, setProduct] = useState(null);
+  const [meta, setMeta] = useState({});
   const [related, setRelated] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [variant, setVariant] = useState(null);
@@ -88,6 +89,7 @@ export const ProductDetail = () => {
         if (!alive) return;
         if (!res?.product) throw new Error('not found');
         setProduct(res.product);
+        setMeta(res.meta || {});
         setRelated(res.relatedProducts || []);
         setActiveMedia(0);
         setQty(1);
@@ -166,7 +168,23 @@ export const ProductDetail = () => {
   const inWishlist = isInWishlist(pId);
   const freeShip = price * qty >= (shipping.freeShippingThreshold ?? 999);
   const rating = Number(product.averageRating || 0);
-  const delivery = new Date(Date.now() + 8 * 86400000).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+  // Perfumes & other flammables travel by surface → later promise (server decides per product type)
+  const delivery = new Date(Date.now() + (meta.surfaceOnly ? 11 : 8) * 86400000).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+  const returnable = meta.returnable !== false;
+  const fr = product.fragrance || {};
+  const fragranceRows = [
+    ['Fragrance family', fr.family],
+    ['Concentration', fr.concentration],
+    ['Longevity', fr.longevity],
+    ['Sillage / projection', fr.sillage],
+    ['Best season', fr.season?.join(', ')],
+    ['Occasion', fr.occasion?.join(', ')],
+  ].filter(([, v]) => v);
+  const specs = product.specifications || {};
+  const hasNotes = Boolean(
+    product.fragranceNotes?.topNotes || product.fragranceNotes?.heartNotes || product.fragranceNotes?.baseNotes || specs['Top Notes'] || specs['Heart Notes'] || specs['Base Notes']
+  );
+  const showFragrance = fragranceRows.length > 0 || hasNotes;
 
   const crumbs = [
     { name: 'Home', url: '/' },
@@ -182,7 +200,7 @@ export const ProductDetail = () => {
 
   const legalRows = [
     ['Brand', product.brand || BRAND.name],
-    ['Net quantity', variant?.title || product.netQuantity],
+    ['Net quantity', variant?.netQuantity || variant?.title || product.netQuantity],
     ['MRP (incl. of all taxes)', formatINR(mrp)],
     ['Country of origin', product.countryOfOrigin || 'India'],
     ['Shelf life / Best before', product.shelfLife],
@@ -193,7 +211,7 @@ export const ProductDetail = () => {
     ['Licence no.', product.licenseNumber],
     ['Customer care', product.customerCareDetails || `${BRAND.email} · ${BRAND.phone}`],
     ['SKU', variant?.sku || product.sku],
-    ['HSN code', product.hsnCode],
+    ['Returns', returnable ? 'Returnable within 3 days if unused & sealed' : 'Not returnable once opened – damaged / leaking / wrong items replaced'],
   ].filter(([, v]) => v);
 
   const specEntries = Object.entries(product.specifications || {}).filter(([k]) => !['Top Notes', 'Heart Notes', 'Base Notes'].includes(k));
@@ -364,9 +382,9 @@ export const ProductDetail = () => {
               </ul>
             )}
 
-            {(product.skinTypes?.length > 0 || product.concerns?.length > 0) && (
+            {(product.skinTypes?.length > 0 || product.concerns?.length > 0 || fr.family || fr.concentration) && (
               <div className="mt-5 flex flex-wrap gap-2">
-                {[...(product.concerns || []), ...(product.skinTypes || [])].slice(0, 8).map((t) => (
+                {[fr.concentration, fr.family, ...(product.concerns || []), ...(product.skinTypes || [])].filter(Boolean).slice(0, 8).map((t) => (
                   <span key={t} className="text-[11px] px-2.5 py-1 rounded-full bg-white/[0.04] border border-zinc-800 text-zinc-300">{t}</span>
                 ))}
               </div>
@@ -397,6 +415,7 @@ export const ProductDetail = () => {
                         }`}
                       >
                         <span className="block text-sm font-semibold text-zinc-100">{v.title}</span>
+                        {v.netQuantity && v.netQuantity !== v.title && <span className="block text-[10px] text-zinc-500">{v.netQuantity}</span>}
                         <span className="block text-[11px] text-zinc-400">{v.stock <= 0 ? 'Sold out' : formatINR(vPrice)}</span>
                       </button>
                     );
@@ -431,14 +450,19 @@ export const ProductDetail = () => {
                   <p className="text-zinc-100">Delivery by <b>{delivery}</b> <span className="text-zinc-500 text-xs">(estimate)</span></p>
                   <p className="text-xs text-zinc-500">
                     {freeShip ? 'FREE delivery on this order' : `FREE delivery on orders above ${formatINR(shipping.freeShippingThreshold ?? 999)}`} · Ships across India
+                    {meta.estimatedDeliveryText ? ` · usually ${meta.estimatedDeliveryText}` : ''}
                   </p>
+                  {meta.surfaceOnly && (
+                    <p className="text-[11px] text-amber-300/90 mt-1">Ships by surface transport as per courier safety rules for fragrances – may take 2–3 extra days.</p>
+                  )}
+                  {meta.shippingNote && <p className="text-[11px] text-zinc-400 mt-1">{meta.shippingNote}</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-800">
                 {[
                   [ShieldCheck, 'Secure PhonePe'],
                   [Banknote, shipping.codEnabled === false ? 'Prepaid only' : 'COD available'],
-                  [RotateCcw, '3-day return*'],
+                  [RotateCcw, returnable ? '3-day return*' : 'Replacement if damaged*'],
                   [Flag, 'Made in India'],
                 ].map(([Icon, t]) => (
                   <div key={t} className="bg-noir flex flex-col items-center gap-1.5 py-3 text-[11px] text-zinc-400 text-center">
@@ -448,7 +472,11 @@ export const ProductDetail = () => {
               </div>
             </div>
             <p className="mt-2 text-[10px] text-zinc-600">
-              *Damaged/defective items, see <Link to="/refund-return-policy" className="underline">Return Policy</Link>.
+              *{meta.returnNote ||
+                (returnable
+                  ? 'Unused, sealed items in original packaging can be returned within 3 days of delivery.'
+                  : 'Not returnable once opened (hygiene). Broken, leaking or wrong items are replaced or refunded.')}{' '}
+              See <Link to="/refund-return-policy" className="underline">Return Policy</Link>.
             </p>
           </div>
         </div>
@@ -461,6 +489,7 @@ export const ProductDetail = () => {
                 ['description', 'Description', true],
                 ['benefits', 'Benefits', product.benefits],
                 ['ingredients', 'Ingredients', product.ingredients],
+                ['fragrance', 'Fragrance profile', showFragrance],
                 ['how-to-use', 'How to use', product.howToUse],
                 ['details', 'Product details', true],
                 ['faqs', 'FAQs', product.faqs?.length],
@@ -478,6 +507,21 @@ export const ProductDetail = () => {
             {product.benefits && (
               <Accordion id="benefits" title="Key benefits" defaultOpen>
                 <Rich html={product.benefits} />
+              </Accordion>
+            )}
+            {showFragrance && (
+              <Accordion id="fragrance" title="Fragrance profile" defaultOpen>
+                {fragranceRows.length > 0 && (
+                  <dl className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-2">
+                    {fragranceRows.map(([k, v]) => (
+                      <div key={k} className="rounded-xl border border-zinc-800 bg-noir-card px-4 py-3">
+                        <dt className="text-[10px] uppercase tracking-wider text-zinc-500">{k}</dt>
+                        <dd className="text-sm text-zinc-100 mt-0.5">{v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+                {hasNotes && <FragrancePyramid specifications={product.specifications} fragranceNotes={product.fragranceNotes} />}
               </Accordion>
             )}
             {product.ingredients && (
@@ -506,8 +550,6 @@ export const ProductDetail = () => {
               </dl>
               <p className="mt-4 text-[11px] text-zinc-500 flex gap-2"><Info className="w-3.5 h-3.5 flex-shrink-0" />For external use only. Please read the label before use. Product images are for illustration; packaging may vary.</p>
             </Accordion>
-
-            <FragrancePyramid specifications={product.specifications} fragranceNotes={product.fragranceNotes} />
 
             {product.faqs?.length > 0 && (
               <section id="faqs" className="mt-12 scroll-mt-24">

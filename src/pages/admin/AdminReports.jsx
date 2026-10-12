@@ -65,6 +65,7 @@ const REPORTS = [
   { key: 'gst', title: 'GST Report (GSTR-1)', desc: 'B2B, B2CL, B2CS, HSN (B2B/B2C), credit notes & documents issued – ready for your CA.', icon: Landmark },
   { key: 'hsn', title: 'HSN Summary', desc: 'HSN/SAC-wise quantity, taxable value and tax for GSTR-1 Table 12.', icon: Percent },
   { key: 'products', title: 'Product-wise Sales', desc: 'Units, revenue, discounts, tax and current stock per product & variant.', icon: Package },
+  { key: 'categories', title: 'Category & Product-type Sales', desc: 'Revenue, GST and share by category and by product type (skincare, perfumes, …).', icon: Boxes },
   { key: 'orders', title: 'Order Book', desc: 'All orders in the period with status, payment, courier & AWB.', icon: ShoppingBag },
   { key: 'payments', title: 'PhonePe Payments & Refunds', desc: 'Transaction IDs, payment modes, success rate and refunds.', icon: Wallet },
   { key: 'customers', title: 'Customer Report', desc: 'Orders, lifetime value and AOV per customer.', icon: Users },
@@ -210,9 +211,15 @@ export const AdminReports = () => {
           <h3 className="font-serif text-xs uppercase tracking-[0.2em] text-gold mb-4">Top products</h3>
           <BarList rows={data?.topProducts || []} labelKey="name" valueKey="revenue" sub={(r) => `· ${r.units} u`} />
         </div>
-        <div className="bg-noir-card border border-zinc-800 rounded-xl p-5">
-          <h3 className="font-serif text-xs uppercase tracking-[0.2em] text-gold mb-4">Top states</h3>
-          <BarList rows={data?.states || []} labelKey="state" valueKey="revenue" sub={(r) => `· ${r.orders}`} />
+        <div className="bg-noir-card border border-zinc-800 rounded-xl p-5 space-y-6">
+          <div>
+            <h3 className="font-serif text-xs uppercase tracking-[0.2em] text-gold mb-4">Sales by category</h3>
+            <BarList rows={data?.categories || []} labelKey="name" valueKey="revenue" sub={(r) => `· ${r.units} u`} />
+          </div>
+          <div>
+            <h3 className="font-serif text-xs uppercase tracking-[0.2em] text-gold mb-4">Top states</h3>
+            <BarList rows={data?.states || []} labelKey="state" valueKey="revenue" sub={(r) => `· ${r.orders}`} />
+          </div>
         </div>
         <div className="bg-noir-card border border-zinc-800 rounded-xl p-5 space-y-6">
           <div>

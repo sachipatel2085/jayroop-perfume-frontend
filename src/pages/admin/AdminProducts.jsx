@@ -23,16 +23,26 @@ import { SeoFormFields } from '../../components/admin/SeoFormFields.jsx';
 import { Input, Select, Textarea, Alert } from '../../components/ui/Field.jsx';
 import { Pill } from '../../components/ui/StatusBadge.jsx';
 
-const SKIN_TYPES = ['All skin types', 'Oily', 'Combination', 'Normal', 'Dry', 'Sensitive', 'Acne-prone'];
-const CONCERNS = ['Pimples', 'Acne marks', 'Dark spots', 'Oil control', 'Open pores', 'Dullness', 'Uneven tone', 'Long-lasting fragrance', 'Daily wear', 'Gifting'];
-const GST_RATES = [0, 5, 12, 18, 28];
-const HSN_PRESETS = [
-  ['3304', 'Skin care / creams (3304)'],
-  ['3303', 'Perfumes / EDP (3303)'],
-  ['3401', 'Soaps (3401)'],
-  ['3305', 'Hair care (3305)'],
-  ['3307', 'Deodorants / shaving (3307)'],
-];
+// Suggestion chips per product type – admins can also type their own values.
+const SUITABLE_FOR = {
+  SKINCARE: ['All skin types', 'Oily', 'Combination', 'Normal', 'Dry', 'Sensitive', 'Acne-prone'],
+  SOAP: ['All skin types', 'Oily', 'Normal', 'Dry', 'Sensitive'],
+  HAIR_CARE: ['All hair types', 'Oily scalp', 'Dry / frizzy', 'Coloured hair', 'Thin hair'],
+  DEFAULT: ['Everyone'],
+};
+const CONCERN_OPTIONS = {
+  SKINCARE: ['Pimples', 'Acne marks', 'Dark spots', 'Oil control', 'Open pores', 'Dullness', 'Uneven tone', 'Dryness'],
+  HAIR_CARE: ['Hair fall', 'Dandruff', 'Frizz', 'Dryness', 'Growth'],
+  SOAP: ['Oil control', 'Dryness', 'Tan', 'Freshness'],
+  BODY_CARE: ['Body odour', 'Dryness', 'Freshness'],
+  DEFAULT: ['Gifting', 'Daily use'],
+};
+const FRAGRANCE_FAMILIES = ['Floral', 'Woody', 'Oriental / Amber', 'Oud', 'Fresh', 'Citrus', 'Aquatic', 'Fougère', 'Gourmand', 'Musky', 'Spicy', 'Green'];
+const CONCENTRATIONS = ['Eau de Parfum', 'Extrait de Parfum', 'Parfum', 'Eau de Toilette', 'Eau de Cologne', 'Attar / Perfume oil', 'Body mist', 'Deodorant'];
+const SILLAGE = ['Soft (skin scent)', 'Moderate', 'Strong'];
+const SEASONS = ['All seasons', 'Summer', 'Monsoon', 'Winter'];
+const OCCASIONS = ['Daily wear', 'Office', 'Evening', 'Date night', 'Wedding / festive', 'Gifting'];
+const GST_RATES = [0, 5, 12, 18, 28, 40];
 
 const TABS = [
   ['basic', 'Basics'],
@@ -65,13 +75,17 @@ const emptyProduct = (categoryId = '') => ({
   stock: 0,
   lowStockThreshold: 5,
   maxPerOrder: 10,
-  hsnCode: '3304',
-  gstRate: 18,
+  productType: '', // '' → inherit from category
+  hsnCode: '', // '' → inherit (category → product type → store default)
+  gstRate: '', // '' → inherit (category → store default)
   images: [],
   videos: [],
   variants: [],
   specs: [],
   fragranceNotes: { topNotes: '', heartNotes: '', baseNotes: '' },
+  fragrance: { family: '', concentration: '', longevity: '', sillage: '', season: [], occasion: [] },
+  returnPolicy: { returnable: null, note: '' },
+  shipping: { surfaceOnly: null, note: '' },
   highlights: [],
   benefits: '',
   ingredients: '',
@@ -107,15 +121,19 @@ const fromProduct = (p) => {
     category: p.category?._id || p.category || '',
     subCategory: p.subCategory?._id || p.subCategory || '',
     salePrice: p.salePrice ?? '',
-    gstRate: p.gstRate ?? 18,
-    hsnCode: p.hsnCode || '3304',
+    productType: p.productType || '',
+    gstRate: p.gstRate ?? '',
+    hsnCode: p.hsnCode || '',
+    fragrance: { ...emptyProduct().fragrance, ...(p.fragrance || {}) },
+    returnPolicy: { returnable: p.returnPolicy?.returnable ?? null, note: p.returnPolicy?.note || '' },
+    shipping: { surfaceOnly: p.shipping?.surfaceOnly ?? null, note: p.shipping?.note || '' },
     weight: p.weight ?? '',
     dimensions: { length: p.dimensions?.length ?? '', width: p.dimensions?.width ?? '', height: p.dimensions?.height ?? '' },
     specs: Object.entries(specsObj)
       .filter(([k]) => !['Top Notes', 'Heart Notes', 'Base Notes'].includes(k))
       .map(([key, value]) => ({ key, value })),
     fragranceNotes: { topNotes: p.fragranceNotes?.topNotes || '', heartNotes: p.fragranceNotes?.heartNotes || '', baseNotes: p.fragranceNotes?.baseNotes || '' },
-    variants: (p.variants || []).map((v) => ({ ...v, salePrice: v.salePrice ?? '', weight: v.weight ?? '', barcode: v.barcode || '' })),
+    variants: (p.variants || []).map((v) => ({ ...v, salePrice: v.salePrice ?? '', weight: v.weight ?? '', barcode: v.barcode || '', netQuantity: v.netQuantity || '' })),
     tags: (p.tags || []).join(', '),
     highlights: p.highlights || [],
     faqs: p.faqs || [],
@@ -137,8 +155,12 @@ const toPayload = (f) => ({
   stock: f.variants.length ? f.variants.reduce((s, v) => s + Number(v.stock || 0), 0) : Number(f.stock || 0),
   lowStockThreshold: Number(f.lowStockThreshold || 0),
   maxPerOrder: Number(f.maxPerOrder || 10),
-  hsnCode: f.hsnCode,
-  gstRate: Number(f.gstRate),
+  productType: f.productType || '',
+  hsnCode: f.hsnCode || '',
+  gstRate: f.gstRate === '' || f.gstRate === null ? null : Number(f.gstRate),
+  fragrance: f.fragrance,
+  returnPolicy: f.returnPolicy,
+  shipping: f.shipping,
   images: f.images.filter((i) => i.url),
   videos: f.videos.filter((v) => v.url),
   variants: f.variants.map((v) => ({
@@ -184,9 +206,9 @@ const toPayload = (f) => ({
   seo: f.seo,
 });
 
-const ChipToggle = ({ options, value = [], onChange }) => (
+const ChipToggle = ({ options, value = [], onChange, allowCustom = true }) => (
   <div className="flex flex-wrap gap-2">
-    {options.map((o) => {
+    {[...new Set([...options, ...value])].map((o) => {
       const on = value.includes(o);
       return (
         <button
@@ -199,7 +221,30 @@ const ChipToggle = ({ options, value = [], onChange }) => (
         </button>
       );
     })}
+    {allowCustom && (
+      <input
+        placeholder="+ add"
+        className="w-28 bg-transparent border border-dashed border-zinc-700 rounded-full px-3 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-gold"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            const v = e.currentTarget.value.trim();
+            if (v && !value.includes(v)) onChange([...value, v]);
+            e.currentTarget.value = '';
+          }
+        }}
+      />
+    )}
   </div>
+);
+
+// Three-state select for "use product-type default / yes / no" overrides
+const TriSelect = ({ label, value, onChange, yes, no, defaultLabel, hint }) => (
+  <Select label={label} hint={hint} value={value === true ? 'yes' : value === false ? 'no' : ''} onChange={(e) => onChange(e.target.value === 'yes' ? true : e.target.value === 'no' ? false : null)}>
+    <option value="">{defaultLabel}</option>
+    <option value="yes">{yes}</option>
+    <option value="no">{no}</option>
+  </Select>
 );
 
 export const AdminProducts = () => {
@@ -212,6 +257,14 @@ export const AdminProducts = () => {
   const [meta, setMeta] = useState({ total: 0, totalPages: 1 });
   const [editing, setEditing] = useState(null); // { id, form }
   const [error, setError] = useState(null);
+  const [typeCatalog, setTypeCatalog] = useState({ types: {}, hsn: {} });
+
+  useEffect(() => {
+    adminService
+      .getProductTypes()
+      .then((d) => d?.types && setTypeCatalog(d))
+      .catch(() => {});
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -331,7 +384,10 @@ export const AdminProducts = () => {
                       <span className={`font-bold ${p.stock <= (p.lowStockThreshold ?? 5) ? 'text-red-400' : 'text-emerald-400'}`}>{p.stock}</span>
                       {p.totalSold > 0 && <span className="block text-[10px] text-zinc-500">{p.totalSold} sold</span>}
                     </td>
-                    <td className="py-3 px-4 text-zinc-400">{p.gstRate ?? 18}% · {p.hsnCode || '—'}</td>
+                    <td className="py-3 px-4 text-zinc-400">
+                      {typeof p.gstRate === 'number' ? `${p.gstRate}%` : 'inherit'} · {p.hsnCode || 'inherit'}
+                      {p.productType && <span className="block text-[10px] text-zinc-500">{typeCatalog.types[p.productType]?.label || p.productType}</span>}
+                    </td>
                     <td className="py-3 px-4">
                       <div className="flex flex-col gap-1 items-start">
                         <Pill tone={p.status === 'ACTIVE' ? 'emerald' : p.status === 'DRAFT' ? 'amber' : 'noir'}>{p.status}</Pill>
@@ -366,6 +422,7 @@ export const AdminProducts = () => {
           id={editing.id}
           initial={editing.form}
           categories={categories}
+          typeCatalog={typeCatalog}
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
@@ -377,7 +434,7 @@ export const AdminProducts = () => {
   );
 };
 
-const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
+const ProductEditor = ({ id, initial, categories, typeCatalog, onClose, onSaved }) => {
   const [f, setF] = useState(initial);
   const [tab, setTab] = useState('basic');
   const [saving, setSaving] = useState(false);
@@ -386,7 +443,21 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
 
   const set = (patch) => setF((prev) => ({ ...prev, ...patch }));
   const parents = categories.filter((c) => !c.parent);
-  const subs = categories.filter((c) => (c.parent?._id || c.parent) === f.category);
+  const selectedCat = parents.find((c) => c._id === f.category);
+  const subs = selectedCat?.subcategories?.length ? selectedCat.subcategories : categories.filter((c) => (c.parent?._id || c.parent) === f.category);
+  const types = typeCatalog?.types || {};
+
+  // Effective classification – mirrors resolveTax() on the server (product → category → type → store default)
+  const subCat = subs.find((c) => c._id === f.subCategory);
+  const inheritedType = subCat?.productType || selectedCat?.productType || '';
+  const effectiveType = f.productType || inheritedType || 'GENERAL';
+  const typeInfo = types[effectiveType] || { label: 'Other', sections: ['benefits', 'ingredients', 'howToUse', 'precautions'], defaultReturnable: true, hazmat: false };
+  const has = (section) => (typeInfo.sections || []).includes(section);
+  const inheritedHsn = subCat?.hsnCode || selectedCat?.hsnCode || typeInfo.hsnCode || '';
+  const inheritedGst = typeof subCat?.gstRate === 'number' ? subCat.gstRate : typeof selectedCat?.gstRate === 'number' ? selectedCat.gstRate : null;
+  const effectiveHsn = f.hsnCode || inheritedHsn;
+  const effectiveGst = f.gstRate !== '' && f.gstRate !== null ? Number(f.gstRate) : inheritedGst ?? 18;
+  const hsnOptions = Object.entries(typeCatalog?.hsn || {}).filter(([code]) => !code.startsWith('99'));
 
   const checks = useMemo(() => {
     const plain = (f.description || '').replace(/<[^>]+>/g, ' ').trim();
@@ -400,11 +471,12 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
       [f.faqs.length >= 3, '3+ FAQs (rich results)'],
       [Boolean(f.seo.focusKeyword), 'Focus keyword set'],
       [f.seo.focusKeyword && f.name.toLowerCase().includes(f.seo.focusKeyword.toLowerCase()), 'Focus keyword in name'],
-      [Boolean(f.netQuantity), 'Net quantity (legal metrology)'],
+      [Boolean(f.netQuantity) || (f.variants.length > 0 && f.variants.every((v) => v.netQuantity || v.title)), 'Net quantity (legal metrology)'],
+      [Boolean(effectiveHsn), 'HSN code (GST invoice)'],
       [Boolean(f.manufacturerDetails), 'Manufacturer details (legal metrology)'],
       [Boolean(f.barcode), 'GTIN / barcode (Google Shopping)'],
     ];
-  }, [f]);
+  }, [f, effectiveHsn]);
   const score = Math.round((checks.filter(([ok]) => ok).length / checks.length) * 100);
 
   const save = async (status) => {
@@ -470,7 +542,7 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
             {tab === 'basic' && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input className="md:col-span-2" label="Product name" required value={f.name} onChange={(e) => set({ name: e.target.value, ...(slugTouched ? {} : { slug: slugify(e.target.value) }) })} placeholder="e.g. Jayrup Pimples Cream – Ayurvedic Anti-Acne Cream 15 g" />
+                  <Input className="md:col-span-2" label="Product name" required value={f.name} onChange={(e) => set({ name: e.target.value, ...(slugTouched ? {} : { slug: slugify(e.target.value) }) })} placeholder="e.g. Jayrup Royal Oud Eau de Parfum 100 ml" />
                   <Input label="URL slug" hint={`/products/${f.slug || slugify(f.name) || '…'}`} value={f.slug} onChange={(e) => { setSlugTouched(true); set({ slug: slugify(e.target.value) }); }} />
                   <Input label="Brand" value={f.brand} onChange={(e) => set({ brand: e.target.value })} />
                   <Select label="Category" required value={f.category} onChange={(e) => set({ category: e.target.value, subCategory: '' })}>
@@ -481,10 +553,25 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
                     <option value="">None</option>
                     {subs.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
                   </Select>
+                  <Select
+                    className="md:col-span-2"
+                    label="Product type"
+                    hint="Sets GST/HSN defaults, which sections show on the product page, return rules and shipping mode"
+                    value={f.productType}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      const t = types[next || inheritedType];
+                      // Pre-fill GST suggestion only when the admin has not chosen one yet
+                      set({ productType: next, ...(f.gstRate === '' && t && next ? { gstRate: t.suggestedGstRate } : {}) });
+                    }}
+                  >
+                    <option value="">{inheritedType ? `Same as category – ${types[inheritedType]?.label || inheritedType}` : 'Same as category (not set → Other)'}</option>
+                    {Object.entries(types).map(([k, t]) => <option key={k} value={k}>{t.label}{t.hsnCode ? ` · HSN ${t.hsnCode}` : ''}</option>)}
+                  </Select>
                 </div>
                 <Textarea label="Short description" hint={`${(f.shortDescription || '').length}/500 · shown near the price`} rows={3} maxLength={500} value={f.shortDescription} onChange={(e) => set({ shortDescription: e.target.value })} />
                 <div>
-                  <p className="text-[11px] uppercase tracking-wider text-zinc-400 mb-1.5">Key highlights <span className="normal-case text-zinc-500">(bullets above the fold – e.g. “Reduces pimples in 7 days”)</span></p>
+                  <p className="text-[11px] uppercase tracking-wider text-zinc-400 mb-1.5">Key highlights <span className="normal-case text-zinc-500">(bullets above the fold – e.g. “Long-lasting 8+ hours” or “Non-greasy, fast absorbing”)</span></p>
                   <div className="space-y-2">
                     {f.highlights.map((h, i) => (
                       <div key={i} className="flex gap-2">
@@ -495,7 +582,7 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
                     {f.highlights.length < 12 && <button type="button" onClick={() => set({ highlights: [...f.highlights, ''] })} className="text-xs text-gold inline-flex items-center gap-1"><Plus className="w-3.5 h-3.5" />Add highlight</button>}
                   </div>
                 </div>
-                <Input label="Search tags" hint="comma separated" value={f.tags} onChange={(e) => set({ tags: e.target.value })} placeholder="pimple cream, acne, ayurvedic, oily skin" />
+                <Input label="Search tags" hint="comma separated" value={f.tags} onChange={(e) => set({ tags: e.target.value })} placeholder="e.g. oud perfume, long lasting, gift for men" />
                 <div className="flex flex-wrap gap-6">
                   <Select label="Status" value={f.status} onChange={(e) => set({ status: e.target.value })}>
                     <option value="ACTIVE">Active (visible)</option>
@@ -563,28 +650,40 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
                   <Input label={f.variants.length ? 'Stock (sum of variants)' : 'Stock'} type="number" min="0" disabled={f.variants.length > 0} value={f.variants.length ? f.variants.reduce((s, v) => s + Number(v.stock || 0), 0) : f.stock} onChange={(e) => set({ stock: e.target.value })} />
                   <Input label="Low-stock alert at" type="number" min="0" value={f.lowStockThreshold} onChange={(e) => set({ lowStockThreshold: e.target.value })} />
                   <Input label="Max qty per order" type="number" min="1" value={f.maxPerOrder} onChange={(e) => set({ maxPerOrder: e.target.value })} />
-                  <Select label="HSN code" value={HSN_PRESETS.some(([c]) => c === f.hsnCode) ? f.hsnCode : 'custom'} onChange={(e) => e.target.value !== 'custom' && set({ hsnCode: e.target.value })}>
-                    {HSN_PRESETS.map(([c, l]) => <option key={c} value={c}>{l}</option>)}
+                  <Select
+                    label="HSN code"
+                    value={!f.hsnCode ? '' : hsnOptions.some(([c]) => c === f.hsnCode) ? f.hsnCode : 'custom'}
+                    onChange={(e) => e.target.value !== 'custom' && set({ hsnCode: e.target.value })}
+                  >
+                    <option value="">Inherit{inheritedHsn ? ` (${inheritedHsn})` : ' (store default)'}</option>
+                    {hsnOptions.map(([c, l]) => <option key={c} value={c}>{c} – {l}</option>)}
                     <option value="custom">Custom…</option>
                   </Select>
-                  <Input label="HSN (custom)" value={f.hsnCode} onChange={(e) => set({ hsnCode: e.target.value.replace(/\D/g, '').slice(0, 8) })} />
-                  <Select label="GST rate" value={f.gstRate} onChange={(e) => set({ gstRate: Number(e.target.value) })}>
+                  <Input label="HSN (custom, 4–8 digits)" value={f.hsnCode} onChange={(e) => set({ hsnCode: e.target.value.replace(/\D/g, '').slice(0, 8) })} />
+                  <Select label="GST rate" value={f.gstRate === null ? '' : f.gstRate} onChange={(e) => set({ gstRate: e.target.value === '' ? '' : Number(e.target.value) })}>
+                    <option value="">Inherit ({inheritedGst ?? 'store default'}{inheritedGst !== null ? '%' : ''})</option>
                     {GST_RATES.map((r) => <option key={r} value={r}>{r}%</option>)}
                   </Select>
                 </div>
+                <p className="text-[11px] text-zinc-500">
+                  Invoice will use <b className="text-zinc-300">HSN {effectiveHsn || '— (set one!)'}</b> at <b className="text-zinc-300">{effectiveGst}% GST</b> ({typeInfo.label}).
+                  {typeInfo.suggestedGstRate !== undefined && Number(typeInfo.suggestedGstRate) !== effectiveGst && (
+                    <span className="text-amber-300"> Suggested rate for {typeInfo.label} is {typeInfo.suggestedGstRate}% – confirm with your CA.</span>
+                  )}
+                </p>
                 {Number(f.price) > 0 && (
                   <p className="text-xs text-zinc-500">
                     Customer pays ₹{f.salePrice || f.price}
                     {f.salePrice && Number(f.salePrice) < Number(f.price) ? ` (${Math.round((1 - f.salePrice / f.price) * 100)}% off)` : ''} · taxable value ₹
-                    {((Number(f.salePrice || f.price) || 0) / (1 + f.gstRate / 100)).toFixed(2)} + GST ₹
-                    {((Number(f.salePrice || f.price) || 0) - (Number(f.salePrice || f.price) || 0) / (1 + f.gstRate / 100)).toFixed(2)}
+                    {((Number(f.salePrice || f.price) || 0) / (1 + effectiveGst / 100)).toFixed(2)} + GST ₹
+                    {((Number(f.salePrice || f.price) || 0) - (Number(f.salePrice || f.price) || 0) / (1 + effectiveGst / 100)).toFixed(2)}
                   </p>
                 )}
 
                 <div className="pt-5 border-t border-zinc-800">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-[11px] uppercase tracking-wider text-zinc-400">Variants (sizes / packs)</p>
-                    <button type="button" onClick={() => set({ variants: [...f.variants, { title: '', sku: `${f.sku}-${f.variants.length + 1}`, price: f.price, salePrice: f.salePrice, stock: 0, weight: '', barcode: '' }] })} className="text-xs text-gold inline-flex items-center gap-1">
+                    <button type="button" onClick={() => set({ variants: [...f.variants, { title: '', sku: `${f.sku}-${f.variants.length + 1}`, price: f.price, salePrice: f.salePrice, stock: 0, weight: '', barcode: '', netQuantity: '' }] })} className="text-xs text-gold inline-flex items-center gap-1">
                       <Plus className="w-3.5 h-3.5" /> Add variant
                     </button>
                   </div>
@@ -595,7 +694,7 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
                       <table className="w-full text-xs">
                         <thead className="text-[10px] uppercase text-zinc-500">
                           <tr>
-                            {['Title', 'SKU', 'MRP', 'Sale price', 'Stock', 'Weight (g)', 'Barcode', ''].map((h) => <th key={h} className="text-left py-1.5 pr-2 font-medium">{h}</th>)}
+                            {['Title', 'Net qty', 'SKU', 'MRP', 'Sale price', 'Stock', 'Weight (g)', 'Barcode', ''].map((h) => <th key={h} className="text-left py-1.5 pr-2 font-medium">{h}</th>)}
                           </tr>
                         </thead>
                         <tbody>
@@ -604,7 +703,8 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
                             const cls = 'w-full bg-noir border border-zinc-800 rounded-md px-2 py-1.5 text-xs text-zinc-100';
                             return (
                               <tr key={i}>
-                                <td className="pr-2 py-1"><input className={cls} value={v.title} onChange={(e) => upd({ title: e.target.value })} placeholder="15 g" /></td>
+                                <td className="pr-2 py-1"><input className={cls} value={v.title} onChange={(e) => upd({ title: e.target.value })} placeholder="50 ml / Pack of 2" /></td>
+                                <td className="pr-2 py-1 w-24"><input className={cls} value={v.netQuantity} onChange={(e) => upd({ netQuantity: e.target.value })} placeholder="50 ml" /></td>
                                 <td className="pr-2 py-1"><input className={`${cls} font-mono`} value={v.sku} onChange={(e) => upd({ sku: e.target.value.toUpperCase() })} /></td>
                                 <td className="pr-2 py-1 w-24"><input className={cls} type="number" value={v.price} onChange={(e) => upd({ price: e.target.value })} /></td>
                                 <td className="pr-2 py-1 w-24"><input className={cls} type="number" value={v.salePrice} onChange={(e) => upd({ salePrice: e.target.value })} /></td>
@@ -626,17 +726,17 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
             {tab === 'content' && (
               <>
                 <RichTextEditor label="Long description" required value={f.description} onChange={(v) => set({ description: v })} minHeight="380px" uploadFolder="products" />
-                <RichTextEditor label="Key benefits" value={f.benefits} onChange={(v) => set({ benefits: v })} minHeight="160px" uploadFolder="products" placeholder="Bullet the main benefits… type / for blocks" />
-                <RichTextEditor label="Ingredients" value={f.ingredients} onChange={(v) => set({ ingredients: v })} minHeight="140px" uploadFolder="products" placeholder="Full ingredient list (INCI) and hero ingredients" />
-                <RichTextEditor label="How to use" value={f.howToUse} onChange={(v) => set({ howToUse: v })} minHeight="140px" uploadFolder="products" placeholder="Step-by-step usage – try “/” → Numbered list" />
-                <RichTextEditor label="Precautions & safety" value={f.precautions} onChange={(v) => set({ precautions: v })} minHeight="120px" uploadFolder="products" placeholder="For external use only. Patch test before use…" />
+                {!has('benefits') && !f.benefits ? null : <RichTextEditor label="Key benefits" value={f.benefits} onChange={(v) => set({ benefits: v })} minHeight="160px" uploadFolder="products" placeholder="Bullet the main benefits… type / for blocks" />}
+                <RichTextEditor label="Ingredients" value={f.ingredients} onChange={(v) => set({ ingredients: v })} minHeight="140px" uploadFolder="products" placeholder={effectiveType === 'FRAGRANCE' ? 'Alcohol denat., parfum (fragrance), aqua… (as on pack)' : 'Full ingredient list (INCI) and hero ingredients'} />
+                <RichTextEditor label="How to use" value={f.howToUse} onChange={(v) => set({ howToUse: v })} minHeight="140px" uploadFolder="products" placeholder={effectiveType === 'FRAGRANCE' ? 'Spray 2–3 times on pulse points from 15 cm…' : 'Step-by-step usage – try “/” → Numbered list'} />
+                <RichTextEditor label="Precautions & safety" value={f.precautions} onChange={(v) => set({ precautions: v })} minHeight="120px" uploadFolder="products" placeholder={effectiveType === 'FRAGRANCE' ? 'Flammable – keep away from heat & flame. Do not spray on eyes or broken skin…' : 'For external use only. Patch test before use…'} />
               </>
             )}
 
             {tab === 'details' && (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Input label="Net quantity" placeholder="15 g / 50 ml" value={f.netQuantity} onChange={(e) => set({ netQuantity: e.target.value })} />
+                  <Input label="Net quantity" hint={f.variants.length ? 'single-size products; variants have their own' : ''} placeholder="15 g / 50 ml" value={f.netQuantity} onChange={(e) => set({ netQuantity: e.target.value })} />
                   <Input label="Shipping weight (g)" type="number" value={f.weight} onChange={(e) => set({ weight: e.target.value })} />
                   <Input label="Barcode / GTIN (EAN-13)" value={f.barcode} onChange={(e) => set({ barcode: e.target.value.replace(/\D/g, '').slice(0, 14) })} />
                   <Input label="Country of origin" value={f.countryOfOrigin} onChange={(e) => set({ countryOfOrigin: e.target.value })} />
@@ -645,14 +745,18 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
                   <Input label="Height (cm)" type="number" value={f.dimensions.height} onChange={(e) => set({ dimensions: { ...f.dimensions, height: e.target.value } })} />
                   <Input label="Shelf life" placeholder="24 months from mfg." value={f.shelfLife} onChange={(e) => set({ shelfLife: e.target.value })} />
                 </div>
-                <div>
-                  <p className="text-[11px] uppercase tracking-wider text-zinc-400 mb-2">Suitable skin types</p>
-                  <ChipToggle options={SKIN_TYPES} value={f.skinTypes} onChange={(v) => set({ skinTypes: v })} />
-                </div>
-                <div>
-                  <p className="text-[11px] uppercase tracking-wider text-zinc-400 mb-2">Concerns addressed</p>
-                  <ChipToggle options={CONCERNS} value={f.concerns} onChange={(v) => set({ concerns: v })} />
-                </div>
+                {(has('skinTypes') || f.skinTypes.length > 0) && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-zinc-400 mb-2">Suitable for</p>
+                    <ChipToggle options={SUITABLE_FOR[effectiveType] || SUITABLE_FOR.DEFAULT} value={f.skinTypes} onChange={(v) => set({ skinTypes: v })} />
+                  </div>
+                )}
+                {(has('concerns') || f.concerns.length > 0) && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-zinc-400 mb-2">Concerns addressed</p>
+                    <ChipToggle options={CONCERN_OPTIONS[effectiveType] || CONCERN_OPTIONS.DEFAULT} value={f.concerns} onChange={(v) => set({ concerns: v })} />
+                  </div>
+                )}
                 <Select label="For" value={f.gender} onChange={(e) => set({ gender: e.target.value })} className="max-w-xs">
                   <option value="UNISEX">Everyone (unisex)</option>
                   <option value="WOMEN">Women</option>
@@ -676,19 +780,69 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
                     {f.specs.map((s, i) => (
                       <div key={i} className="grid grid-cols-[1fr_2fr_auto] gap-2">
                         <input value={s.key} onChange={(e) => set({ specs: f.specs.map((x, j) => (j === i ? { ...x, key: e.target.value } : x)) })} placeholder="Texture" className="bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100" />
-                        <input value={s.value} onChange={(e) => set({ specs: f.specs.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)) })} placeholder="Light, non-greasy cream" className="bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100" />
+                        <input value={s.value} onChange={(e) => set({ specs: f.specs.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)) })} placeholder="e.g. Light, non-greasy" className="bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100" />
                         <button type="button" onClick={() => set({ specs: f.specs.filter((_, j) => j !== i) })} className="p-2 text-zinc-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-zinc-800">
-                  <p className="text-[11px] uppercase tracking-wider text-zinc-400 mb-2">Fragrance notes (perfumes only)</p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <Input label="Top notes" value={f.fragranceNotes.topNotes} onChange={(e) => set({ fragranceNotes: { ...f.fragranceNotes, topNotes: e.target.value } })} />
-                    <Input label="Heart notes" value={f.fragranceNotes.heartNotes} onChange={(e) => set({ fragranceNotes: { ...f.fragranceNotes, heartNotes: e.target.value } })} />
-                    <Input label="Base notes" value={f.fragranceNotes.baseNotes} onChange={(e) => set({ fragranceNotes: { ...f.fragranceNotes, baseNotes: e.target.value } })} />
+                {(has('fragrance') || f.fragranceNotes.topNotes || f.fragrance.family) && (
+                  <div className="pt-4 border-t border-zinc-800 space-y-3">
+                    <p className="text-[11px] uppercase tracking-wider text-zinc-400">Fragrance profile</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <Select label="Family" value={f.fragrance.family} onChange={(e) => set({ fragrance: { ...f.fragrance, family: e.target.value } })}>
+                        <option value="">—</option>
+                        {[...new Set([...FRAGRANCE_FAMILIES, f.fragrance.family].filter(Boolean))].map((o) => <option key={o}>{o}</option>)}
+                      </Select>
+                      <Select label="Concentration" value={f.fragrance.concentration} onChange={(e) => set({ fragrance: { ...f.fragrance, concentration: e.target.value } })}>
+                        <option value="">—</option>
+                        {[...new Set([...CONCENTRATIONS, f.fragrance.concentration].filter(Boolean))].map((o) => <option key={o}>{o}</option>)}
+                      </Select>
+                      <Input label="Longevity" placeholder="6–8 hours" value={f.fragrance.longevity} onChange={(e) => set({ fragrance: { ...f.fragrance, longevity: e.target.value } })} />
+                      <Select label="Sillage" value={f.fragrance.sillage} onChange={(e) => set({ fragrance: { ...f.fragrance, sillage: e.target.value } })}>
+                        <option value="">—</option>
+                        {[...new Set([...SILLAGE, f.fragrance.sillage].filter(Boolean))].map((o) => <option key={o}>{o}</option>)}
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <Input label="Top notes" value={f.fragranceNotes.topNotes} onChange={(e) => set({ fragranceNotes: { ...f.fragranceNotes, topNotes: e.target.value } })} />
+                      <Input label="Heart notes" value={f.fragranceNotes.heartNotes} onChange={(e) => set({ fragranceNotes: { ...f.fragranceNotes, heartNotes: e.target.value } })} />
+                      <Input label="Base notes" value={f.fragranceNotes.baseNotes} onChange={(e) => set({ fragranceNotes: { ...f.fragranceNotes, baseNotes: e.target.value } })} />
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wider text-zinc-400 mb-2">Best season</p>
+                      <ChipToggle options={SEASONS} value={f.fragrance.season} onChange={(v) => set({ fragrance: { ...f.fragrance, season: v } })} />
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wider text-zinc-400 mb-2">Occasion</p>
+                      <ChipToggle options={OCCASIONS} value={f.fragrance.occasion} onChange={(v) => set({ fragrance: { ...f.fragrance, occasion: v } })} />
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t border-zinc-800 space-y-3">
+                  <p className="text-[11px] uppercase tracking-wider text-zinc-400">Returns &amp; shipping (shown on the product page and enforced on return requests)</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <TriSelect
+                      label="Returnable (change of mind)"
+                      value={f.returnPolicy.returnable}
+                      onChange={(v) => set({ returnPolicy: { ...f.returnPolicy, returnable: v } })}
+                      defaultLabel={`Default for ${typeInfo.label} – ${typeInfo.defaultReturnable === false ? 'not returnable once opened' : 'returnable if unused & sealed'}`}
+                      yes="Returnable within 3 days if unused & sealed"
+                      no="Not returnable once opened (replacement if damaged/wrong)"
+                    />
+                    <Input label="Return note on product page" placeholder="optional" value={f.returnPolicy.note} onChange={(e) => set({ returnPolicy: { ...f.returnPolicy, note: e.target.value } })} />
+                    <TriSelect
+                      label="Surface shipping only"
+                      hint="Alcohol-based perfumes, aerosols & other flammables cannot fly"
+                      value={f.shipping.surfaceOnly}
+                      onChange={(v) => set({ shipping: { ...f.shipping, surfaceOnly: v } })}
+                      defaultLabel={`Default for ${typeInfo.label} – ${typeInfo.hazmat ? 'surface only' : 'any mode'}`}
+                      yes="Yes – surface only (longer delivery promise)"
+                      no="No – can ship by air"
+                    />
+                    <Input label="Shipping note on product page" placeholder="optional" value={f.shipping.note} onChange={(e) => set({ shipping: { ...f.shipping, note: e.target.value } })} />
                   </div>
                 </div>
               </>
@@ -700,7 +854,7 @@ const ProductEditor = ({ id, initial, categories, onClose, onSaved }) => {
                 {f.faqs.map((q, i) => (
                   <div key={i} className="border border-zinc-800 rounded-xl p-4 space-y-2">
                     <div className="flex gap-2">
-                      <input value={q.question} onChange={(e) => set({ faqs: f.faqs.map((x, j) => (j === i ? { ...x, question: e.target.value } : x)) })} placeholder="Question – e.g. How many days to see results?" className="flex-1 bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100 font-medium" />
+                      <input value={q.question} onChange={(e) => set({ faqs: f.faqs.map((x, j) => (j === i ? { ...x, question: e.target.value } : x)) })} placeholder="Question – e.g. How long does it last?" className="flex-1 bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100 font-medium" />
                       <button type="button" onClick={() => set({ faqs: f.faqs.filter((_, j) => j !== i) })} className="p-2 text-zinc-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
                     </div>
                     <textarea value={q.answer} rows={3} onChange={(e) => set({ faqs: f.faqs.map((x, j) => (j === i ? { ...x, answer: e.target.value } : x)) })} placeholder="Answer" className="w-full bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-300" />

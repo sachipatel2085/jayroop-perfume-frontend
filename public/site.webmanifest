@@ -1,7 +1,7 @@
 {
-  "name": "Jayrup – Pimples Cream, Skincare & Perfumes",
+  "name": "Jayrup – Skincare & Perfumes",
   "short_name": "Jayrup",
-  "description": "Ayurvedic-inspired Pimples Cream, skincare and perfumes. Made in India.",
+  "description": "Skincare, perfumes and personal care made in India.",
   "start_url": "/?utm_source=pwa",
   "scope": "/",
   "display": "standalone",

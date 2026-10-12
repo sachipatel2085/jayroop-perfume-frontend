@@ -21,6 +21,11 @@ export const AdminCategories = () => {
     imageAlt: "",
     featured: false,
     status: "ACTIVE",
+    productType: "",
+    hsnCode: "",
+    gstRate: "",
+    googleProductCategory: "",
+    sortOrder: 0,
     seo: {
       metaTitle: "",
       metaDescription: "",
@@ -29,6 +34,7 @@ export const AdminCategories = () => {
       canonicalUrl: "",
     },
   });
+  const [typeCatalog, setTypeCatalog] = useState({});
 
   const loadCategories = async () => {
     try {
@@ -44,6 +50,10 @@ export const AdminCategories = () => {
 
   useEffect(() => {
     loadCategories();
+    adminService
+      .getProductTypes()
+      .then((d) => d?.types && setTypeCatalog(d.types))
+      .catch(() => {});
   }, []);
 
   const handleOpenAddModal = () => {
@@ -57,6 +67,11 @@ export const AdminCategories = () => {
       imageAlt: "",
       featured: false,
       status: "ACTIVE",
+      productType: "",
+      hsnCode: "",
+      gstRate: "",
+      googleProductCategory: "",
+      sortOrder: 0,
       seo: {
         metaTitle: "",
         metaDescription: "",
@@ -79,6 +94,11 @@ export const AdminCategories = () => {
       imageAlt: cat.image?.altText || "",
       featured: cat.featured,
       status: cat.status,
+      productType: cat.productType || "",
+      hsnCode: cat.hsnCode || "",
+      gstRate: typeof cat.gstRate === "number" ? cat.gstRate : "",
+      googleProductCategory: cat.googleProductCategory || "",
+      sortOrder: cat.sortOrder || 0,
       seo: {
         metaTitle: cat.seo?.metaTitle || "",
         metaDescription: cat.seo?.metaDescription || "",
@@ -104,6 +124,11 @@ export const AdminCategories = () => {
         },
         featured: formData.featured,
         status: formData.status,
+        productType: formData.productType,
+        hsnCode: formData.hsnCode,
+        gstRate: formData.gstRate === "" ? null : Number(formData.gstRate),
+        googleProductCategory: formData.googleProductCategory,
+        sortOrder: Number(formData.sortOrder) || 0,
         seo: formData.seo,
       };
 
@@ -160,6 +185,7 @@ export const AdminCategories = () => {
               <th className="py-3 px-4">Category Name</th>
               <th className="py-3 px-4">Slug</th>
               <th className="py-3 px-4">Subcategories</th>
+              <th className="py-3 px-4">Type &amp; GST defaults</th>
               <th className="py-3 px-4">Status</th>
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
@@ -200,6 +226,19 @@ export const AdminCategories = () => {
                     </div>
                   ) : (
                     <span className="text-zinc-600 text-[11px]">—</span>
+                  )}
+                </td>
+                <td className="py-3 px-4 text-[11px] text-zinc-400">
+                  {cat.productType ? (
+                    <>
+                      <span className="text-zinc-200">{typeCatalog[cat.productType]?.label || cat.productType}</span>
+                      <span className="block">
+                        HSN {cat.hsnCode || typeCatalog[cat.productType]?.hsnCode || "—"} ·{" "}
+                        {typeof cat.gstRate === "number" ? `${cat.gstRate}%` : "store GST"}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-amber-300/80">Set product type</span>
                   )}
                 </td>
                 <td className="py-3 px-4">
@@ -273,12 +312,91 @@ export const AdminCategories = () => {
                   className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
                 >
                   <option value="">None (Top-Level Root Category)</option>
-                  {categories.map((c) => (
+                  {categories.filter((c) => c._id !== editingId).map((c) => (
                     <option key={c._id} value={c._id}>
                       {c.name}
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="border border-gold/20 bg-gold/[0.03] p-4 space-y-3">
+                <p className="text-[10px] uppercase tracking-wider text-gold">
+                  Product type &amp; tax defaults – inherited by every product in this category (each product can override)
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">Product type</label>
+                    <select
+                      value={formData.productType}
+                      onChange={(e) => {
+                        const t = typeCatalog[e.target.value];
+                        setFormData({
+                          ...formData,
+                          productType: e.target.value,
+                          ...(formData.gstRate === "" && t ? { gstRate: t.suggestedGstRate } : {}),
+                        });
+                      }}
+                      className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
+                    >
+                      <option value="">Not set</option>
+                      {Object.entries(typeCatalog).map(([k, t]) => (
+                        <option key={k} value={k}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">
+                      HSN code {typeCatalog[formData.productType]?.hsnCode ? `(type default ${typeCatalog[formData.productType].hsnCode})` : ""}
+                    </label>
+                    <input
+                      value={formData.hsnCode}
+                      placeholder={typeCatalog[formData.productType]?.hsnCode || "e.g. 3303"}
+                      onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value.replace(/\D/g, "").slice(0, 8) })}
+                      className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">GST rate</label>
+                    <select
+                      value={formData.gstRate}
+                      onChange={(e) => setFormData({ ...formData, gstRate: e.target.value })}
+                      className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
+                    >
+                      <option value="">Store default (Settings › Invoices)</option>
+                      {[0, 5, 12, 18, 28, 40].map((r) => (
+                        <option key={r} value={r}>
+                          {r}%
+                        </option>
+                      ))}
+                    </select>
+                    {typeCatalog[formData.productType] && (
+                      <p className="text-[10px] text-zinc-500 mt-1">
+                        Suggested for {typeCatalog[formData.productType].label}: {typeCatalog[formData.productType].suggestedGstRate}% – confirm with your CA.
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">Display order</label>
+                    <input
+                      type="number"
+                      value={formData.sortOrder}
+                      onChange={(e) => setFormData({ ...formData, sortOrder: e.target.value })}
+                      className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">Google product category (Merchant Center, optional)</label>
+                    <input
+                      value={formData.googleProductCategory}
+                      placeholder={typeCatalog[formData.productType]?.googleCategory || "Health & Beauty > Personal Care"}
+                      onChange={(e) => setFormData({ ...formData, googleProductCategory: e.target.value })}
+                      className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
+                    />
+                  </div>
+                </div>
               </div>
 
               <ImageDropzone
@@ -293,7 +411,7 @@ export const AdminCategories = () => {
                 value={formData.description}
                 onChange={(val) => setFormData({ ...formData, description: val })}
                 label="Category Description (HTML supported)"
-                placeholder="Describe this royal category collection..."
+                placeholder="Describe this category – what it contains and who it is for…"
                 minHeight="140px"
               />
 

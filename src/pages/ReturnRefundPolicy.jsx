@@ -17,11 +17,45 @@ const sections = [
         </p>
         <p>All the exchanged/replaced/damaged product will be delivered within 5-7 business days.</p>
         <p>
+          Every product page clearly shows whether that product is <strong>returnable</strong> or <strong>non-returnable</strong>, and the same is shown in your order details
+          under <Link to="/account/orders">My Orders</Link>.
+        </p>
+        <p>
           You agree that there may be a certain category of products / items that are exempted from returns or refunds. Such categories of the products would be identified
           to you at the item of purchase. For exchange / return accepted request(s) (as applicable), once your returned product / item is received and inspected by us, we
           will send you an email to notify you about receipt of the returned / exchanged product. Further, if the same has been approved after the quality check at our
           end, your request (i.e. return / exchange) will be processed in accordance with our policies.
         </p>
+      </>
+    ),
+  },
+  {
+    id: 'product-categories',
+    heading: 'Product-specific conditions',
+    content: (
+      <>
+        <p>
+          For hygiene and safety reasons, some personal-care products cannot be taken back once they have been opened or used. The following conditions apply in addition
+          to the return policy above:
+        </p>
+        <ul>
+          <li>
+            <strong>Perfumes, attars &amp; fragrances:</strong> not returnable once the seal, cellophane wrap or cap lock has been opened, or the product has been sprayed / used.
+            Fragrance perception is personal and is not considered a defect. Bottles that arrive broken, leaking, tampered, or a wrong fragrance / size are always replaced
+            or refunded.
+          </li>
+          <li>
+            <strong>Skincare, hair care, soaps &amp; body care:</strong> may be returned within 3 days only if unused, sealed and in original packaging. Opened or used
+            products are not returnable unless they arrived damaged, expired or are the wrong item. Individual results may vary and are not a ground for return.
+          </li>
+          <li>
+            <strong>Gift sets / combos:</strong> must be returned complete with all items; partially used sets are not returnable.
+          </li>
+          <li>
+            <strong>Damaged, leaking, expired, tampered or wrong items:</strong> eligible for replacement or refund for every product, provided they are reported within the
+            time limits in this policy with photos (an unboxing video is strongly recommended).
+          </li>
+        </ul>
       </>
     ),
   },
@@ -64,7 +98,8 @@ const sections = [
     content: (
       <ol>
         <li>
-          E-mail <a href={`mailto:${BRAND.email}`}>{BRAND.email}</a> or call <a href={BRAND.phoneHref}>{BRAND.phone}</a> with your order number.
+          Open the order in <Link to="/account/orders">My Orders</Link> and choose <em>Report a problem / Return</em> (available for 3 days after delivery), or e-mail{' '}
+          <a href={`mailto:${BRAND.email}`}>{BRAND.email}</a> / call <a href={BRAND.phoneHref}>{BRAND.phone}</a> with your order number.
         </li>
         <li>Attach clear photos of the product and the packaging (for damaged, leaking or incorrect items).</li>
         <li>Our team will confirm eligibility and share the pickup / return instructions.</li>
@@ -79,7 +114,8 @@ export const ReturnRefundPolicy = () => (
     title="Refund & Return Policy"
     path="/refund-return-policy"
     seoTitle="Return & Refund Policy"
-    seoDescription="Return or exchange within 3 days of delivery for damaged or defective items. Refunds are credited to the original payment method within 15 days."
+    updated="October 12, 2026"
+    seoDescription="Return or exchange within 3 days for eligible items; damaged, leaking or wrong products are always replaced or refunded. Refunds go to the original payment method."
     sections={sections}
   />
 );

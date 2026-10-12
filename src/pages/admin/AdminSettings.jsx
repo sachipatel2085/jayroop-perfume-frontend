@@ -95,13 +95,16 @@ export const AdminSettings = () => {
               <p className="text-xs text-zinc-400 mt-1">
                 Credentials are read from the server <code className="text-gold">.env</code> (PHONEPE_CLIENT_ID, PHONEPE_CLIENT_SECRET, PHONEPE_CLIENT_VERSION, PHONEPE_ENV). They are never stored in the database or shown here.
               </p>
+              {gw.environment === 'SANDBOX' && gw.configured && (
+                <p className="text-xs text-sky-300 mt-2">Sandbox mode – use PhonePe “Test Mode” keys. To go live switch Test Mode OFF in PhonePe, copy the live keys and set PHONEPE_ENV=PRODUCTION.</p>
+              )}
               {gw.environment === 'MOCK' && <p className="text-xs text-amber-300 mt-2">Test simulator is ON (PHONEPE_MOCK=true) – disabled automatically in production.</p>}
               {!gw.webhookConfigured && gw.apiVersion !== 'v1' && <p className="text-xs text-amber-300 mt-2">Webhook username/password not set – payments still work (status is verified on redirect and by the background checker), but set them for instant updates.</p>}
             </div>
             {gw.webhookUrl && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                 {[
-                  ['Webhook URL (PhonePe dashboard › Webhooks)', gw.webhookUrl],
+                  ['Webhook URL (PhonePe › Developer Settings › Webhook › Create · type “SHA”)', gw.webhookUrl],
                   ['Redirect URL pattern', gw.redirectUrlPattern],
                 ].map(([l, v]) => (
                   <div key={l} className="bg-noir border border-zinc-800 rounded-lg p-3">
@@ -138,6 +141,12 @@ export const AdminSettings = () => {
             <Input label="Free shipping above (₹)" type="number" min="0" value={s.freeShippingThreshold} onChange={(e) => set({ freeShippingThreshold: e.target.value })} />
             <Input label="Flat shipping fee (₹)" type="number" min="0" value={s.flatShippingFee} onChange={(e) => set({ flatShippingFee: e.target.value })} hint="incl. GST" />
             <Input label="Delivery estimate text" value={s.estimatedDeliveryText} onChange={(e) => set({ estimatedDeliveryText: e.target.value })} />
+            <Input
+              label="Delivery estimate – surface-only items"
+              hint="perfumes & other flammables"
+              value={s.surfaceDeliveryText || ''}
+              onChange={(e) => set({ surfaceDeliveryText: e.target.value })}
+            />
           </div>
           <p className="text-xs text-zinc-500 mt-3">These rules are applied on the server for cart, checkout, invoices and Google Merchant feed – the browser can’t change them.</p>
         </Card>
@@ -147,7 +156,15 @@ export const AdminSettings = () => {
         <Card title="Business identity & GST" icon={Building2}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="Brand name" value={s.business.brandName} onChange={(e) => setB({ brandName: e.target.value })} />
-            <Input label="Trade name" value={s.business.tradeName} onChange={(e) => setB({ tradeName: e.target.value })} />
+            <Input label="Trade name (exactly as on GST certificate)" value={s.business.tradeName} onChange={(e) => setB({ tradeName: e.target.value })} />
+            <Input
+              className="md:col-span-2"
+              label="Tagline (invoices & reports)"
+              hint="describe the whole range – not one product"
+              maxLength={80}
+              value={s.business.tagline || ''}
+              onChange={(e) => setB({ tagline: e.target.value })}
+            />
             <Input label="Legal name (as on GST certificate)" value={s.business.legalName} onChange={(e) => setB({ legalName: e.target.value })} />
             <Input label="Registration note" value={s.business.registrationNote} onChange={(e) => setB({ registrationNote: e.target.value })} />
             <Input label="GSTIN" maxLength={15} placeholder="24XXXXX0000X1Z5" value={s.business.gstin} onChange={(e) => setB({ gstin: e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '') })} hint="Leave empty if not registered" />
@@ -184,16 +201,31 @@ export const AdminSettings = () => {
               <option value="SHIPPED">Shipped (recommended)</option>
               <option value="DELIVERED">Delivered</option>
             </Select>
-            <Input label="Default HSN code" value={s.invoice.defaultHsnCode} onChange={(e) => setI({ defaultHsnCode: e.target.value })} />
-            <Select label="Default product GST rate" value={s.invoice.defaultGstRate} onChange={(e) => setI({ defaultGstRate: Number(e.target.value) })}>
-              {[0, 5, 12, 18, 28].map((r) => <option key={r} value={r}>{r}%</option>)}
+            <Input
+              label="Fallback HSN code"
+              hint="used only if product, category & product type have none"
+              value={s.invoice.defaultHsnCode}
+              onChange={(e) => setI({ defaultHsnCode: e.target.value.replace(/\D/g, '').slice(0, 8) })}
+            />
+            <Select label="Fallback GST rate" value={s.invoice.defaultGstRate} onChange={(e) => setI({ defaultGstRate: Number(e.target.value) })}>
+              {[0, 5, 12, 18, 28, 40].map((r) => <option key={r} value={r}>{r}%</option>)}
             </Select>
-            <Select label="GST on shipping / COD fee" value={s.invoice.shippingGstRate} onChange={(e) => setI({ shippingGstRate: Number(e.target.value) })}>
-              {[0, 5, 12, 18, 28].map((r) => <option key={r} value={r}>{r}%</option>)}
+            <Select label="GST on shipping / COD fee" value={s.invoice.shippingTaxMode || 'HIGHEST_ITEM_RATE'} onChange={(e) => setI({ shippingTaxMode: e.target.value })}>
+              <option value="HIGHEST_ITEM_RATE">Same as highest product rate in the order (recommended)</option>
+              <option value="FIXED">Fixed rate</option>
             </Select>
+            {s.invoice.shippingTaxMode === 'FIXED' && (
+              <Select label="Fixed shipping GST rate" value={s.invoice.shippingGstRate} onChange={(e) => setI({ shippingGstRate: Number(e.target.value) })}>
+                {[0, 5, 12, 18, 28, 40].map((r) => <option key={r} value={r}>{r}%</option>)}
+              </Select>
+            )}
             <Input label="Shipping SAC code" value={s.invoice.shippingSacCode} onChange={(e) => setI({ shippingSacCode: e.target.value })} />
             <Input label="Signatory" value={s.invoice.signatoryName} onChange={(e) => setI({ signatoryName: e.target.value })} />
           </div>
+          <p className="text-xs text-zinc-500 mt-3">
+            Each invoice line uses the HSN &amp; GST of its own product (Products › Price, Stock &amp; GST), else its category (Categories), else its product type – so creams,
+            perfumes and any future products are taxed correctly in the same order. The fallbacks above are used only when nothing else is set.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <Textarea label="Terms printed on invoice" rows={3} value={s.invoice.termsText} onChange={(e) => setI({ termsText: e.target.value })} />
             <Textarea label="Footer thank-you note" rows={3} value={s.invoice.footerNote} onChange={(e) => setI({ footerNote: e.target.value })} />

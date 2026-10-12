@@ -81,8 +81,8 @@ export const Shop = () => {
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-10 px-4 sm:px-8 max-w-7xl mx-auto">
       <SEO
-        title="Royal Fragrance & Skincare Catalog | Jayrup Treasury"
-        description="Browse the complete catalog of Jayrup handcrafted extraits de parfum, artisanal saffron soaps, and Jayrup Special skincare formulations."
+        title="Shop All Products – Skincare & Perfumes | Jayrup"
+        description="Shop the complete Jayrup range online – skincare, long-lasting perfumes and more. Genuine products, PhonePe & COD payment, delivery across India."
         canonicalUrl="/shop"
       >
         <BreadcrumbSchema
@@ -92,8 +92,8 @@ export const Shop = () => {
           ]}
         />
         <CollectionPageSchema
-          name="Jayrup Royal Treasury Catalog"
-          description="Browse the complete catalog of Jayrup handcrafted extraits de parfum, artisanal saffron soaps, and Jayrup Special skincare formulations."
+          name="Jayrup – All Products"
+          description="Shop the complete Jayrup range online – skincare, long-lasting perfumes and more. Genuine products, PhonePe & COD payment, delivery across India."
           url="/shop"
           products={products}
         />

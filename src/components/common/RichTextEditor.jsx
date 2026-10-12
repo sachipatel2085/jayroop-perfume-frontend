@@ -634,7 +634,7 @@ export const RichTextEditor = ({
                   <input type="checkbox" className="accent-[#D4AF37]" checked={Boolean(modal.newTab)} onChange={(e) => setModal({ ...modal, newTab: e.target.checked })} />
                   Open in new tab
                 </label>
-                <p className="text-[11px] text-zinc-500">Tip: link to your own products & articles (e.g. /products/jayrup-pimples-cream) for better SEO.</p>
+                <p className="text-[11px] text-zinc-500">Tip: link to your own products & articles (e.g. /products/your-product-slug) for better SEO.</p>
               </>
             )}
 

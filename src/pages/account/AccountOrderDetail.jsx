@@ -15,10 +15,11 @@ import {
   ClipboardCheck,
   Home,
   LifeBuoy,
+  AlertTriangle,
 } from 'lucide-react';
 import { orderService } from '../../services/orderService.js';
 import { OrderStatusBadge, PaymentBadge, Pill } from '../../components/ui/StatusBadge.jsx';
-import { Card, PageLoader, Alert, Textarea } from '../../components/ui/Field.jsx';
+import { Card, PageLoader, Alert, Textarea, Select } from '../../components/ui/Field.jsx';
 import { useBuyAgain, usePayNow } from './orderHelpers.jsx';
 import { formatINR, formatDate } from '../../config/site.js';
 
@@ -36,6 +37,18 @@ const stepIndex = (o) => {
   return 0;
 };
 
+// Must match RETURN_REASONS on the server (config/productTypes.js)
+const RETURN_REASONS = [
+  ['DAMAGED', 'Item arrived damaged / broken', true],
+  ['LEAKING', 'Leaking or spilled product', true],
+  ['WRONG_ITEM', 'Received a wrong item / size', true],
+  ['MISSING_ITEM', 'Item missing from the package', true],
+  ['SEAL_BROKEN', 'Seal broken / tampered on arrival', true],
+  ['NOT_AS_DESCRIBED', 'Not as shown on the website', true],
+  ['CHANGED_MIND', 'No longer needed (unused, sealed)', false],
+];
+const RETURN_STATUS = { OPEN: ['Under review', 'amber'], APPROVED: ['Approved', 'emerald'], REJECTED: ['Not approved', 'red'], CLOSED: ['Closed', 'noir'] };
+
 const MODE = { UPI_INTENT: 'UPI', UPI_COLLECT: 'UPI', UPI_QR: 'UPI QR', CARD: 'Card', NET_BANKING: 'Net Banking', TOKEN: 'Saved card' };
 
 export const AccountOrderDetail = () => {
@@ -48,6 +61,9 @@ export const AccountOrderDetail = () => {
   const [reason, setReason] = useState('');
   const [cancelling, setCancelling] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [showReturn, setShowReturn] = useState(false);
+  const [ret, setRet] = useState({ reason: '', message: '', preferredResolution: 'REPLACEMENT', items: [] });
+  const [returning, setReturning] = useState(false);
   const buyAgain = useBuyAgain();
   const { pay, busy } = usePayNow();
 
@@ -78,6 +94,29 @@ export const AccountOrderDetail = () => {
       setError(err.message);
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const itemKey = (i) => i.variant?.sku || i.sku;
+  const openReturn = () => {
+    setRet({ reason: '', message: '', preferredResolution: 'REPLACEMENT', items: order.items.map(itemKey) });
+    setShowReturn(true);
+  };
+  const selectedItems = order ? order.items.filter((i) => ret.items.includes(itemKey(i))) : [];
+  const blockedForChangeOfMind = selectedItems.filter((i) => i.returnable === false);
+  const handleReturn = async () => {
+    try {
+      setReturning(true);
+      setError(null);
+      const res = await orderService.requestReturn(orderNumber, ret);
+      setOrder(res.data);
+      setShowReturn(false);
+      setNotice(res.message || 'Request received.');
+    } catch (err) {
+      setError(err.message);
+      setShowReturn(false);
+    } finally {
+      setReturning(false);
     }
   };
 
@@ -203,12 +242,30 @@ export const AccountOrderDetail = () => {
             <RotateCcw className="w-4 h-4 mr-2" /> Buy again
           </button>
         )}
+        {order.canRequestReturn && (
+          <button onClick={openReturn} className="px-5 py-3 rounded-lg border border-amber-500/40 text-amber-200 text-xs uppercase tracking-[0.15em] hover:bg-amber-500/10 inline-flex items-center">
+            <AlertTriangle className="w-4 h-4 mr-2" /> Report a problem / Return
+          </button>
+        )}
         {order.canCancel && (
           <button onClick={() => setShowCancel(true)} className="px-5 py-3 rounded-lg border border-red-500/40 text-red-300 text-xs uppercase tracking-[0.15em] hover:bg-red-500/10 inline-flex items-center">
             <XCircle className="w-4 h-4 mr-2" /> Cancel order
           </button>
         )}
       </div>
+
+      {order.returnRequest && (
+        <Card title="Return / replacement request" icon={RotateCcw}>
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <Pill tone={RETURN_STATUS[order.returnRequest.status]?.[1] || 'amber'}>{RETURN_STATUS[order.returnRequest.status]?.[0] || order.returnRequest.status}</Pill>
+            <span className="text-zinc-300">{RETURN_REASONS.find(([k]) => k === order.returnRequest.reason)?.[1] || order.returnRequest.reason}</span>
+            <span className="text-xs text-zinc-500">· requested {formatDate(order.returnRequest.requestedAt, true)} · wants {order.returnRequest.preferredResolution === 'REFUND' ? 'refund' : 'replacement'}</span>
+          </div>
+          <p className="text-xs text-zinc-400 mt-2">{(order.returnRequest.items || []).map((i) => `${i.name} × ${i.quantity}`).join(', ')}</p>
+          {order.returnRequest.resolution && <p className="text-xs text-zinc-300 mt-2">Update from our team: {order.returnRequest.resolution}</p>}
+          {order.returnRequest.status === 'OPEN' && <p className="text-[11px] text-zinc-500 mt-2">Our team will contact you within 24–48 hours. Please keep the product, packaging and photos / unboxing video ready.</p>}
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
         <div className="space-y-6">
@@ -220,6 +277,7 @@ export const AccountOrderDetail = () => {
                   <div className="flex-1 min-w-0">
                     <Link to={`/products/${item.slug}`} className="text-sm text-zinc-100 hover:text-gold line-clamp-2">{item.name}</Link>
                     <p className="text-xs text-zinc-500">{item.variant?.title ? `${item.variant.title} · ` : ''}Qty {item.quantity} × {formatINR(item.price)}</p>
+                    {item.returnable === false && <p className="text-[10px] text-zinc-500">Non-returnable once opened · replaced if damaged / wrong</p>}
                     {order.orderStatus === 'DELIVERED' && (
                       <Link to={`/products/${item.slug}#reviews`} className="text-[11px] text-gold hover:underline">Rate & review</Link>
                     )}
@@ -296,13 +354,71 @@ export const AccountOrderDetail = () => {
 
           <Card title="Need help?" icon={LifeBuoy}>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              Damaged or wrong item? Contact us within 3 days of delivery with photos. Call{' '}
+              Damaged, leaking or wrong item? Use “Report a problem” above (available for 3 days after delivery) or contact us with photos. Call{' '}
               <a href="tel:+919408133100" className="text-gold">+91 94081 33100</a> or e-mail{' '}
               <a href={`mailto:care@jayrup.in?subject=Order ${order.orderNumber}`} className="text-gold">care@jayrup.in</a>.
             </p>
           </Card>
         </div>
       </div>
+
+      {showReturn && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true">
+          <div className="bg-noir-card border border-gold/30 rounded-2xl p-6 max-w-lg w-full space-y-4 my-8">
+            <h3 className="font-serif text-lg uppercase tracking-wider text-zinc-100">Report a problem</h3>
+            <div>
+              <p className="text-[11px] uppercase tracking-wider text-zinc-400 mb-2">Which items?</p>
+              <div className="space-y-2">
+                {order.items.map((i) => {
+                  const k = itemKey(i);
+                  const on = ret.items.includes(k);
+                  return (
+                    <label key={k} className={`flex items-center gap-3 p-2 rounded-lg border cursor-pointer ${on ? 'border-gold/60 bg-gold/5' : 'border-zinc-800'}`}>
+                      <input type="checkbox" className="accent-[#D4AF37]" checked={on} onChange={() => setRet((r) => ({ ...r, items: on ? r.items.filter((x) => x !== k) : [...r.items, k] }))} />
+                      <img src={i.image} alt="" className="w-10 h-10 rounded object-cover" />
+                      <span className="text-xs text-zinc-200 flex-1">
+                        {i.name}
+                        {i.variant?.title ? ` (${i.variant.title})` : ''} × {i.quantity}
+                        {i.returnable === false && <span className="block text-[10px] text-zinc-500">Non-returnable once opened</span>}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+            <Select label="What went wrong?" value={ret.reason} onChange={(e) => setRet((r) => ({ ...r, reason: e.target.value }))}>
+              <option value="">Choose a reason…</option>
+              {RETURN_REASONS.map(([k, l, anyItem]) => (
+                <option key={k} value={k} disabled={!anyItem && blockedForChangeOfMind.length > 0}>
+                  {l}
+                  {!anyItem && blockedForChangeOfMind.length > 0 ? ' – not available for opened/non-returnable items' : ''}
+                </option>
+              ))}
+            </Select>
+            <Select label="I would prefer" value={ret.preferredResolution} onChange={(e) => setRet((r) => ({ ...r, preferredResolution: e.target.value }))}>
+              <option value="REPLACEMENT">A replacement</option>
+              <option value="REFUND">A refund</option>
+            </Select>
+            <Textarea
+              label="Describe the problem"
+              rows={4}
+              maxLength={1500}
+              value={ret.message}
+              onChange={(e) => setRet((r) => ({ ...r, message: e.target.value }))}
+              placeholder="Tell us what happened. Our team will ask for photos / an unboxing video on e-mail or WhatsApp."
+            />
+            <p className="text-[11px] text-zinc-500">
+              As per our <Link to="/refund-return-policy" className="underline">Refund &amp; Return Policy</Link>, requests are accepted within 3 days of delivery.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowReturn(false)} className="px-4 py-2 rounded-lg border border-zinc-700 text-sm text-zinc-300">Close</button>
+              <button onClick={handleReturn} disabled={returning || !ret.reason || ret.items.length === 0} className="btn-gold rounded-lg !py-2">
+                {returning ? 'Sending…' : 'Submit request'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showCancel && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">

@@ -1,17 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Leaf, ShieldCheck, Sparkles, Flag, BadgeCheck, Target, HeartHandshake, Mail, Globe, ChevronRight } from 'lucide-react';
 import { SEO } from '../components/seo/SEO.jsx';
 import { OrganizationSchema } from '../components/seo/OrganizationSchema.jsx';
 import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
 import logoImg from '../assets/jayroop-logo.webp';
-import { BRAND } from '../config/site.js';
+import { BRAND, legalIdentity } from '../config/site.js';
+import { productService } from '../services/productService.js';
 
 const DIFFERENT = [
-  { icon: Leaf, title: 'Ayurvedic Inspired Ingredients', text: 'Carefully selected herbal and skin-friendly components inspired by traditional wellness practices.' },
-  { icon: ShieldCheck, title: 'Cosmetic Safety Focused', text: 'Formulated as a Class 3 Cosmetic Product, following quality and safety guidelines.' },
-  { icon: Sparkles, title: 'Simple & Effective Formulas', text: 'No unnecessary complexity — just focused skincare that works.' },
-  { icon: Flag, title: 'Made in India', text: 'Proudly developed and manufactured in India for Indian skin needs.' },
+  { icon: Leaf, title: 'Thoughtfully Chosen Ingredients', text: 'Herbal, skin-friendly and fine aromatic ingredients inspired by traditional Indian wellness and perfumery.' },
+  { icon: ShieldCheck, title: 'Cosmetic Safety Focused', text: 'Every product is a Class 3 cosmetic made by licensed manufacturers, following quality and safety guidelines.' },
+  { icon: Sparkles, title: 'Simple & Effective', text: 'No unnecessary complexity — focused formulas and long-lasting fragrances that deliver what they promise.' },
+  { icon: Flag, title: 'Made in India', text: 'Proudly developed and manufactured in India, for Indian skin, climate and lifestyles.' },
   { icon: BadgeCheck, title: 'Quality & Transparency', text: 'We believe in clear communication, honest branding, and authentic products.' },
 ];
 
@@ -22,11 +23,20 @@ const Bullet = ({ children }) => (
   </li>
 );
 
-export const AboutUs = () => (
+export const AboutUs = () => {
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    productService
+      .getCategories()
+      .then((c) => Array.isArray(c) && setCategories(c))
+      .catch(() => {});
+  }, []);
+
+  return (
   <div className="bg-noir min-h-screen text-zinc-100">
     <SEO
-      title="About Jayrup – Ayurvedic-Inspired Skincare Made in India"
-      description="Jayrup creates safe, effective and affordable cosmetic skincare inspired by Ayurveda and modern cosmetic science. Learn about Jayrup Pimples Cream, our philosophy, quality standards and vision."
+      title="About Jayrup – Skincare & Fragrances Made in India"
+      description="Jayrup creates safe, effective and affordable skincare and long-lasting fragrances, combining traditional wisdom with modern cosmetic science. Learn about our journey, quality standards and vision."
       canonicalUrl="/about"
     >
       <OrganizationSchema />
@@ -46,12 +56,12 @@ export const AboutUs = () => (
           <p className="text-[11px] uppercase tracking-[0.3em] text-gold font-semibold">About Us</p>
           <h1 className="font-serif text-4xl sm:text-5xl uppercase tracking-wider font-bold mt-3">About Jayrup</h1>
           <p className="mt-6 text-base sm:text-lg text-zinc-300 leading-relaxed max-w-2xl">
-            At Jayrup, we believe that clear, healthy skin should be achievable without harsh chemicals or complicated routines. Our goal is to create safe, effective, and
-            affordable cosmetic skincare products that support everyday skin confidence.
+            At Jayrup, we believe that looking and feeling your best should be simple, safe and affordable. Our goal is to create effective cosmetic and personal-care
+            products — from skincare to long-lasting fragrances — that support everyday confidence.
           </p>
           <p className="mt-4 text-sm text-zinc-400 leading-relaxed max-w-2xl">
-            Jayrup Pimples Cream is our first step toward building a trusted Indian skincare brand rooted in Ayurvedic inspiration, modern cosmetic standards, and honest
-            formulations. Developed in India, Jayrup is focused on delivering skincare solutions that suit Indian skin types, lifestyles, and climate conditions.
+            Our journey began with Jayrup Pimples Cream and has grown into a range of skincare and perfumes, with more products on the way. Developed in India, every Jayrup
+            product is made to suit Indian skin types, lifestyles and climate conditions — rooted in traditional inspiration, modern cosmetic standards and honest formulations.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/shop" className="btn-gold">Shop Jayrup</Link>
@@ -70,42 +80,50 @@ export const AboutUs = () => (
         <div>
           <h2 className="font-serif text-2xl sm:text-3xl uppercase tracking-wider">Our Philosophy</h2>
           <p className="mt-4 text-zinc-400 leading-relaxed">
-            We combine traditional Ayurvedic knowledge with modern cosmetic science to develop products that are gentle, effective, and suitable for regular use.
+            We combine traditional Indian knowledge — Ayurvedic botanicals and the art of perfumery — with modern cosmetic science to develop products that are gentle,
+            effective and suitable for regular use.
           </p>
           <p className="mt-4 text-zinc-400 leading-relaxed">
-            Every Jayrup product is created with a focus on skin safety, consistency, and visible results, without unnecessary additives.
+            Every Jayrup product is created with a focus on safety, consistency and real results, without unnecessary additives.
           </p>
         </div>
         <div className="bg-noir-card border border-gold/20 rounded-2xl p-6 sm:p-8">
-          <p className="text-[11px] uppercase tracking-[0.25em] text-gold mb-4">Our formulations are designed to</p>
+          <p className="text-[11px] uppercase tracking-[0.25em] text-gold mb-4">Every product is designed to</p>
           <ul className="space-y-3 text-zinc-200">
-            <Bullet>Support reduction of pimples and acne marks</Bullet>
-            <Bullet>Help control excess oil</Bullet>
-            <Bullet>Promote clearer-looking, healthier skin</Bullet>
+            <Bullet>Be safe for regular, everyday use</Bullet>
+            <Bullet>Deliver visible results and lasting performance</Bullet>
+            <Bullet>Offer honest quality at a fair price</Bullet>
           </ul>
         </div>
       </section>
 
-      {/* First product */}
-      <section className="bg-gradient-to-br from-gold/[0.08] to-transparent border border-gold/20 rounded-3xl p-6 sm:p-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.25em] text-gold">Our First Product</p>
-          <h2 className="font-serif text-2xl sm:text-3xl uppercase tracking-wider mt-2">Jayrup Pimples Cream</h2>
-          <p className="mt-4 text-zinc-300 leading-relaxed">
-            Jayrup Pimples Cream is an Ayurvedic-inspired cosmetic skincare product formulated for people dealing with:
-          </p>
-          <ul className="mt-4 space-y-2 text-zinc-200">
-            <Bullet>Pimples &amp; acne</Bullet>
-            <Bullet>Acne marks</Bullet>
-            <Bullet>Oily and uneven skin</Bullet>
-          </ul>
-          <p className="mt-4 text-zinc-400 leading-relaxed">With regular use, it helps improve the appearance of skin while fitting seamlessly into daily skincare routines.</p>
-        </div>
-        <div className="flex flex-col justify-between gap-6">
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.06] p-5 text-sm text-amber-100/90 leading-relaxed">
-            Jayrup Pimples Cream is intended for external use only and complies with applicable cosmetic safety standards.
+      {/* Our range – built from the live catalogue, so new categories appear automatically */}
+      <section className="bg-gradient-to-br from-gold/[0.08] to-transparent border border-gold/20 rounded-3xl p-6 sm:p-10">
+        <p className="text-[11px] uppercase tracking-[0.25em] text-gold">Our Range</p>
+        <h2 className="font-serif text-2xl sm:text-3xl uppercase tracking-wider mt-2">Explore Jayrup</h2>
+        <p className="mt-4 text-zinc-300 leading-relaxed max-w-3xl">
+          From our first product, Jayrup Pimples Cream, to our collection of long-lasting perfumes, every Jayrup product carries the same promise of quality, safety and
+          customer trust.
+        </p>
+        {categories.length > 0 && (
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {categories.map((c) => (
+              <Link
+                key={c._id}
+                to={`/category/${c.slug}`}
+                className="group bg-noir-card border border-zinc-800 hover:border-gold/50 rounded-xl p-4 flex items-center justify-between gap-3 transition-colors"
+              >
+                <span className="text-sm font-semibold text-zinc-100 group-hover:text-gold">{c.name}</span>
+                <ChevronRight className="w-4 h-4 text-gold" />
+              </Link>
+            ))}
           </div>
-          <Link to="/shop" className="btn-gold self-start">View product</Link>
+        )}
+        <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+          <p className="text-xs text-amber-100/80 rounded-lg border border-amber-500/30 bg-amber-500/[0.06] px-4 py-3 leading-relaxed">
+            All Jayrup products are cosmetics for external use only and comply with applicable cosmetic safety standards. Please read the label before use.
+          </p>
+          <Link to="/shop" className="btn-gold self-start sm:self-auto whitespace-nowrap">Shop all products</Link>
         </div>
       </section>
 
@@ -136,14 +154,14 @@ export const AboutUs = () => (
         <div className="bg-noir-card border border-zinc-800 rounded-2xl p-6">
           <Target className="w-6 h-6 text-gold mb-3" />
           <h2 className="font-serif text-lg uppercase tracking-wider">Our Vision</h2>
-          <p className="mt-3 text-sm text-zinc-400 leading-relaxed">Our vision is to grow Jayrup into a trusted cosmetic skincare brand offering multiple products that support:</p>
+          <p className="mt-3 text-sm text-zinc-400 leading-relaxed">Our vision is to grow Jayrup into a trusted Indian beauty and fragrance brand offering products that support:</p>
           <ul className="mt-3 space-y-1.5 text-sm text-zinc-300">
-            <Bullet>Clear skin</Bullet>
-            <Bullet>Healthy routines</Bullet>
+            <Bullet>Healthy, clear skin</Bullet>
+            <Bullet>Signature fragrances for every day</Bullet>
             <Bullet>Everyday confidence</Bullet>
           </ul>
           <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
-            As we expand, new skincare solutions will be introduced under the Jayrup brand with the same focus on quality, safety, and customer trust.
+            As we expand, new products will be introduced under the Jayrup brand with the same focus on quality, safety, and customer trust.
           </p>
         </div>
         <div className="bg-noir-card border border-zinc-800 rounded-2xl p-6">
@@ -161,7 +179,7 @@ export const AboutUs = () => (
 
       <section className="border-t border-zinc-800 pt-10 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start">
         <p className="text-sm text-zinc-500 leading-relaxed max-w-3xl">
-          Jayrup Pimples Cream operates as a brand owner and marketer. All products are manufactured by licensed third-party cosmetic manufacturers and marketed under the
+          {legalIdentity()} operates as a brand owner and marketer. All products are manufactured by licensed third-party cosmetic manufacturers and marketed under the
           Jayrup brand in compliance with Indian laws.
         </p>
         <div className="bg-noir-card border border-gold/20 rounded-xl p-5 text-sm min-w-[260px]">
@@ -173,6 +191,7 @@ export const AboutUs = () => (
       </section>
     </div>
   </div>
-);
+  );
+};
 
 export default AboutUs;

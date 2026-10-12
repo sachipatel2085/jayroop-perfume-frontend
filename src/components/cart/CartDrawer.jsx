@@ -72,7 +72,7 @@ export const CartDrawer = () => {
                 <p className="font-serif text-sm uppercase tracking-wider text-zinc-400">
                   Your shopping bag is empty
                 </p>
-                <p className="text-xs mt-1">Discover our royal perfumes & skincare creations.</p>
+                <p className="text-xs mt-1">Discover our full range of products.</p>
                 <button
                   onClick={() => {
                     setIsCartOpen(false);

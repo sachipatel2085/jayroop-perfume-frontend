@@ -138,7 +138,7 @@ export const WishlistPage = () => {
             Your Wishlist is Empty
           </h3>
           <p className="text-xs text-zinc-500 mb-6 max-w-md mx-auto">
-            Click the heart emblem on any fragrance or skincare cream to preserve it in your royal treasury.
+            Tap the heart on any product to save it here for later.
           </p>
           <Link to="/shop" className="btn-gold text-xs py-3 px-8 shadow-gold-glow inline-flex items-center gap-2">
             <span>Explore Treasury</span>

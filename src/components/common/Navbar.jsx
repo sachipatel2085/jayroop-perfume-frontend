@@ -596,7 +596,7 @@ export const Navbar = () => {
             </button>
 
             <h3 className="font-serif text-base sm:text-lg text-gold mb-3 sm:mb-4 tracking-wider uppercase">
-              Search Fragrances & Skincare
+              Search Jayrup
             </h3>
 
             <form onSubmit={handleSearchSubmit} className="flex gap-2">
@@ -605,7 +605,7 @@ export const Navbar = () => {
                 autoFocus
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, oud, saffron, pimples cream, notes..."
+                placeholder="Search products, fragrance notes, concerns…"
                 className="flex-1 bg-noir border border-gold/30 px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold"
               />
               <button
@@ -616,42 +616,24 @@ export const Navbar = () => {
               </button>
             </form>
 
-            <div className="mt-4 flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-zinc-400">
-              <span className="text-zinc-500">Popular:</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery("Royal Oud");
-                  navigate("/shop?search=Royal%20Oud");
-                  setSearchOpen(false);
-                }}
-                className="hover:text-gold border border-zinc-800 px-2.5 py-1 rounded-full text-[10px] sm:text-xs"
-              >
-                Royal Oud
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery("Pimples Cream");
-                  navigate("/shop?search=Pimples");
-                  setSearchOpen(false);
-                }}
-                className="hover:text-gold border border-zinc-800 px-2.5 py-1 rounded-full text-gold-amber text-[10px] sm:text-xs"
-              >
-                Jayrup Special Pimples Cream
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery("Sandalwood");
-                  navigate("/shop?search=Sandalwood");
-                  setSearchOpen(false);
-                }}
-                className="hover:text-gold border border-zinc-800 px-2.5 py-1 rounded-full text-[10px] sm:text-xs"
-              >
-                Mysore Sandalwood
-              </button>
-            </div>
+            {categories.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-zinc-400">
+                <span className="text-zinc-500">Browse:</span>
+                {categories.slice(0, 6).map((cat) => (
+                  <button
+                    key={cat._id}
+                    type="button"
+                    onClick={() => {
+                      navigate(`/category/${cat.slug}`);
+                      setSearchOpen(false);
+                    }}
+                    className="hover:text-gold border border-zinc-800 px-2.5 py-1 rounded-full text-[10px] sm:text-xs"
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

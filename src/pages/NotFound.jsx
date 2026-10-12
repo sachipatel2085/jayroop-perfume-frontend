@@ -1,12 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Compass, Sparkles, ArrowRight, Home, ShoppingBag } from 'lucide-react';
 import { SEO } from '../components/seo/SEO.jsx';
 import logoImg from '../assets/jayroop-logo.webp';
+import { productService } from '../services/productService.js';
 
 export const NotFound = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    productService
+      .getCategories()
+      .then((c) => Array.isArray(c) && setCategories(c.slice(0, 5)))
+      .catch(() => {});
+  }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -56,7 +65,7 @@ export const NotFound = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search perfumes, soaps, or skincare..."
+              placeholder="Search our products…"
               className="w-full bg-noir-card border border-gold/30 py-3 pl-4 pr-12 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-gold"
             />
             <button
@@ -75,23 +84,20 @@ export const NotFound = () => {
             Explore Curated Collections
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
+            {categories.map((c) => (
+              <Link
+                key={c._id}
+                to={`/category/${c.slug}`}
+                className="px-3 py-1.5 bg-noir-card border border-zinc-800 hover:border-gold/50 text-xs text-zinc-300 hover:text-gold transition-colors"
+              >
+                {c.name}
+              </Link>
+            ))}
             <Link
-              to="/category/luxury-perfumes"
+              to="/shop"
               className="px-3 py-1.5 bg-noir-card border border-zinc-800 hover:border-gold/50 text-xs text-zinc-300 hover:text-gold transition-colors"
             >
-              Royal Perfumes
-            </Link>
-            <Link
-              to="/category/skincare"
-              className="px-3 py-1.5 bg-noir-card border border-zinc-800 hover:border-gold/50 text-xs text-zinc-300 hover:text-gold transition-colors"
-            >
-              Ayurvedic Skincare
-            </Link>
-            <Link
-              to="/category/saffron-soaps"
-              className="px-3 py-1.5 bg-noir-card border border-zinc-800 hover:border-gold/50 text-xs text-zinc-300 hover:text-gold transition-colors"
-            >
-              Artisanal Soaps
+              Shop All
             </Link>
             <Link
               to="/blog"

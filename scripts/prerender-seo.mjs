@@ -6,7 +6,7 @@
  *  1. Asks the live API for every indexable route (/api/v1/seo/routes)
  *  2. For each route fetches the server-built <head> (title, meta, canonical, OG, JSON-LD)
  *     and a crawler-readable <noscript> body (/api/v1/seo/render?path=…)
- *  3. Writes dist/<route>.html  (e.g. dist/products/jayrup-pimples-cream.html)
+ *  3. Writes dist/<route>.html  (e.g. dist/products/<slug>.html)
  *     – .htaccess serves these files first, so Google gets full HTML without running JS.
  *  4. Downloads sitemap.xml, robots.txt and google-merchant-feed.xml into dist/
  *  5. Appends admin-managed 301 redirects (Admin › SEO › Redirects) to dist/.htaccess

@@ -22,6 +22,12 @@ export const orderService = {
     return res.data;
   },
 
+  // Report a problem / request return or replacement (within the policy window after delivery)
+  requestReturn: async (orderNumber, payload) => {
+    const res = await api.post(`/orders/my-orders/${encodeURIComponent(orderNumber)}/return-request`, payload);
+    return res;
+  },
+
   /** Public / owner order lookup. Guests must pass the phone number used on the order. */
   getOrderByIdentifier: async (identifier, phone) => {
     const res = await api.get(`/orders/${encodeURIComponent(identifier)}`, { params: phone ? { phone } : {} });

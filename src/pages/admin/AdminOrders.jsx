@@ -30,7 +30,17 @@ import { ORDER_STATUS_META } from '../../config/site.js';
 const money = (n) => `₹${Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 const dt = (d) => (d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—');
 
-const STATUS_TABS = ['', 'PENDING_PAYMENT', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'REFUND_REQUESTED', 'CANCELLED', 'REFUNDED'];
+const STATUS_TABS = ['', 'PENDING_PAYMENT', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'RETURN_OPEN', 'REFUND_REQUESTED', 'CANCELLED', 'REFUNDED'];
+const TAB_LABEL = { RETURN_OPEN: 'Return requests' };
+const RETURN_REASON_LABEL = {
+  DAMAGED: 'Damaged / broken',
+  LEAKING: 'Leaking / spilled',
+  WRONG_ITEM: 'Wrong item / size',
+  MISSING_ITEM: 'Item missing',
+  SEAL_BROKEN: 'Seal broken / tampered',
+  NOT_AS_DESCRIBED: 'Not as described',
+  CHANGED_MIND: 'Changed mind (unused)',
+};
 const TRANSITIONS = {
   PENDING_PAYMENT: ['PROCESSING', 'CANCELLED'],
   PAID: ['PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUND_REQUESTED'],
@@ -129,7 +139,7 @@ export const AdminOrders = () => {
               filters.status === s ? 'bg-gold text-black border-gold font-semibold' : 'border-zinc-800 text-zinc-400 hover:text-gold'
             }`}
           >
-            {s ? ORDER_STATUS_META[s]?.label || s : 'All'}
+            {s ? TAB_LABEL[s] || ORDER_STATUS_META[s]?.label || s : 'All'}
             {s && meta.statusCounts[s] ? <span className="ml-1.5 opacity-70">{meta.statusCounts[s]}</span> : null}
           </button>
         ))}
@@ -237,6 +247,7 @@ const OrderDrawer = ({ orderId, onClose, onUpdated }) => {
   const [tracking, setTracking] = useState({ courier: 'Delhivery', trackingId: '', trackingUrl: '', note: '' });
   const [refund, setRefund] = useState({ amount: '', reason: '', manual: false });
   const [note, setNote] = useState('');
+  const [retResolution, setRetResolution] = useState('');
 
   const load = useCallback(async () => {
     const o = await adminService.getOrder(orderId);
@@ -353,7 +364,10 @@ const OrderDrawer = ({ orderId, onClose, onUpdated }) => {
                   <img src={i.image} alt="" className="w-10 h-10 rounded object-cover border border-zinc-800" />
                   <div className="flex-1 min-w-0">
                     <p className="text-zinc-100 truncate">{i.name}{i.variant?.title ? ` · ${i.variant.title}` : ''}</p>
-                    <p className="text-zinc-500">SKU {i.variant?.sku || i.sku || '—'} · HSN {i.hsnCode || '—'} · GST {i.gstRate ?? 18}%</p>
+                    <p className="text-zinc-500">
+                      SKU {i.variant?.sku || i.sku || '—'} · HSN {i.hsnCode || '—'} · GST {i.gstRate ?? 18}%{i.categoryName ? ` · ${i.categoryName}` : ''}
+                      {i.returnable === false ? ' · non-returnable' : ''}
+                    </p>
                   </div>
                   <span className="text-zinc-400">{i.quantity} × {money(i.price)}</span>
                   <span className="text-zinc-100 font-semibold w-20 text-right">{money(i.subtotal)}</span>
@@ -374,6 +388,43 @@ const OrderDrawer = ({ orderId, onClose, onUpdated }) => {
               {order.refundedAmount > 0 && <div className="flex justify-between text-sky-300"><dt>Refunded</dt><dd>{money(order.refundedAmount)}</dd></div>}
             </dl>
           </Section>
+
+          {order.returnRequest && (
+            <Section title="Return / replacement request" icon={RefreshCw}>
+              <div className="space-y-2 text-xs">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Pill tone={order.returnRequest.status === 'OPEN' ? 'amber' : order.returnRequest.status === 'APPROVED' ? 'emerald' : order.returnRequest.status === 'REJECTED' ? 'red' : 'noir'}>
+                    {order.returnRequest.status}
+                  </Pill>
+                  <span className="text-zinc-200">{RETURN_REASON_LABEL[order.returnRequest.reason] || order.returnRequest.reason}</span>
+                  <span className="text-zinc-500">· wants {order.returnRequest.preferredResolution?.toLowerCase()} · {dt(order.returnRequest.requestedAt)}</span>
+                </div>
+                <p className="text-zinc-400">{(order.returnRequest.items || []).map((i) => `${i.name} × ${i.quantity}`).join(', ')}</p>
+                {order.returnRequest.message && <p className="text-zinc-300 whitespace-pre-line bg-white/[0.03] rounded-lg p-3">{order.returnRequest.message}</p>}
+                {order.returnRequest.resolution && <p className="text-zinc-400">Resolution: {order.returnRequest.resolution}</p>}
+                <textarea
+                  rows={2}
+                  value={retResolution}
+                  onChange={(e) => setRetResolution(e.target.value)}
+                  placeholder="Message to customer (e.g. pickup scheduled, replacement dispatched, refund initiated)…"
+                  className="w-full bg-noir border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-gold"
+                />
+                <div className="flex flex-wrap gap-2">
+                  {['APPROVED', 'REJECTED', 'CLOSED'].map((st) => (
+                    <button
+                      key={st}
+                      disabled={busy === `ret-${st}`}
+                      onClick={() => act(`ret-${st}`, () => adminService.updateReturnRequest(order._id, { status: st, resolution: retResolution }), `Return request ${st.toLowerCase()} – customer notified by e-mail`)}
+                      className={`rounded-lg !py-2 !px-3 ${st === 'APPROVED' ? 'btn-gold' : 'btn-outline-gold'}`}
+                    >
+                      {st === 'APPROVED' ? 'Approve' : st === 'REJECTED' ? 'Reject' : 'Close'}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-zinc-500">After approving: ship the replacement, or use “Refund” below for a refund (credit note is issued automatically).</p>
+              </div>
+            </Section>
+          )}
 
           <Section title="Payment" icon={CreditCard}>
             <div className="grid grid-cols-2 gap-2 text-xs">

@@ -66,39 +66,70 @@ const FAQ_DATA = [
     answer: 'Shipping charges, if applicable, are shown clearly at checkout before you pay. Orders above ₹999 ship free.',
   },
   {
-    category: 'Specialized Skincare',
-    question: 'What is Jayrup Pimples Cream used for?',
+    category: 'Shipping & Delivery',
+    question: 'Why do perfume orders take a little longer?',
     answer:
-      'Jayrup Pimples Cream is an Ayurvedic-inspired cosmetic cream formulated to support reduction of pimples and acne marks, help control excess oil and promote clearer-looking skin with regular use.',
+      'Alcohol-based perfumes are classified as flammable goods by courier companies, so they can only travel by surface (road/rail) transport and not by air. Orders containing perfumes may take 2–3 extra business days. The expected delivery time is shown on every product page and at checkout.',
   },
   {
-    category: 'Specialized Skincare',
-    question: 'Is Jayrup Pimples Cream safe for daily use?',
+    category: 'Products & Usage',
+    question: 'Where can I find ingredients, net quantity and usage directions?',
     answer:
-      'It is a Class 3 cosmetic product made for regular external use and complies with applicable cosmetic safety standards. As with any skincare product, do a patch test first and discontinue use if irritation occurs. For external use only.',
+      'Every product page lists the key ingredients, how to use, precautions, net quantity, shelf life, manufacturer / marketer details and country of origin – the same information printed on the pack. Many products also have their own FAQs on the product page.',
   },
   {
-    category: 'Specialized Skincare',
-    question: 'Which skin types is it suitable for?',
-    answer: 'It is designed for Indian skin types and climate, especially oily, combination and acne-prone skin. Check the product page for full ingredient and usage details.',
+    category: 'Products & Usage',
+    question: 'Are Jayrup products safe for daily use?',
+    answer:
+      'All Jayrup products are Class 3 cosmetics made by licensed manufacturers for external use and comply with applicable cosmetic safety standards. As with any cosmetic, read the label, do a patch test first and discontinue use if irritation occurs.',
   },
   {
-    category: 'Fragrance Artistry',
+    category: 'Products & Usage',
+    question: 'Are the products genuine? How do I check the batch and expiry?',
+    answer:
+      'Jayrup products are sold directly by the brand, so every product is 100% genuine. The batch number, manufacturing date and best-before / expiry date are printed on each pack.',
+  },
+  {
+    category: 'Skincare',
+    question: 'Which skincare product is right for my skin type?',
+    answer:
+      'Each skincare product page shows the skin types and concerns it is made for, along with directions and precautions. If you are unsure, write to care@jayrup.in or WhatsApp us and our team will guide you.',
+  },
+  {
+    category: 'Skincare',
+    question: 'How soon will I see results?',
+    answer:
+      'Results vary from person to person and depend on skin type, consistency of use and lifestyle. Follow the directions on the product page and use the product regularly for the recommended period.',
+  },
+  {
+    category: 'Fragrances',
     question: 'How should I apply perfume for it to last longer?',
     answer:
       'Spray on pulse points such as the wrists, neck and behind the ears on moisturised skin, and avoid rubbing your wrists together. Store the bottle away from direct sunlight and heat.',
   },
   {
+    category: 'Fragrances',
+    question: 'What is the difference between Eau de Parfum, Eau de Toilette and Attar?',
+    answer:
+      'They differ in fragrance concentration. Eau de Parfum (EDP) has a higher concentration and usually lasts longer than Eau de Toilette (EDT). Attar is a concentrated, alcohol-free perfume oil. The concentration, notes and expected longevity are listed on each perfume’s product page.',
+  },
+  {
+    category: 'Fragrances',
+    question: 'Can I return a perfume if I don’t like the smell?',
+    answer:
+      'For hygiene reasons, perfumes cannot be returned once the seal or cap lock is opened or the product has been used, and fragrance preference is personal. Bottles that arrive broken, leaking, tampered or a wrong fragrance/size are always replaced or refunded. Read the notes and fragrance family on the product page before buying.',
+  },
+  {
     category: 'Returns & Replacements',
     question: 'What is your return policy?',
     answer:
-      'Return or exchange is available within 3 days of delivery. The item must be unused, in the same condition and with original packaging. Replacements are provided for items found defective or damaged; sale items may not be eligible.',
+      'Return or exchange is available within 3 days of delivery. The item must be unused, sealed, in the same condition and with original packaging; sale items may not be eligible. Some products (for example opened perfumes) are non-returnable – this is shown on each product page. Damaged, leaking or wrong items are always replaced or refunded.',
   },
   {
     category: 'Returns & Replacements',
     question: 'I received a damaged or leaking product. What should I do?',
     answer:
-      'Contact us within 48 hours of delivery with photos of the product and packaging at care@jayrup.in or +91 94081 33100. We will help you with a replacement as per our policy.',
+      'Open the order in My Account › My Orders and choose “Report a problem / Return”, or contact us within 48 hours of delivery with photos of the product and packaging at care@jayrup.in or +91 94081 33100. An unboxing video helps us resolve it faster. We will arrange a replacement or refund as per our policy.',
   },
   {
     category: 'Returns & Replacements',
@@ -118,8 +149,9 @@ const CATEGORIES = [
   'All Questions',
   'Orders & Payments',
   'Shipping & Delivery',
-  'Fragrance Artistry',
-  'Specialized Skincare',
+  'Products & Usage',
+  'Skincare',
+  'Fragrances',
   'Returns & Replacements',
 ];
 
@@ -147,7 +179,7 @@ export const FAQ = () => {
     <div className="bg-noir min-h-screen text-zinc-100 py-10 px-4 sm:px-8 max-w-6xl mx-auto">
       <SEO
         title="FAQs – Orders, Delivery, Payments & Product Usage | Jayrup"
-        description="Answers to common questions about Jayrup Pimples Cream, delivery timelines, PhonePe & COD payments, GST invoices, returns and refunds."
+        description="Answers to common questions about Jayrup skincare and perfumes, product usage, delivery timelines, PhonePe & COD payments, GST invoices, returns and refunds."
         canonicalUrl="/faq"
       >
         <FAQSchema faqs={FAQ_DATA} />

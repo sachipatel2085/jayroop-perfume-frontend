@@ -37,7 +37,7 @@ export default function VideoSEO({ videos = [] }) {
         '@context': 'https://schema.org',
         '@type': 'VideoObject',
         name: video.title || 'Jayrup Luxury Fragrance Story',
-        description: video.seoDescription || video.caption || 'Jayrup (JR) Royal Fragrance & Skincare Experience',
+        description: video.seoDescription || video.caption || 'Jayrup – skincare & fragrances',
         thumbnailUrl: [video.posterUrl || 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=1200'],
         uploadDate: video.createdAt || new Date().toISOString(),
         duration: parseDurationToISO(video.videoDuration),
@@ -51,7 +51,7 @@ export default function VideoSEO({ videos = [] }) {
         },
         publisher: {
           '@type': 'Organization',
-          name: 'Jayrup (JR) Royal Fragrance & Skincare House',
+          name: 'Jayrup',
           logo: {
             '@type': 'ImageObject',
             url: window.location.origin + '/jayroop-logo.webp',

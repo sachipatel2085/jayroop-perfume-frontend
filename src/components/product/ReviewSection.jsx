@@ -181,7 +181,7 @@ export const ReviewSection = ({ productId }) => {
                   rows={4}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder="Share details about longevity, fragrance development, or skincare results..."
+                  placeholder="What did you like? How did it perform, how long did it last, would you recommend it?"
                   className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold"
                 />
               </div>

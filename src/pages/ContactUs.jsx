@@ -14,7 +14,7 @@ const SUBJECTS = [
   'Return & Replacement Request',
   'Complaint',
   'Payment Issue',
-  'Skincare Guidance',
+  'Product Question',
   'Wholesale & Corporate Gifting',
   'Grievance & Feedback',
 ];
@@ -46,7 +46,7 @@ export const ContactUs = () => {
     <div className="bg-noir min-h-screen text-zinc-100">
       <SEO
         title="Contact Jayrup – Customer Care, Orders & Returns"
-        description="Questions about Jayrup Pimples Cream or your order? Call +91 94081 33100 or email care@jayrup.in. Business address: G-28 Metropolis Complex, Gambhoi, Himatnagar, Gujarat 383030."
+        description="Questions about a Jayrup product or your order? Call +91 94081 33100 or email care@jayrup.in. Business address: G-28 Metropolis Complex, Gambhoi, Himatnagar, Gujarat 383030."
         canonicalUrl="/contact-us"
       >
         <OrganizationSchema />
@@ -92,7 +92,7 @@ export const ContactUs = () => {
               <p className="text-[11px] uppercase tracking-[0.3em] text-gold">Don’t be a stranger!</p>
               <h2 className="font-serif text-2xl sm:text-3xl uppercase tracking-wider mt-2">You tell us. We listen.</h2>
               <p className="text-sm text-zinc-400 mt-4 leading-relaxed">
-                At Jayrup, your voice matters to us. Whether it’s a question about our skincare range, feedback on your experience, or a suggestion to help us improve —
+                At Jayrup, your voice matters to us. Whether it’s a question about our products, feedback on your experience, or a suggestion to help us improve —
                 we’re always here to listen and assist you.
               </p>
               <p className="text-sm text-zinc-400 mt-3 leading-relaxed">

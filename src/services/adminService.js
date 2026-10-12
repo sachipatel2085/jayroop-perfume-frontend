@@ -39,6 +39,8 @@ export const adminService = {
   // Products
   getProducts: async (params) => (await api.get('/products/admin/list', { params })),
   getProduct: async (id) => (await api.get(`/products/admin/${id}`)).data,
+  // Product-type catalogue (tax defaults, sections, return/shipping rules) – single source on the server
+  getProductTypes: async () => (await api.get('/products/meta/types')).data,
   createProduct: async (productData) => (await api.post('/products', productData)).data,
   updateProduct: async (id, productData) => (await api.put(`/products/${id}`, productData)).data,
   deleteProduct: async (id) => (await api.delete(`/products/${id}`)).data,
@@ -91,5 +93,6 @@ export const adminService = {
 
   // Store Configuration & Cash on Delivery (COD) Controls
   getSettings: async () => (await api.get('/settings')).data,
+  updateReturnRequest: async (orderId, payload) => api.put(`/orders/${orderId}/return-request`, payload),
   updateSettings: async (settingsData) => (await api.put('/settings', settingsData)).data,
 };

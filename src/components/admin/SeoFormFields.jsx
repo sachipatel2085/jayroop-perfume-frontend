@@ -40,7 +40,7 @@ export const SeoFormFields = ({
   const displayDesc =
     metaDescription ||
     fallbackDescription ||
-    'Discover exquisite handcrafted Extraits de Parfum and Ayurvedic skincare from Jayrup Royal House. पिंपल्स भागे, आत्मविश्वास जागे.';
+    'Write a compelling 150–160 character description – it appears under your title in Google results.';
   const displaySlug = fallbackSlug ? fallbackSlug.toLowerCase().replace(/\s+/g, '-') : 'item';
   const previewUrl = `${SITE_URL}/${itemType}/${displaySlug}`;
 
@@ -200,7 +200,7 @@ export const SeoFormFields = ({
                 type="text"
                 value={focusKeyword}
                 onChange={(e) => handleFieldChange('focusKeyword', e.target.value)}
-                placeholder="e.g. luxury oud perfume, pimples soap"
+                placeholder="e.g. long lasting oud perfume"
                 className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-gold"
               />
               <p className="text-[10px] text-zinc-500">

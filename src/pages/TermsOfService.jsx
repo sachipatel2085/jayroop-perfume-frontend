@@ -83,6 +83,29 @@ const sections = [
     ),
   },
   {
+    id: 'products',
+    heading: 'Products, information & safe use',
+    content: (
+      <ul>
+        <li>
+          The Platform sells cosmetic and personal-care products such as skincare, fragrances and related items. Product images are for illustration; packaging, colour
+          and fragrance may vary slightly between batches.
+        </li>
+        <li>
+          Product descriptions, ingredients, net quantity, manufacturer details and directions for use are provided on each product page as declared on the pack. Please
+          read the label before use and do a patch test for skincare and fragrance products, especially if you have sensitive skin or allergies.
+        </li>
+        <li>
+          Cosmetic products are not medicines; they are not intended to diagnose, treat, cure or prevent any disease, and individual results may vary.
+        </li>
+        <li>Perfumes and other alcohol-based products are flammable – keep away from heat, open flame and children, and do not spray near the eyes.</li>
+        <li>
+          Return eligibility differs by product and is shown on each product page; see our <Link to="/refund-return-policy">Refund &amp; Return Policy</Link>.
+        </li>
+      </ul>
+    ),
+  },
+  {
     id: 'indemnity',
     heading: 'Indemnity',
     content: (
