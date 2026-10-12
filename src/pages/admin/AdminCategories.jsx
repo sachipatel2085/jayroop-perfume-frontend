@@ -16,7 +16,9 @@ export const AdminCategories = () => {
     name: "",
     slug: "",
     parent: "",
+    intro: "",
     description: "",
+    faqs: [],
     imageUrl: "",
     imageAlt: "",
     featured: false,
@@ -62,7 +64,9 @@ export const AdminCategories = () => {
       name: "",
       slug: "",
       parent: "",
+      intro: "",
       description: "",
+      faqs: [],
       imageUrl: "",
       imageAlt: "",
       featured: false,
@@ -89,7 +93,9 @@ export const AdminCategories = () => {
       name: cat.name,
       slug: cat.slug,
       parent: cat.parent?._id || cat.parent || "",
+      intro: cat.intro || "",
       description: cat.description || "",
+      faqs: Array.isArray(cat.faqs) ? cat.faqs.map((f) => ({ question: f.question || "", answer: f.answer || "" })) : [],
       imageUrl: cat.image?.url || "",
       imageAlt: cat.image?.altText || "",
       featured: cat.featured,
@@ -117,7 +123,9 @@ export const AdminCategories = () => {
         name: formData.name,
         slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-"),
         parent: formData.parent || null,
+        intro: formData.intro,
         description: formData.description,
+        faqs: formData.faqs.filter((f) => f.question.trim() && f.answer.trim()),
         image: {
           url: formData.imageUrl,
           altText: formData.imageAlt || formData.name,
@@ -147,16 +155,21 @@ export const AdminCategories = () => {
 
   const handleDelete = async (id) => {
     if (
-      window.confirm("Delete category? (Ensure no products are assigned first)")
+      window.confirm(
+        "Delete this category permanently?\n\nIt must be empty – first delete its products in Admin › Products (🗑 Delete permanently) or move them to another category.",
+      )
     ) {
       try {
         await adminService.deleteCategory(id);
         loadCategories();
       } catch (err) {
-        alert(err.message);
+        alert(err?.response?.data?.message || err.message);
       }
     }
   };
+
+  const setFaq = (i, key, value) =>
+    setFormData((prev) => ({ ...prev, faqs: prev.faqs.map((f, j) => (j === i ? { ...f, [key]: value } : f)) }));
 
   return (
     <div className="space-y-6">
@@ -206,7 +219,7 @@ export const AdminCategories = () => {
                     <div>
                       <p className="font-semibold text-zinc-200">{cat.name}</p>
                       <p className="text-[10px] text-zinc-500 line-clamp-1">
-                        {cat.description}
+                        {cat.intro || String(cat.description || "").replace(/<[^>]+>/g, " ")}
                       </p>
                     </div>
                   </div>
@@ -407,13 +420,72 @@ export const AdminCategories = () => {
                 hint="Upload high-res category aesthetic banner (PNG, JPG, WebP)"
               />
 
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-zinc-400 mb-1.5">
+                  Banner line (short intro – 1–2 sentences, plain text)
+                </label>
+                <textarea
+                  rows={2}
+                  maxLength={400}
+                  value={formData.intro}
+                  onChange={(e) => setFormData({ ...formData, intro: e.target.value })}
+                  placeholder="Shown under the category name at the top of the page"
+                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 text-sm focus:outline-none focus:border-gold"
+                />
+                <p className="text-[10px] text-zinc-500 mt-1">{formData.intro.length}/400</p>
+              </div>
+
               <RichTextEditor
                 value={formData.description}
                 onChange={(val) => setFormData({ ...formData, description: val })}
-                label="Category Description (HTML supported)"
-                placeholder="Describe this category – what it contains and who it is for…"
+                label="About this category (shown under the products – long SEO text)"
+                placeholder="Describe this category – what it contains, who it is for, how to use…"
                 minHeight="140px"
               />
+
+              {/* FAQs – shown on the category page and published as FAQPage structured data */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs uppercase tracking-wider text-zinc-400">Category FAQs (Google FAQ rich results)</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, faqs: [...formData.faqs, { question: "", answer: "" }] })}
+                    className="text-xs text-gold hover:text-gold-light inline-flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add FAQ
+                  </button>
+                </div>
+                {formData.faqs.length === 0 && (
+                  <p className="text-[11px] text-zinc-500">No FAQs yet. 3–6 real customer questions work best.</p>
+                )}
+                {formData.faqs.map((f, i) => (
+                  <div key={i} className="border border-zinc-800 p-3 space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        value={f.question}
+                        onChange={(e) => setFaq(i, "question", e.target.value)}
+                        placeholder="Question"
+                        className="flex-1 bg-noir border border-zinc-800 p-2 text-zinc-100 text-sm focus:outline-none focus:border-gold"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, faqs: formData.faqs.filter((_, j) => j !== i) })}
+                        className="p-2 text-zinc-500 hover:text-red-400"
+                        aria-label="Remove FAQ"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <textarea
+                      rows={2}
+                      value={f.answer}
+                      onChange={(e) => setFaq(i, "answer", e.target.value)}
+                      placeholder="Answer"
+                      className="w-full bg-noir border border-zinc-800 p-2 text-zinc-100 text-sm focus:outline-none focus:border-gold"
+                    />
+                  </div>
+                ))}
+              </div>
 
               {/* Category Search Engine Optimization */}
               <SeoFormFields
@@ -422,7 +494,7 @@ export const AdminCategories = () => {
                 fallbackTitle={
                   formData.name ? `${formData.name} Collection` : ""
                 }
-                fallbackDescription={formData.description}
+                fallbackDescription={formData.intro || formData.description}
                 fallbackSlug={formData.slug || formData.name}
                 fallbackImage={formData.imageUrl}
                 itemType="category"

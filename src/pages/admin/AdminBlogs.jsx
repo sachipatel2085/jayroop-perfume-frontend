@@ -20,10 +20,12 @@ export const AdminBlogs = () => {
     content: '',
     coverImageUrl: '',
     coverImageAlt: '',
-    author: 'Jayrup Editorial House',
+    author: 'Jayrup Editorial Team',
     readTime: '5 min read',
-    tags: 'Fragrance, Luxury, Heritage',
+    tags: '',
     status: 'PUBLISHED',
+    faqs: [],
+    relatedProductSlugs: '',
     seo: {
       metaTitle: '',
       metaDescription: '',
@@ -59,10 +61,12 @@ export const AdminBlogs = () => {
       content: '',
       coverImageUrl: '',
       coverImageAlt: '',
-      author: 'Jayrup Editorial House',
+      author: 'Jayrup Editorial Team',
       readTime: '5 min read',
-      tags: 'Fragrance, Luxury, Heritage',
+      tags: '',
       status: 'PUBLISHED',
+      faqs: [],
+      relatedProductSlugs: '',
       seo: {
         metaTitle: '',
         metaDescription: '',
@@ -88,6 +92,8 @@ export const AdminBlogs = () => {
       readTime: b.readTime,
       tags: b.tags?.join(', ') || '',
       status: b.status,
+      faqs: (b.faqs || []).map((f) => ({ question: f.question || '', answer: f.answer || '' })),
+      relatedProductSlugs: (b.relatedProductSlugs || []).join(', '),
       seo: {
         metaTitle: b.seo?.metaTitle || '',
         metaDescription: b.seo?.metaDescription || '',
@@ -114,9 +120,14 @@ export const AdminBlogs = () => {
         },
         author: formData.author,
         readTime: formData.readTime,
-        tags: formData.tags.split(',').map((t) => t.trim()),
+        tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
         status: formData.status,
         seo: formData.seo,
+        faqs: formData.faqs.filter((f) => f.question.trim() && f.answer.trim()),
+        relatedProductSlugs: formData.relatedProductSlugs
+          .split(',')
+          .map((s) => s.trim().toLowerCase().replace(/^.*\/products\//, '').replace(/\/+$/, ''))
+          .filter(Boolean),
       };
 
       if (editingId) {
@@ -128,9 +139,12 @@ export const AdminBlogs = () => {
       setShowModal(false);
       loadBlogs();
     } catch (err) {
-      alert(err.message);
+      alert(err?.response?.data?.message || err.message);
     }
   };
+
+  const setFaq = (i, key, value) =>
+    setFormData((prev) => ({ ...prev, faqs: prev.faqs.map((f, j) => (j === i ? { ...f, [key]: value } : f)) }));
 
   const handleDelete = async (id) => {
     if (window.confirm('Delete article?')) {
@@ -294,9 +308,64 @@ export const AdminBlogs = () => {
                   type="text"
                   value={formData.tags}
                   onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                  placeholder="Fragrance, Oud, Sandalwood"
+                  placeholder="perfume tips, long lasting perfume, eau de parfum"
                   className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
                 />
+              </div>
+
+              <div>
+                <label className="block text-zinc-400 uppercase tracking-wider text-[10px] mb-1">
+                  Related products (product URLs or slugs, comma-separated)
+                </label>
+                <input
+                  type="text"
+                  value={formData.relatedProductSlugs}
+                  onChange={(e) => setFormData({ ...formData, relatedProductSlugs: e.target.value })}
+                  placeholder="jayrup-royal-flora-eau-de-parfum-50ml, jayrup-pimples-cream"
+                  className="w-full bg-noir border border-zinc-800 p-2.5 text-zinc-100 focus:outline-none focus:border-gold"
+                />
+                <p className="text-[10px] text-zinc-500 mt-1">Shown as “Shop the products” cards under the article.</p>
+              </div>
+
+              {/* FAQs – shown under the article and published as FAQPage structured data */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-zinc-400 uppercase tracking-wider text-[10px]">Article FAQs (Google FAQ rich results)</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, faqs: [...formData.faqs, { question: '', answer: '' }] })}
+                    className="text-xs text-gold hover:text-gold-light inline-flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add FAQ
+                  </button>
+                </div>
+                {formData.faqs.map((f, i) => (
+                  <div key={i} className="border border-zinc-800 p-3 space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        value={f.question}
+                        onChange={(e) => setFaq(i, 'question', e.target.value)}
+                        placeholder="Question"
+                        className="flex-1 bg-noir border border-zinc-800 p-2 text-zinc-100 text-sm focus:outline-none focus:border-gold"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, faqs: formData.faqs.filter((_, j) => j !== i) })}
+                        className="p-2 text-zinc-500 hover:text-red-400"
+                        aria-label="Remove FAQ"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <textarea
+                      rows={2}
+                      value={f.answer}
+                      onChange={(e) => setFaq(i, 'answer', e.target.value)}
+                      placeholder="Answer"
+                      className="w-full bg-noir border border-zinc-800 p-2 text-zinc-100 text-sm focus:outline-none focus:border-gold"
+                    />
+                  </div>
+                ))}
               </div>
 
               {/* Article Search Engine Optimization */}

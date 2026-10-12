@@ -43,7 +43,8 @@ export const adminService = {
   getProductTypes: async () => (await api.get('/products/meta/types')).data,
   createProduct: async (productData) => (await api.post('/products', productData)).data,
   updateProduct: async (id, productData) => (await api.put(`/products/${id}`, productData)).data,
-  deleteProduct: async (id) => (await api.delete(`/products/${id}`)).data,
+  deleteProduct: async (id) => (await api.delete(`/products/${id}`)).data, // archive (hide from store)
+  deleteProductPermanently: async (id) => (await api.delete(`/products/${id}/permanent`)).data,
 
   // Categories
   getCategories: async (params = { all: 'true' }) => (await api.get('/categories', { params })).data,

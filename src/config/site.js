@@ -41,11 +41,11 @@ export const fullAddress = (a = BRAND.address) =>
   [a.line1, a.line2, a.city, a.district, `${a.state} – ${a.postalCode}`, a.country].filter(Boolean).join(', ');
 
 export const DEFAULT_SEO = {
-  title: 'Jayrup | Skincare & Luxury Perfumes – Shop Online in India',
+  title: 'Jayrup | Luxury Perfume for Men & Ayurvedic Pimple Cream India',
   description:
-    'Shop Jayrup online – effective skincare and long-lasting luxury perfumes, made in India. Genuine products, secure PhonePe & COD checkout, delivery across India.',
+    'Shop Jayrup – Royal Flora long-lasting Eau de Parfum for men & Ayurvedic Pimples Cream with Neem & Karanj. Made in India. PhonePe & COD, delivery across India.',
   keywords:
-    'jayrup, jayrup perfume, jayrup skincare, luxury perfume india, eau de parfum, long lasting perfume, skincare india, jayrup pimples cream',
+    'jayrup, jayrup perfume, royal flora perfume, luxury perfume for men, long lasting perfume for men, eau de parfum india, ayurvedic pimple cream, jayrup pimples cream, herbal pimple cream',
 };
 
 export const INDIA_STATES = [

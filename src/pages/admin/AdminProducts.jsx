@@ -313,6 +313,24 @@ export const AdminProducts = () => {
     load();
   };
 
+  const deletePermanently = async (p) => {
+    const typed = window.prompt(
+      `Delete “${p.name}” permanently?\n\nThis cannot be undone. Its reviews are removed and its page redirects to its category. Past orders and invoices are NOT affected.\n\nType DELETE to confirm:`,
+    );
+    if (typed === null) return;
+    if (typed.trim().toUpperCase() !== 'DELETE') {
+      window.alert('Not deleted – you must type DELETE to confirm.');
+      return;
+    }
+    try {
+      await adminService.deleteProductPermanently(p._id);
+      setProducts((prev) => prev.filter((x) => x._id !== p._id));
+      load();
+    } catch (err) {
+      window.alert(err?.response?.data?.message || 'Could not delete the product.');
+    }
+  };
+
   const toggleFeatured = async (p) => {
     await adminService.updateProduct(p._id, { featured: !p.featured });
     setProducts((prev) => prev.map((x) => (x._id === p._id ? { ...x, featured: !p.featured } : x)));
@@ -400,7 +418,8 @@ export const AdminProducts = () => {
                       <a href={`/products/${p.slug}`} target="_blank" rel="noopener noreferrer" className="p-1.5 text-zinc-500 hover:text-gold inline-block" title="View on store"><ExternalLink className="w-4 h-4" /></a>
                       <button onClick={() => duplicate(p)} className="p-1.5 text-zinc-500 hover:text-gold" title="Duplicate"><Copy className="w-4 h-4" /></button>
                       <button onClick={() => openEdit(p)} className="p-1.5 text-zinc-500 hover:text-gold" title="Edit"><Edit2 className="w-4 h-4" /></button>
-                      {p.status !== 'ARCHIVED' && <button onClick={() => archive(p)} className="p-1.5 text-zinc-500 hover:text-red-400" title="Archive"><Archive className="w-4 h-4" /></button>}
+                      {p.status !== 'ARCHIVED' && <button onClick={() => archive(p)} className="p-1.5 text-zinc-500 hover:text-amber-400" title="Archive (hide from store)"><Archive className="w-4 h-4" /></button>}
+                      <button onClick={() => deletePermanently(p)} className="p-1.5 text-zinc-500 hover:text-red-500" title="Delete permanently"><Trash2 className="w-4 h-4" /></button>
                     </td>
                   </tr>
                 );

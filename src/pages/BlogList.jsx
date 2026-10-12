@@ -4,6 +4,7 @@ import { ArrowRight, BookOpen, Clock, Calendar } from 'lucide-react';
 import { productService } from '../services/productService.js';
 import { SEO } from '../components/seo/SEO.jsx';
 import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
+import { resolveMediaUrl } from '../utils/media.js';
 
 export const BlogList = () => {
   const [blogs, setBlogs] = useState([]);
@@ -22,27 +23,27 @@ export const BlogList = () => {
   return (
     <div className="bg-noir min-h-screen text-zinc-100 py-12 px-4 sm:px-8 max-w-7xl mx-auto">
       <SEO
-        title="The Royal Blog & Editorial | Jayrup Fragrance House"
-        description="Skincare routines, fragrance guides and product tips from the Jayrup journal."
+        title="The Jayrup Journal – Skincare Tips & Fragrance Guides"
+        description="Perfume guides, how to make perfume last longer, Ayurvedic skin care and routines for pimple-prone skin – practical tips from the Jayrup Journal."
         canonicalUrl="/blog"
       >
         <BreadcrumbSchema
           items={[
             { name: 'Home', url: '/' },
-            { name: 'The Royal Blog', url: '/blog' },
+            { name: 'Journal', url: '/blog' },
           ]}
         />
       </SEO>
 
       <div className="border-b border-gold/20 pb-8 mb-12 text-center max-w-2xl mx-auto space-y-3">
         <span className="text-[10px] uppercase tracking-[0.3em] text-gold font-semibold">
-          Editorial & Fragrance Philosophy
+          Guides & tips
         </span>
         <h1 className="font-serif text-3xl sm:text-5xl uppercase tracking-wider font-bold text-zinc-100">
-          The Royal Blog
+          The Jayrup Journal
         </h1>
         <p className="text-xs text-zinc-400 font-light">
-          Explorations in royal Indian distillation, oud maturation, and the science of skin confidence.
+          Perfume guides, Ayurvedic skin care and simple routines – written for Indian skin and weather.
         </p>
       </div>
 
@@ -64,7 +65,7 @@ export const BlogList = () => {
               <div>
                 <Link to={`/blog/${blog.slug}`} className="block aspect-16/9 overflow-hidden bg-zinc-900">
                   <img
-                    src={blog.coverImage?.url}
+                    src={resolveMediaUrl(blog.coverImage?.url)}
                     alt={blog.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />

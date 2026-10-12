@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Award, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, Sparkles, Volume2, VolumeX, ShieldCheck, Truck, BadgeCheck, Leaf, Droplets, Gift, Wallet, MapPin, ChevronDown, ShoppingBag, Check, Star } from 'lucide-react';
 import { productService } from '../services/productService.js';
 import { ProductCard } from '../components/product/ProductCard.jsx';
 import { SEO } from '../components/seo/SEO.jsx';
@@ -10,6 +10,9 @@ import VideoSEO from '../components/common/VideoSEO.jsx';
 import InspirationsSection from '../components/influencer/InspirationsSection.jsx';
 import ScentFluencerSection from '../components/influencer/ScentFluencerSection.jsx';
 import { DEFAULT_SEO } from '../config/site.js';
+import { HOME_FAQS } from '../config/homeContent.js';
+import { FAQSchema } from '../components/seo/FAQSchema.jsx';
+import { useCart } from '../context/CartContext.jsx';
 import { resolveMediaUrl } from '../utils/media.js';
 
 // Built-in responsive campaign artwork (public/images/hero). Used when no hero campaign is set in
@@ -21,7 +24,7 @@ const HERO_DEFAULT = {
   poster: '/images/hero/jayrup-hero-1600.webp',
   alt: 'Jayrup Royal Flora Eau de Parfum 50 ml – Marwad ka Pahla Luxury Perfume',
   eyebrow: 'Royal man’s first choice',
-  title: 'Jayrup Royal Flora – Luxury Perfume',
+  title: 'Jayrup Royal Flora – Luxury Perfume for Men',
   description: 'Long-lasting Eau de Parfum, made in India. Also discover Jayrup Pimples Cream – Ayurvedic care for pimple-prone skin.',
   ctaText: 'Shop Royal Flora',
   ctaUrl: '/products/jayrup-royal-flora-eau-de-parfum-50ml',
@@ -39,6 +42,7 @@ export const Home = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [heroMediaFailed, setHeroMediaFailed] = useState(false);
   const [isCampaignMuted, setIsCampaignMuted] = useState(true);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const loadHomeData = async () => {
@@ -69,7 +73,7 @@ export const Home = () => {
         if (Array.isArray(catRes)) setCategories(catRes);
 
         // 4. Fetch blogs
-        const blogRes = await productService.getBlogs({ limit: 2 });
+        const blogRes = await productService.getBlogs({ limit: 3 });
         if (blogRes?.data) setBlogs(blogRes.data);
 
         // 5. Fetch influencer & inspiration videos
@@ -86,6 +90,10 @@ export const Home = () => {
   }, []);
 
   const useAdImage = heroAd?.mediaType !== 'VIDEO' && Boolean(heroAd?.mediaUrl) && !heroMediaFailed;
+  // The first two products get a large "spotlight"; any extra products appear in the grid below.
+  const spotlight = featuredProducts.slice(0, 2);
+  const moreProducts = featuredProducts.slice(2);
+  const plain = (html = '') => String(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   const inspirations = influencerVideos.filter((v) => v.sectionType === 'INSPIRATIONS');
   const scentFluencers = influencerVideos.filter((v) => v.sectionType === 'SCENT_FLUENCER');
 
@@ -99,6 +107,7 @@ export const Home = () => {
       >
         <OrganizationSchema />
         <WebsiteSchema />
+        <FAQSchema faqs={HOME_FAQS} />
       </SEO>
       <VideoSEO videos={influencerVideos} />
 
@@ -180,74 +189,198 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* 2. SHOP-BY-CATEGORY STRIP – built from the live catalogue (new product lines appear automatically) */}
-      <section className="bg-gradient-to-r from-noir via-[#1c1809] to-noir border-y border-gold/30 py-5 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-4 text-center lg:text-left">
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-            <span className="bg-gradient-to-r from-gold-amber via-gold to-gold-amber text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
-              Shop by category
-            </span>
-            {categories.slice(0, 6).map((c) => (
+      {/* 2. TRUST BAR – the questions every Indian shopper asks first */}
+      <section aria-label="Why shop with Jayrup" className="border-b border-gold/15 bg-noir">
+        <ul className="max-w-7xl mx-auto px-4 sm:px-8 py-5 grid grid-cols-2 md:grid-cols-5 gap-x-4 gap-y-4">
+          {[
+            { icon: BadgeCheck, title: '100% Genuine', text: 'Shipped direct by Jayrup' },
+            { icon: Wallet, title: 'Cash on Delivery', text: 'Or pay with PhonePe' },
+            { icon: Truck, title: 'Pan-India Delivery', text: 'Track your order online' },
+            { icon: ShieldCheck, title: 'Secure Checkout', text: 'UPI · Cards · Net banking' },
+            { icon: MapPin, title: 'Made in India', text: 'Licensed manufacturers' },
+          ].map(({ icon: Icon, title, text }) => (
+            <li key={title} className="flex items-center gap-3 last:col-span-2 md:last:col-span-1">
+              <span className="w-10 h-10 shrink-0 rounded-full border border-gold/30 bg-gold/5 flex items-center justify-center">
+                <Icon className="w-[18px] h-[18px] text-gold" aria-hidden="true" />
+              </span>
+              <span>
+                <span className="block text-[13px] font-semibold text-zinc-100">{title}</span>
+                <span className="block text-[11px] text-zinc-500">{text}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* 3. BESTSELLERS – one large spotlight per product, built from the live catalogue */}
+      <section className="py-16 sm:py-24 px-4 sm:px-8 max-w-7xl mx-auto" aria-labelledby="bestsellers-heading">
+        <header className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-gold">Shop our bestsellers</p>
+          <h2 id="bestsellers-heading" className="font-serif text-2xl sm:text-4xl uppercase tracking-wider text-zinc-100 mt-2">
+            Luxury Perfume &amp; Ayurvedic Skin Care
+          </h2>
+          <p className="text-sm text-zinc-400 mt-3">Two products, made in India and made to be trusted – each one crafted by a licensed manufacturer.</p>
+        </header>
+
+        {loading && !spotlight.length ? (
+          <div className="grid gap-8">
+            {[0, 1].map((n) => (
+              <div key={n} className="h-[420px] bg-noir-card border border-zinc-800 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-10 sm:space-y-14">
+            {spotlight.map((p, i) => {
+              const img = p.images?.find((x) => x.isPrimary) || p.images?.[0];
+              const price = p.salePrice && p.salePrice < p.price ? p.salePrice : p.price;
+              const onSale = p.salePrice && p.salePrice < p.price;
+              const reverse = i % 2 === 1;
+              return (
+                <article
+                  key={p._id}
+                  className="group grid md:grid-cols-2 items-stretch border border-gold/20 bg-gradient-to-br from-noir-card to-noir shadow-[0_30px_60px_-30px_rgba(0,0,0,0.9)] overflow-hidden"
+                >
+                  <Link
+                    to={`/products/${p.slug}`}
+                    className={`relative block aspect-square self-center w-full overflow-hidden bg-[#0d1015] ${reverse ? 'md:order-2' : ''}`}
+                    aria-label={p.name}
+                  >
+                    <img
+                      src={resolveMediaUrl(img?.url)}
+                      alt={img?.altText || p.name}
+                      width="1200"
+                      height="1200"
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                    />
+                    <span className="absolute inset-0 shadow-[inset_0_0_80px_rgba(0,0,0,0.45)] pointer-events-none" />
+                    <span className="absolute top-4 left-4 text-[10px] uppercase tracking-widest font-bold bg-gold text-black px-2.5 py-1">
+                      Bestseller
+                    </span>
+                  </Link>
+
+                  <div className="p-6 sm:p-10 lg:p-12 flex flex-col justify-center">
+                    {p.category?.name && (
+                      <Link to={`/category/${p.category.slug}`} className="text-[11px] uppercase tracking-[0.25em] text-gold hover:text-gold-light">
+                        {p.category.name}
+                      </Link>
+                    )}
+                    <h3 className="font-serif text-2xl sm:text-3xl text-zinc-100 mt-2 leading-snug">
+                      <Link to={`/products/${p.slug}`} className="hover:text-gold-light transition-colors">
+                        {p.name}
+                      </Link>
+                    </h3>
+                    {p.numReviews > 0 && (
+                      <p className="mt-2 flex items-center gap-1 text-xs text-zinc-400">
+                        <Star className="w-3.5 h-3.5 fill-gold text-gold" /> {Number(p.averageRating || 0).toFixed(1)} · {p.numReviews} reviews
+                      </p>
+                    )}
+                    <p className="text-sm text-zinc-400 leading-relaxed mt-4 line-clamp-4">{p.shortDescription || plain(p.description).slice(0, 260)}</p>
+
+                    {p.highlights?.length > 0 && (
+                      <ul className="mt-5 space-y-2">
+                        {p.highlights.slice(0, 4).map((h) => (
+                          <li key={h} className="flex items-start gap-2.5 text-sm text-zinc-300">
+                            <Check className="w-4 h-4 text-gold mt-0.5 shrink-0" aria-hidden="true" />
+                            <span>{h}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <div className="mt-6 flex items-baseline gap-3">
+                      <span className="text-2xl font-semibold text-zinc-100">₹{price}</span>
+                      {onSale && <span className="text-sm text-zinc-500 line-through">₹{p.price}</span>}
+                      <span className="text-[11px] text-zinc-500">MRP incl. of all taxes</span>
+                    </div>
+
+                    <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                      <button
+                        type="button"
+                        onClick={() => addToCart(p, p.variants?.[0] || null, 1)}
+                        disabled={p.stock === 0}
+                        className="btn-gold text-xs py-3.5 px-7 inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        <ShoppingBag className="w-4 h-4" /> {p.stock === 0 ? 'Out of stock' : 'Add to cart'}
+                      </button>
+                      <Link to={`/products/${p.slug}`} className="btn-outline-gold text-xs py-3.5 px-7 inline-flex items-center justify-center gap-2 group/link">
+                        View details <ArrowRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {moreProducts.length > 0 && (
+          <div className="mt-16">
+            <h3 className="font-serif text-xl uppercase tracking-wider text-zinc-100 mb-6">More from Jayrup</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+              {moreProducts.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* 4. SHOP BY CATEGORY – wide banner cards from the live categories */}
+      {categories.length > 0 && (
+        <section className="pb-16 sm:pb-24 px-4 sm:px-8 max-w-7xl mx-auto" aria-labelledby="categories-heading">
+          <header className="flex items-end justify-between gap-4 mb-8">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.3em] text-gold">Collections</p>
+              <h2 id="categories-heading" className="font-serif text-2xl sm:text-3xl uppercase tracking-wider text-zinc-100 mt-1">
+                Shop by Category
+              </h2>
+            </div>
+            <Link to="/shop" className="hidden sm:inline-flex items-center gap-1 text-xs text-gold hover:text-white uppercase tracking-widest font-semibold">
+              Shop all <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </header>
+          <div className={`grid gap-6 ${categories.length > 1 ? 'lg:grid-cols-2' : ''}`}>
+            {categories.slice(0, 4).map((cat) => (
               <Link
-                key={c._id}
-                to={`/category/${c.slug}`}
-                className="text-xs sm:text-sm font-serif text-gold-light hover:text-white border border-gold/30 hover:border-gold rounded-full px-3 py-1 tracking-wide transition-colors"
+                key={cat._id}
+                to={`/category/${cat.slug}`}
+                className="group relative overflow-hidden border border-gold/20 hover:border-gold/60 transition-colors aspect-[16/9] sm:aspect-[1600/700] flex items-end"
               >
-                {c.name}
+                {cat.image?.url && (
+                  <img
+                    src={resolveMediaUrl(cat.image.url)}
+                    alt={cat.image.altText || cat.name}
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover object-right transition-transform duration-700 group-hover:scale-105"
+                  />
+                )}
+                <span className="absolute inset-0 bg-gradient-to-r from-noir via-noir/70 to-transparent" />
+                <span className="absolute inset-0 bg-gradient-to-t from-noir/80 via-transparent to-transparent" />
+                <span className="relative z-10 p-6 sm:p-8 max-w-[70%] sm:max-w-[60%]">
+                  <span className="block font-serif text-xl sm:text-2xl uppercase tracking-wider text-zinc-100 group-hover:text-gold-light transition-colors">
+                    {cat.name}
+                  </span>
+                  <span className="block text-xs sm:text-sm text-zinc-400 mt-2 line-clamp-2">{cat.intro || plain(cat.description).slice(0, 140)}</span>
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-xs text-gold uppercase tracking-wider font-semibold">
+                    Explore <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </span>
               </Link>
             ))}
           </div>
+        </section>
+      )}
 
-          <div className="text-xs text-zinc-400 tracking-wider">
-            100% Genuine • Secure PhonePe Payments • Cash on Delivery • Pan-India Delivery
-          </div>
-
-          <Link to="/shop" className="text-xs text-gold hover:text-white uppercase font-semibold tracking-widest inline-flex items-center gap-1 group">
-            <span>Shop All</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
-      </section>
-
-      {/* 3. SIGNATURE ROYAL COLLECTION (Featured Products) */}
-      <section className="py-20 px-4 sm:px-8 max-w-7xl mx-auto">
-        <div className="text-center max-w-xl mx-auto mb-14 space-y-2">
-          <span className="text-[11px] uppercase tracking-[0.3em] text-gold font-medium">
-            Handcrafted Masterpieces
-          </span>
-          <h2 className="font-serif text-2xl sm:text-4xl uppercase tracking-wider text-zinc-100 font-semibold">
-            Signature Royal Creations
-          </h2>
-          <div className="w-16 h-0.5 bg-gold/50 mx-auto mt-4" />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
-        </div>
-
-        <div className="mt-12 text-center">
-          <Link to="/shop" className="btn-outline-gold text-xs py-3 px-8">
-            View Complete Catalog
-          </Link>
-        </div>
-      </section>
-
-      {/* 4. DYNAMIC HOMEPAGE CAMPAIGN / PROMOTIONAL BANNER */}
+      {/* 5. DYNAMIC HOMEPAGE CAMPAIGN (Admin › Ads › HOMEPAGE_CAMPAIGN) */}
       {campaignAd && (
-        <section className="py-8 px-4 sm:px-8 max-w-7xl mx-auto">
+        <section className="pb-16 px-4 sm:px-8 max-w-7xl mx-auto">
           <div className="relative overflow-hidden border border-gold/40 shadow-2xl bg-noir-card min-h-[320px] sm:min-h-[400px] flex items-center p-8 sm:p-14">
             {campaignAd.mediaType === 'VIDEO' ? (
               <div className="absolute inset-0 w-full h-full overflow-hidden">
-                <video
-                  autoPlay
-                  loop
-                  muted={isCampaignMuted}
-                  playsInline
-                  poster={resolveMediaUrl(campaignAd.posterUrl)}
-                  className="w-full h-full object-cover opacity-50 scale-105 transition-transform duration-1000"
-                >
+                <video autoPlay loop muted={isCampaignMuted} playsInline poster={resolveMediaUrl(campaignAd.posterUrl)} className="w-full h-full object-cover opacity-50">
                   <source src={resolveMediaUrl(campaignAd.mediaUrl)} type="video/mp4" />
                 </video>
                 <button
@@ -259,204 +392,204 @@ export const Home = () => {
                 </button>
               </div>
             ) : (
-              <img
-                src={resolveMediaUrl(campaignAd.mediaUrl)}
-                alt={campaignAd.title}
-                className="absolute inset-0 w-full h-full object-cover opacity-45 filter brightness-95"
-              />
+              <img src={resolveMediaUrl(campaignAd.mediaUrl)} alt={campaignAd.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-45" />
             )}
-
-            {/* Ambient Dark Gradient Overlays */}
             <div className="absolute inset-0 bg-gradient-to-r from-noir via-noir/80 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-noir/90 via-transparent to-noir/40 pointer-events-none" />
-
-            {/* Content Details */}
             <div className="relative z-10 max-w-2xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/40 bg-noir/70 backdrop-blur-md text-gold-light text-[10px] uppercase tracking-[0.25em] font-medium">
-                <Sparkles className="w-3 h-3 text-gold-amber" />
-                <span>{campaignAd.subtitle || 'Special Royal Release'}</span>
-              </div>
-
-              <h2 className="font-serif text-3xl sm:text-5xl font-bold uppercase tracking-wider text-zinc-100 leading-tight">
-                {campaignAd.title}
-              </h2>
-
-              <p className="text-zinc-300 text-xs sm:text-sm md:text-base leading-relaxed font-light max-w-xl">
-                {campaignAd.description}
+              <p className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/40 bg-noir/70 text-gold-light text-[10px] uppercase tracking-[0.25em]">
+                <Sparkles className="w-3 h-3 text-gold-amber" /> {campaignAd.subtitle || 'New from Jayrup'}
               </p>
-
+              <h2 className="font-serif text-3xl sm:text-5xl font-bold uppercase tracking-wider text-zinc-100 leading-tight">{campaignAd.title}</h2>
+              <p className="text-zinc-300 text-sm leading-relaxed max-w-xl">{campaignAd.description}</p>
               {campaignAd.ctaText && (
-                <div className="pt-2">
-                  <Link
-                    to={campaignAd.ctaUrl || '/shop'}
-                    className="btn-gold text-xs py-3.5 px-8 inline-flex items-center gap-2 group shadow-gold-glow"
-                  >
-                    <span>{campaignAd.ctaText}</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
+                <Link to={campaignAd.ctaUrl || '/shop'} className="btn-gold text-xs py-3.5 px-8 inline-flex items-center gap-2 group">
+                  <span>{campaignAd.ctaText}</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
               )}
             </div>
           </div>
         </section>
       )}
 
-      {/* 5. OUR SCENT-FLUENCER (Shoppable Vertical Reels) */}
-      <ScentFluencerSection videos={scentFluencers} />
+      {/* 6. BRAND STORY – replaces the old "Heritage" block (real product artwork, honest claims) */}
+      <section className="relative py-16 sm:py-24 bg-noir-card border-y border-gold/15 overflow-hidden" aria-labelledby="story-heading">
+        <div aria-hidden="true" className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-gold/10 blur-3xl" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <figure className="relative order-1 lg:order-none">
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/images/home/jayrup-story-720.webp" />
+              <img
+                src="/images/home/jayrup-story.webp"
+                alt="Jayrup Royal Flora Eau de Parfum 50 ml and Jayrup Pimples Cream 20 g – made in India"
+                width="1200"
+                height="1000"
+                loading="lazy"
+                decoding="async"
+                className="relative w-full h-auto border border-gold/30 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.9)]"
+              />
+            </picture>
+          </figure>
 
-      {/* 5. BRAND STORY & ROYAL HERITAGE */}
-      <section className="py-20 bg-noir-card border-y border-gold/15 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <span className="text-[11px] uppercase tracking-[0.3em] text-gold font-medium">
-              The Heritage of Jayrup
-            </span>
-            <h2 className="font-serif text-2xl sm:text-4xl text-zinc-100 uppercase tracking-wide leading-tight">
-              An Olfactory & Botanical Legacy Built on Regal Distinction
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.3em] text-gold">The Jayrup story</p>
+            <h2 id="story-heading" className="font-serif text-2xl sm:text-4xl text-zinc-100 uppercase tracking-wide leading-tight mt-2">
+              Made in India. Made to be remembered.
             </h2>
-            <p className="text-zinc-300 text-sm leading-relaxed font-light">
-              Founded on the belief that scent and radiance are extensions of the soul, <strong>Jayrup (JR)</strong> brings together the heritage of Indian perfumery and
-              time-honoured botanical skincare with modern cosmetic science.
+            <p className="text-zinc-300 text-[15px] leading-relaxed mt-5">
+              <strong className="text-zinc-100">Jayrup</strong> began in Himatnagar, Gujarat, with a simple promise: everyday luxury and honest care that every Indian can trust.
+              Our first fragrance, <Link to="/products/jayrup-royal-flora-eau-de-parfum-50ml" className="text-gold hover:underline">Royal Flora</Link> – <em>Marwad ka Pahla
+              Luxury Perfume</em> – is a long-lasting Eau de Parfum for the man who wants to be remembered.
             </p>
-            <p className="text-zinc-400 text-sm leading-relaxed font-light">
-              From long-lasting perfumes to effective everyday skincare, every Jayrup product is made in India, crafted by licensed manufacturers and checked for quality,
-              safety and consistency before it reaches you.
+            <p className="text-zinc-400 text-[15px] leading-relaxed mt-4">
+              For skin, we turned to Ayurveda. <Link to="/products/jayrup-pimples-cream" className="text-gold hover:underline">Jayrup Pimples Cream</Link> is a licensed
+              Ayurvedic proprietary medicine with Neem, Karanj, Manjistha and Daruhaldi, made in a GMP-certified facility. Every Jayrup product is made by a licensed
+              manufacturer and carries full batch and expiry details on the pack.
             </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
-              <div>
-                <h4 className="font-serif text-xl text-gold font-bold">Made in India</h4>
-                <p className="text-[11px] text-zinc-400 uppercase tracking-wider mt-1">For Indian Skin &amp; Climate</p>
-              </div>
-              <div>
-                <h4 className="font-serif text-xl text-gold font-bold">100%</h4>
-                <p className="text-[11px] text-zinc-400 uppercase tracking-wider mt-1">Genuine Products</p>
-              </div>
-              <div>
-                <h4 className="font-serif text-xl text-gold font-bold">Pan-India</h4>
-                <p className="text-[11px] text-zinc-400 uppercase tracking-wider mt-1">Express Courier</p>
-              </div>
-            </div>
-          </div>
+            <dl className="grid grid-cols-2 gap-px bg-zinc-800 border border-zinc-800 mt-8">
+              {[
+                ['EDP', 'Long-lasting Eau de Parfum'],
+                ['GMP', 'Licensed Ayurvedic medicine'],
+                ['COD', 'Cash on Delivery & PhonePe'],
+                ['Pan-India', 'Delivery with tracking'],
+              ].map(([k, v]) => (
+                <div key={k} className="bg-noir-card p-4 sm:p-5">
+                  <dt className="font-serif text-xl sm:text-2xl text-gold">{k}</dt>
+                  <dd className="text-[11px] uppercase tracking-wider text-zinc-400 mt-1">{v}</dd>
+                </div>
+              ))}
+            </dl>
 
-          <div className="relative aspect-4/3 rounded-none overflow-hidden border border-gold/30 shadow-2xl">
-            <img
-              src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&q=80&w=1200"
-              alt="Jayrup Artisanal Perfumery"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-noir/80 via-transparent to-transparent" />
+            <Link to="/about" className="mt-8 inline-flex items-center gap-2 text-xs text-gold hover:text-white uppercase tracking-widest font-semibold group">
+              Read our story <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* 6. INSPIRATIONS (16:9 Celebrity / Ambassador Stories) */}
-      <InspirationsSection videos={inspirations} />
-
-      {/* 7. SHOP BY DYNAMIC CATEGORY */}
-      <section className="py-20 px-4 sm:px-8 max-w-7xl mx-auto">
-        <div className="text-center max-w-xl mx-auto mb-14 space-y-2">
-          <span className="text-[11px] uppercase tracking-[0.3em] text-gold font-medium">
-            Curated Lines
-          </span>
-          <h2 className="font-serif text-2xl sm:text-4xl uppercase tracking-wider text-zinc-100 font-semibold">
-            Explore by Category
+      {/* 7. WHY JAYRUP – benefit cards (keyword-rich, real claims only) */}
+      <section className="py-16 sm:py-24 px-4 sm:px-8 max-w-7xl mx-auto" aria-labelledby="why-heading">
+        <header className="text-center max-w-2xl mx-auto mb-12">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-gold">Why Jayrup</p>
+          <h2 id="why-heading" className="font-serif text-2xl sm:text-4xl uppercase tracking-wider text-zinc-100 mt-2">
+            Quality You Can Check on the Pack
           </h2>
-          <div className="w-16 h-0.5 bg-gold/50 mx-auto mt-4" />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((cat) => (
+        </header>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {[
+            { icon: Droplets, title: 'Long-lasting perfume', text: 'Royal Flora is an Eau de Parfum – richer and longer-lasting than a deo or body spray.', to: '/category/perfumes' },
+            { icon: Leaf, title: 'Ayurvedic herbs', text: 'Neem, Karanj, Manjistha and Daruhaldi – a classical formula for pimple-prone skin.', to: '/category/skincare' },
+            { icon: BadgeCheck, title: 'Licensed & GMP made', text: 'Made by licensed manufacturers, with batch, MRP and expiry printed on every pack.', to: '/about' },
+            { icon: Gift, title: 'Gift-ready packs', text: 'Premium bottle in a navy-and-gold gift tube – perfect for birthdays and festivals.', to: '/products/jayrup-royal-flora-eau-de-parfum-50ml' },
+          ].map(({ icon: Icon, title, text, to }) => (
             <Link
-              key={cat._id}
-              to={`/category/${cat.slug}`}
-              className="group relative h-80 overflow-hidden border border-gold/20 hover:border-gold/60 transition-all duration-500 flex flex-col justify-end p-6"
+              key={title}
+              to={to}
+              className="group p-6 bg-noir-card border border-zinc-800 hover:border-gold/40 transition-all hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(212,175,55,0.25)]"
             >
-              <img
-                src={
-                  cat.image?.url ||
-                  'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=800'
-                }
-                alt={cat.name}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-noir via-noir/50 to-transparent opacity-85 group-hover:opacity-75 transition-opacity" />
-
-              <div className="relative z-10 space-y-2">
-                <span className="text-[10px] uppercase tracking-widest text-gold font-semibold">
-                  Collection
-                </span>
-                <h3 className="font-serif text-xl text-zinc-100 group-hover:text-gold-light transition-colors font-bold uppercase tracking-wider">
-                  {cat.name}
-                </h3>
-                <p className="text-xs text-zinc-300 line-clamp-2 font-light">
-                  {cat.description}
-                </p>
-                <div className="pt-2 flex items-center gap-1.5 text-xs text-gold uppercase tracking-wider font-semibold">
-                  <span>Enter Salon</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
+              <span className="w-12 h-12 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
+                <Icon className="w-5 h-5 text-gold" aria-hidden="true" />
+              </span>
+              <h3 className="font-serif text-lg text-zinc-100 mt-5 group-hover:text-gold-light transition-colors">{title}</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed mt-2">{text}</p>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* 6. EDITORIAL BLOG PREVIEW */}
+      {/* 8. VIDEO SECTIONS (Admin › Influencer videos) */}
+      <ScentFluencerSection videos={scentFluencers} />
+      <InspirationsSection videos={inspirations} />
+
+      {/* 9. JOURNAL – latest articles (internal links help every page rank) */}
       {blogs.length > 0 && (
-        <section className="py-20 bg-noir border-t border-zinc-900 px-4 sm:px-8 max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
+        <section className="py-16 sm:py-24 px-4 sm:px-8 max-w-7xl mx-auto" aria-labelledby="journal-heading">
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
-              <span className="text-[11px] uppercase tracking-[0.3em] text-gold font-medium">
-                The Royal Blog
-              </span>
-              <h2 className="font-serif text-2xl sm:text-3xl uppercase tracking-wider text-zinc-100 font-semibold mt-1">
-                Editorial & Rituals
+              <p className="text-[11px] uppercase tracking-[0.3em] text-gold">The Jayrup Journal</p>
+              <h2 id="journal-heading" className="font-serif text-2xl sm:text-3xl uppercase tracking-wider text-zinc-100 mt-1">
+                Perfume &amp; Skin Care Guides
               </h2>
             </div>
-            <Link
-              to="/blog"
-              className="text-xs text-gold hover:text-white uppercase tracking-widest font-semibold flex items-center gap-1"
-            >
-              <span>Read Full Blog</span>
-              <ArrowRight className="w-4 h-4" />
+            <Link to="/blog" className="inline-flex items-center gap-1 text-xs text-gold hover:text-white uppercase tracking-widest font-semibold">
+              All articles <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          </header>
+          <div className="grid md:grid-cols-3 gap-6">
             {blogs.map((b) => (
-              <Link
-                key={b._id}
-                to={`/blog/${b.slug}`}
-                className="group p-5 bg-noir-card border border-gold/15 hover:border-gold/40 transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="aspect-16/9 overflow-hidden bg-zinc-900 mb-4">
-                    <img
-                      src={b.coverImage?.url}
-                      alt={b.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <span className="text-[10px] uppercase tracking-widest text-gold font-medium">
-                    {b.category} • {b.readTime}
-                  </span>
-                  <h3 className="font-serif text-lg font-bold text-zinc-100 group-hover:text-gold-light transition-colors mt-2 mb-2">
-                    {b.title}
-                  </h3>
-                  <p className="text-xs text-zinc-400 line-clamp-2 font-light">
-                    {b.excerpt}
+              <article key={b._id} className="group bg-noir-card border border-gold/15 hover:border-gold/40 transition-colors flex flex-col">
+                <Link to={`/blog/${b.slug}`} className="block aspect-[16/9] overflow-hidden bg-zinc-900">
+                  <img
+                    src={resolveMediaUrl(b.coverImage?.url)}
+                    alt={b.coverImage?.altText || b.title}
+                    width="1200"
+                    height="675"
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </Link>
+                <div className="p-5 flex flex-col flex-1">
+                  <p className="text-[10px] uppercase tracking-widest text-gold">
+                    {b.category} · {b.readTime}
                   </p>
+                  <h3 className="font-serif text-lg text-zinc-100 mt-2 leading-snug">
+                    <Link to={`/blog/${b.slug}`} className="hover:text-gold-light transition-colors">
+                      {b.title}
+                    </Link>
+                  </h3>
+                  <p className="text-sm text-zinc-400 line-clamp-3 mt-2 flex-1">{b.excerpt}</p>
+                  <Link to={`/blog/${b.slug}`} className="mt-4 inline-flex items-center gap-1 text-xs text-gold uppercase tracking-wider font-semibold">
+                    Read article <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
                 </div>
-                <div className="mt-4 pt-3 border-t border-zinc-800 flex items-center text-xs text-gold uppercase tracking-wider font-semibold">
-                  <span>Read Story</span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </Link>
+              </article>
             ))}
           </div>
         </section>
       )}
+
+      {/* 10. FAQ – answers the questions people search for (FAQPage schema above) */}
+      <section className="py-16 sm:py-24 bg-noir-card border-t border-gold/15" aria-labelledby="faq-heading">
+        <div className="max-w-3xl mx-auto px-4 sm:px-8">
+          <header className="text-center mb-10">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-gold">Need help?</p>
+            <h2 id="faq-heading" className="font-serif text-2xl sm:text-3xl uppercase tracking-wider text-zinc-100 mt-2">
+              Frequently Asked Questions
+            </h2>
+          </header>
+          <div className="divide-y divide-zinc-800 border-y border-zinc-800">
+            {HOME_FAQS.map((f, i) => (
+              <details key={f.question} className="group py-5" open={i === 0}>
+                <summary className="flex items-center justify-between gap-4 cursor-pointer list-none text-zinc-100 font-medium hover:text-gold-light">
+                  <h3 className="text-[15px] font-medium">{f.question}</h3>
+                  <ChevronDown className="w-4 h-4 text-gold shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+                </summary>
+                <p className="mt-3 text-sm text-zinc-400 leading-relaxed">{f.answer}</p>
+              </details>
+            ))}
+          </div>
+          <p className="text-center text-sm text-zinc-500 mt-8">
+            More questions? See our <Link to="/faq" className="text-gold hover:underline">full FAQ</Link> or{' '}
+            <Link to="/contact-us" className="text-gold hover:underline">contact us</Link>.
+          </p>
+        </div>
+      </section>
+
+      {/* 11. SEO INTRO – short, natural copy with the main search terms */}
+      <section className="py-14 px-4 sm:px-8 max-w-4xl mx-auto text-center" aria-labelledby="seo-heading">
+        <h2 id="seo-heading" className="font-serif text-xl sm:text-2xl uppercase tracking-wider text-zinc-100">
+          Buy Luxury Perfume &amp; Ayurvedic Pimple Cream Online in India
+        </h2>
+        <p className="text-sm text-zinc-400 leading-relaxed mt-4">
+          Jayrup brings you a <Link to="/category/perfumes" className="text-gold hover:underline">long-lasting luxury perfume for men</Link> and{' '}
+          <Link to="/category/skincare" className="text-gold hover:underline">Ayurvedic skin care</Link> – made in India by licensed manufacturers. Shop{' '}
+          <Link to="/products/jayrup-royal-flora-eau-de-parfum-50ml" className="text-gold hover:underline">Jayrup Royal Flora Eau de Parfum 50 ml</Link>, the
+          royal man’s first choice, and <Link to="/products/jayrup-pimples-cream" className="text-gold hover:underline">Jayrup Pimples Cream</Link>, an Ayurvedic cream for
+          pimple-prone skin. Pay securely with PhonePe or choose Cash on Delivery, with delivery across India.
+        </p>
+      </section>
     </div>
   );
 };
