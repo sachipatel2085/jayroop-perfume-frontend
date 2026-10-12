@@ -6,12 +6,8 @@ import { ProductCard } from '../components/product/ProductCard.jsx';
 import { SEO } from '../components/seo/SEO.jsx';
 import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
 import { CollectionPageSchema } from '../components/seo/CollectionPageSchema.jsx';
+import { resolveMediaUrl } from '../utils/media.js';
 
-const resolveMediaUrl = (url) => {
-  if (!url) return '';
-  if (url.startsWith('/uploads')) return `http://localhost:5000${url}`;
-  return url;
-};
 
 export const CategoryPage = () => {
   const { slug } = useParams();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Award, Star, Compass, Play, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, Sparkles, Award, Volume2, VolumeX } from 'lucide-react';
 import { productService } from '../services/productService.js';
 import { ProductCard } from '../components/product/ProductCard.jsx';
 import { SEO } from '../components/seo/SEO.jsx';
@@ -9,19 +9,24 @@ import { WebsiteSchema } from '../components/seo/WebsiteSchema.jsx';
 import VideoSEO from '../components/common/VideoSEO.jsx';
 import InspirationsSection from '../components/influencer/InspirationsSection.jsx';
 import ScentFluencerSection from '../components/influencer/ScentFluencerSection.jsx';
-import defaultHeroBanner from '../assets/jayrup-hero-banner.jpg';
-import logoImg from '../assets/jayroop-logo.webp';
 import { DEFAULT_SEO } from '../config/site.js';
+import { resolveMediaUrl } from '../utils/media.js';
 
-const resolveMediaUrl = (url) => {
-  if (!url) return '';
-  if (url.startsWith('/uploads')) {
-    const apiBase = import.meta.env.VITE_API_URL || '';
-    const backendOrigin = apiBase.replace(/\/api\/v1\/?$/, '');
-    return backendOrigin ? `${backendOrigin}${url}` : url;
-  }
-  return url;
+// Built-in responsive campaign artwork (public/images/hero). Used when no hero campaign is set in
+// Admin › Ads, or when the campaign image fails to load – so the hero is never blank.
+const HERO_DEFAULT = {
+  desktopSrcSet: '/images/hero/jayrup-hero-1200.webp 1200w, /images/hero/jayrup-hero-1600.webp 1600w, /images/hero/jayrup-hero-2400.webp 2400w',
+  mobileSrcSet: '/images/hero/jayrup-hero-mobile-720.webp 720w, /images/hero/jayrup-hero-mobile-1080.webp 1080w',
+  fallback: '/images/hero/jayrup-hero-1600.jpg',
+  poster: '/images/hero/jayrup-hero-1600.webp',
+  alt: 'Jayrup Royal Flora Eau de Parfum 50 ml – Marwad ka Pahla Luxury Perfume',
+  eyebrow: 'Royal man’s first choice',
+  title: 'Jayrup Royal Flora – Luxury Perfume',
+  description: 'Long-lasting Eau de Parfum, made in India. Also discover Jayrup Pimples Cream – Ayurvedic care for pimple-prone skin.',
+  ctaText: 'Shop Royal Flora',
+  ctaUrl: '/products/jayrup-royal-flora-eau-de-parfum-50ml',
 };
+
 
 export const Home = () => {
   const [heroAd, setHeroAd] = useState(null);
@@ -32,6 +37,7 @@ export const Home = () => {
   const [influencerVideos, setInfluencerVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
+  const [heroMediaFailed, setHeroMediaFailed] = useState(false);
   const [isCampaignMuted, setIsCampaignMuted] = useState(true);
 
   useEffect(() => {
@@ -79,6 +85,7 @@ export const Home = () => {
     loadHomeData();
   }, []);
 
+  const useAdImage = heroAd?.mediaType !== 'VIDEO' && Boolean(heroAd?.mediaUrl) && !heroMediaFailed;
   const inspirations = influencerVideos.filter((v) => v.sectionType === 'INSPIRATIONS');
   const scentFluencers = influencerVideos.filter((v) => v.sectionType === 'SCENT_FLUENCER');
 
@@ -95,120 +102,80 @@ export const Home = () => {
       </SEO>
       <VideoSEO videos={influencerVideos} />
 
-      {/* 1. HERO SECTION: Dynamically loaded from Advertisement DB / Uploaded Banner */}
-      <section className="relative w-full min-h-[85vh] sm:min-h-[92vh] flex items-center justify-center overflow-hidden bg-[#070b10]">
-        {/* Dynamic Video or High-res Poster / Image Background */}
-        {heroAd?.mediaType === 'VIDEO' ? (
-          <div className="absolute inset-0 w-full h-full overflow-hidden">
+      {/* 1. HERO – full campaign artwork, art-directed per device (never cropped or hidden) */}
+      <section className="relative w-full bg-[#0b1118]" aria-label="Featured collection">
+        <Link
+          to={heroAd?.ctaUrl || HERO_DEFAULT.ctaUrl}
+          className="relative block w-full overflow-hidden aspect-[4/5] sm:aspect-[2400/1450]"
+          aria-label={heroAd?.altText || HERO_DEFAULT.alt}
+        >
+          {heroAd?.mediaType === 'VIDEO' && heroAd?.mediaUrl && !heroMediaFailed ? (
             <video
               autoPlay
               loop
               muted={isMuted}
               playsInline
-              poster={resolveMediaUrl(heroAd.posterUrl)}
-              className="w-full h-full object-cover opacity-45 scale-105 transition-transform duration-1000"
+              preload="metadata"
+              poster={resolveMediaUrl(heroAd.posterUrl) || HERO_DEFAULT.poster}
+              onError={() => setHeroMediaFailed(true)}
+              className="absolute inset-0 w-full h-full object-cover"
             >
               <source src={resolveMediaUrl(heroAd.mediaUrl)} type="video/mp4" />
             </video>
-            {/* Audio Toggle Button */}
-            <button
-              onClick={() => setIsMuted(!isMuted)}
-              className="absolute bottom-6 right-6 z-20 p-2.5 rounded-full bg-noir/70 border border-gold/40 text-gold hover:text-gold-light backdrop-blur-sm"
-              aria-label={isMuted ? 'Unmute video' : 'Mute video'}
-            >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </button>
-          </div>
-        ) : (
-          <div
-            className="absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-100 sm:scale-105 filter brightness-[0.75] sm:brightness-[0.65]"
-            style={{
-              backgroundImage: `url(${resolveMediaUrl(heroAd?.mediaUrl) || defaultHeroBanner})`,
-            }}
-          />
+          ) : (
+            <picture>
+              <source
+                media="(max-width: 639px)"
+                srcSet={useAdImage && heroAd.mobileMediaUrl ? resolveMediaUrl(heroAd.mobileMediaUrl) : HERO_DEFAULT.mobileSrcSet}
+                sizes="100vw"
+              />
+              <source media="(min-width: 640px)" srcSet={useAdImage ? resolveMediaUrl(heroAd.mediaUrl) : HERO_DEFAULT.desktopSrcSet} sizes="100vw" />
+              <img
+                src={useAdImage ? resolveMediaUrl(heroAd.mediaUrl) : HERO_DEFAULT.fallback}
+                alt={heroAd?.altText || HERO_DEFAULT.alt}
+                width="2400"
+                height="1450"
+                fetchPriority="high"
+                loading="eager"
+                decoding="async"
+                onError={() => setHeroMediaFailed(true)}
+                className="absolute inset-0 w-full h-full object-cover object-center"
+              />
+            </picture>
+          )}
+        </Link>
+
+        {heroAd?.mediaType === 'VIDEO' && !heroMediaFailed && (
+          <button
+            onClick={() => setIsMuted(!isMuted)}
+            className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-noir/70 border border-gold/40 text-gold hover:text-gold-light backdrop-blur-sm"
+            aria-label={isMuted ? 'Unmute video' : 'Mute video'}
+          >
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </button>
         )}
 
-        {/* Ambient Dark Luxury Gradient Overlays & Golden Spotlight */}
-        <div className="absolute inset-0 bg-gradient-to-t from-noir via-noir/50 to-noir/60" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gold/15 via-transparent to-noir/95 pointer-events-none" />
-
-        {/* Hero Content Overlay (Text styled as per royal brand crest & slogan) */}
-        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-4 sm:space-y-5 py-12">
-          {/* 1. Royal Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/40 bg-noir/80 backdrop-blur-md text-gold-light text-[11px] uppercase tracking-[0.25em] font-medium shadow-gold-glow">
-            <Sparkles className="w-3.5 h-3.5 text-gold-amber" />
-            <span>Royal Man's First Choice</span>
-          </div>
-
-          {/* 2. Ornate Crest Emblem */}
-          <div className="flex justify-center -mb-2">
-            <div className="relative p-1 rounded-full border border-gold/40 shadow-gold-glow bg-noir/80">
-              <div className="w-12 h-12 rounded-full overflow-hidden">
-                <img
-                  src={logoImg}
-                  alt="JR Royal Crest"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+        {/* Headline + calls to action (real text for SEO & accessibility – the artwork is an image) */}
+        <div className="border-y border-gold/25 bg-gradient-to-r from-noir via-[#121820] to-noir">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 py-5 sm:py-6 flex flex-col lg:flex-row items-center justify-between gap-4 text-center lg:text-left">
+            <div>
+              <p className="inline-flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-gold-light">
+                <Sparkles className="w-3.5 h-3.5 text-gold-amber" /> {heroAd?.subtitle || HERO_DEFAULT.eyebrow}
+              </p>
+              <h1 className="font-serif text-xl sm:text-2xl md:text-3xl uppercase tracking-[0.12em] text-zinc-100 mt-1">
+                {heroAd?.seoTitle || heroAd?.title || HERO_DEFAULT.title}
+              </h1>
+              <p className="text-zinc-400 text-xs sm:text-sm mt-1 max-w-2xl">{heroAd?.description || HERO_DEFAULT.description}</p>
             </div>
-          </div>
-
-          {/* 3. Main Brand Title */}
-          <div>
-            <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-[0.18em] sm:tracking-[0.25em] uppercase text-transparent bg-clip-text bg-gradient-to-b from-[#FFF5D0] via-[#D4AF37] to-[#8C6B1B] drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] leading-none">
-              {heroAd?.title || 'JAYRUP'}
-              <span className="text-xs sm:text-sm font-sans tracking-normal text-gold align-top ml-1">™</span>
-            </h1>
-
-            {/* Subtitle: LUXURY PERFUME */}
-            <p className="mt-2 text-gold tracking-[0.35em] sm:tracking-[0.45em] text-xs sm:text-sm uppercase font-semibold">
-              {heroAd?.subtitle || 'LUXURY PERFUME'}
-            </p>
-          </div>
-
-          {/* 4. Rajputana Royal Filigree Divider */}
-          <div className="flex items-center justify-center gap-3 text-gold/60 my-1">
-            <span className="h-px w-12 sm:w-24 bg-gradient-to-r from-transparent to-gold/60" />
-            <span className="text-gold text-xs tracking-widest select-none">❦ ✦ ❦</span>
-            <span className="h-px w-12 sm:w-24 bg-gradient-to-l from-transparent to-gold/60" />
-          </div>
-
-          {/* 5. Highlighted Slogan Bar: Marwad ka Pahla Luxury Perfume */}
-          <div className="relative py-2.5 px-6 sm:px-12 inline-block my-1">
-            {/* Illuminated Gold Light Beams */}
-            <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-gold to-transparent shadow-[0_0_12px_rgba(212,175,55,0.9)]" />
-            <div className="absolute inset-x-0 bottom-0 h-[1.5px] bg-gradient-to-r from-transparent via-gold to-transparent shadow-[0_0_12px_rgba(212,175,55,0.9)]" />
-
-            <p className="font-serif italic text-xl sm:text-2xl md:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-[#FFF4CC] via-[#E5C058] to-[#FFF4CC] tracking-wide font-normal drop-shadow-[0_2px_10px_rgba(212,175,55,0.5)]">
-              Marwad ka Pahla Luxury Perfume
-            </p>
-            <div className="flex justify-center -mt-0.5">
-              <span className="text-[10px] text-gold/80">❖</span>
+            <div className="flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
+              <Link to={heroAd?.ctaUrl || HERO_DEFAULT.ctaUrl} className="btn-gold text-xs py-3.5 px-8 flex items-center gap-2 group shadow-gold-glow">
+                <span>{heroAd?.ctaText || HERO_DEFAULT.ctaText}</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link to="/shop" className="btn-outline-gold text-xs py-3.5 px-7">
+                Shop all products
+              </Link>
             </div>
-          </div>
-
-          {/* 6. Description / Edition Details */}
-          <p className="text-zinc-300 text-xs sm:text-sm md:text-base max-w-xl mx-auto font-sans font-light leading-relaxed pt-1">
-            {heroAd?.description ||
-              "Royal man's first choice • Royal Flora Eau De Parfum (50 ml | e 1.69 fl.oz) — Handcrafted with the majestic spirit and timeless heritage of Marwad."}
-          </p>
-
-          {/* 7. Action CTAs */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to={heroAd?.ctaUrl || '/shop'}
-              className="btn-gold text-xs py-3.5 px-8 flex items-center gap-2 group shadow-gold-glow"
-            >
-              <span>{heroAd?.ctaText || 'EXPLORE ROYAL FLORA'}</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-
-            <Link
-              to={heroAd?.ctaUrl && heroAd.ctaUrl !== '/shop' ? '/shop' : categories[0] ? `/category/${categories[0].slug}` : '/shop'}
-              className="btn-outline-gold text-xs py-3.5 px-7 flex items-center gap-2 bg-noir/50 backdrop-blur-sm"
-            >
-              <span>{heroAd?.ctaUrl && heroAd.ctaUrl !== '/shop' ? 'Shop All Products' : categories[0] ? `Shop ${categories[0].name}` : 'Shop All Products'}</span>
-            </Link>
           </div>
         </div>
       </section>

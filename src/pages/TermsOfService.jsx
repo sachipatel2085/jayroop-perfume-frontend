@@ -88,7 +88,7 @@ const sections = [
     content: (
       <ul>
         <li>
-          The Platform sells cosmetic and personal-care products such as skincare, fragrances and related items. Product images are for illustration; packaging, colour
+          The Platform sells cosmetic and personal-care products such as fragrances, and Ayurvedic proprietary medicines for external use. Product images are for illustration; packaging, colour
           and fragrance may vary slightly between batches.
         </li>
         <li>
@@ -96,7 +96,7 @@ const sections = [
           read the label before use and do a patch test for skincare and fragrance products, especially if you have sensitive skin or allergies.
         </li>
         <li>
-          Cosmetic products are not medicines; they are not intended to diagnose, treat, cure or prevent any disease, and individual results may vary.
+          Cosmetic products are not medicines. Ayurvedic proprietary medicines must be used only as directed on the label; information on the Platform is not a substitute for advice from a qualified doctor – consult one for severe or persistent conditions. Individual results may vary.
         </li>
         <li>Perfumes and other alcohol-based products are flammable – keep away from heat, open flame and children, and do not spray near the eyes.</li>
         <li>

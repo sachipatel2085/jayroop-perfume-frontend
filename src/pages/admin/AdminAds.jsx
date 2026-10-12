@@ -15,7 +15,8 @@ export const AdminAds = () => {
     subtitle: 'LUXURY PERFUME',
     description: "Marwad ka Pahla Luxury Perfume — Royal man's first choice. Experience Royal Flora Eau De Parfum.",
     mediaType: 'IMAGE',
-    mediaUrl: '/uploads/jayrup-hero-banner.jpg',
+    mediaUrl: '/images/hero/jayrup-hero-2400.webp',
+    mobileMediaUrl: '/images/hero/jayrup-hero-mobile-1080.webp',
     posterUrl: '',
     ctaText: 'EXPLORE ROYAL FLORA',
     ctaUrl: '/shop',
@@ -49,7 +50,8 @@ export const AdminAds = () => {
       subtitle: 'LUXURY PERFUME',
       description: "Marwad ka Pahla Luxury Perfume — Royal man's first choice. Experience Royal Flora Eau De Parfum.",
       mediaType: 'IMAGE',
-      mediaUrl: '/uploads/jayrup-hero-banner.jpg',
+      mediaUrl: '/images/hero/jayrup-hero-2400.webp',
+      mobileMediaUrl: '/images/hero/jayrup-hero-mobile-1080.webp',
       posterUrl: '',
       ctaText: 'EXPLORE ROYAL FLORA',
       ctaUrl: '/shop',
@@ -70,6 +72,7 @@ export const AdminAds = () => {
       description: ad.description || '',
       mediaType: ad.mediaType,
       mediaUrl: ad.mediaUrl,
+      mobileMediaUrl: ad.mobileMediaUrl || '',
       posterUrl: ad.posterUrl || '',
       ctaText: ad.ctaText,
       ctaUrl: ad.ctaUrl,
@@ -260,6 +263,16 @@ export const AdminAds = () => {
                 isVideo={formData.mediaType === 'VIDEO'}
                 required={true}
               />
+
+              {formData.mediaType === 'IMAGE' && (
+                <ImageDropzone
+                  value={formData.mobileMediaUrl}
+                  onChange={(url) => setFormData({ ...formData, mobileMediaUrl: url })}
+                  folder="ads"
+                  label="Mobile Image (portrait, optional)"
+                  hint="Recommended 1080 × 1350 px (4:5). Shown on phones; desktop image is used if empty. Desktop image: 2400 × 1450 px."
+                />
+              )}
 
               {formData.mediaType === 'VIDEO' && (
                 <ImageDropzone

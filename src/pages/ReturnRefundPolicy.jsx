@@ -45,6 +45,10 @@ const sections = [
             or refunded.
           </li>
           <li>
+            <strong>Ayurvedic medicines (e.g. Jayrup Pimples Cream):</strong> for safety and hygiene, not returnable once the jar or seal has been opened. Products that
+            arrive damaged, tampered, past their expiry date or the wrong item are always replaced or refunded.
+          </li>
+          <li>
             <strong>Skincare, hair care, soaps &amp; body care:</strong> may be returned within 3 days only if unused, sealed and in original packaging. Opened or used
             products are not returnable unless they arrived damaged, expired or are the wrong item. Individual results may vary and are not a ground for return.
           </li>

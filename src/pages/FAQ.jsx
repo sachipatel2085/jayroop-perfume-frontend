@@ -81,13 +81,19 @@ const FAQ_DATA = [
     category: 'Products & Usage',
     question: 'Are Jayrup products safe for daily use?',
     answer:
-      'All Jayrup products are Class 3 cosmetics made by licensed manufacturers for external use and comply with applicable cosmetic safety standards. As with any cosmetic, read the label, do a patch test first and discontinue use if irritation occurs.',
+      'Jayrup perfumes are cosmetics and Jayrup Pimples Cream is an Ayurvedic proprietary medicine – all are made by licensed manufacturers for external use. Read the label, do a patch test first and stop use if irritation occurs. For severe or persistent skin problems, consult a doctor.',
   },
   {
     category: 'Products & Usage',
     question: 'Are the products genuine? How do I check the batch and expiry?',
     answer:
       'Jayrup products are sold directly by the brand, so every product is 100% genuine. The batch number, manufacturing date and best-before / expiry date are printed on each pack.',
+  },
+  {
+    category: 'Skincare',
+    question: 'Is Jayrup Pimples Cream a cosmetic or a medicine?',
+    answer:
+      'Jayrup Pimples Cream is an Ayurvedic proprietary medicine (not a cosmetic preparation), manufactured under Ayurvedic licence No. 518 D in a GMP-certified facility. It is for external use only.',
   },
   {
     category: 'Skincare',

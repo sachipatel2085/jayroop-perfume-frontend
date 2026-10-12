@@ -10,7 +10,7 @@ import { productService } from '../services/productService.js';
 
 const DIFFERENT = [
   { icon: Leaf, title: 'Thoughtfully Chosen Ingredients', text: 'Herbal, skin-friendly and fine aromatic ingredients inspired by traditional Indian wellness and perfumery.' },
-  { icon: ShieldCheck, title: 'Cosmetic Safety Focused', text: 'Every product is a Class 3 cosmetic made by licensed manufacturers, following quality and safety guidelines.' },
+  { icon: ShieldCheck, title: 'Cosmetic Safety Focused', text: 'Every product – cosmetic or Ayurvedic medicine – is made by licensed, GMP-certified manufacturers following quality and safety guidelines.' },
   { icon: Sparkles, title: 'Simple & Effective', text: 'No unnecessary complexity — focused formulas and long-lasting fragrances that deliver what they promise.' },
   { icon: Flag, title: 'Made in India', text: 'Proudly developed and manufactured in India, for Indian skin, climate and lifestyles.' },
   { icon: BadgeCheck, title: 'Quality & Transparency', text: 'We believe in clear communication, honest branding, and authentic products.' },
@@ -102,7 +102,7 @@ export const AboutUs = () => {
         <p className="text-[11px] uppercase tracking-[0.25em] text-gold">Our Range</p>
         <h2 className="font-serif text-2xl sm:text-3xl uppercase tracking-wider mt-2">Explore Jayrup</h2>
         <p className="mt-4 text-zinc-300 leading-relaxed max-w-3xl">
-          From our first product, Jayrup Pimples Cream, to our collection of long-lasting perfumes, every Jayrup product carries the same promise of quality, safety and
+          From our first product, Jayrup Pimples Cream – an Ayurvedic cream for pimple-prone skin – to our long-lasting Royal Flora perfume, every Jayrup product carries the same promise of quality, safety and
           customer trust.
         </p>
         {categories.length > 0 && (
@@ -121,7 +121,7 @@ export const AboutUs = () => {
         )}
         <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
           <p className="text-xs text-amber-100/80 rounded-lg border border-amber-500/30 bg-amber-500/[0.06] px-4 py-3 leading-relaxed">
-            All Jayrup products are cosmetics for external use only and comply with applicable cosmetic safety standards. Please read the label before use.
+            Jayrup products are cosmetics and Ayurvedic proprietary medicines for external use, made by licensed manufacturers in line with applicable Indian standards. Please read the label before use.
           </p>
           <Link to="/shop" className="btn-gold self-start sm:self-auto whitespace-nowrap">Shop all products</Link>
         </div>
