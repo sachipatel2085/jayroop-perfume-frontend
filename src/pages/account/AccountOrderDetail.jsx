@@ -313,6 +313,7 @@ export const AccountOrderDetail = () => {
               )}
               <div className="flex justify-between text-zinc-400"><dt>Shipping</dt><dd>{order.shipping ? formatINR(order.shipping) : 'FREE'}</dd></div>
               {order.codFee > 0 && <div className="flex justify-between text-zinc-400"><dt>COD charges</dt><dd>{formatINR(order.codFee)}</dd></div>}
+              {order.taxAmount > 0 && <div className="flex justify-between text-zinc-400"><dt>GST</dt><dd>{formatINR(order.taxAmount)}</dd></div>}
               <div className="flex justify-between font-bold text-base pt-2 border-t border-zinc-800"><dt>Total</dt><dd className="text-gold">{formatINR(order.total)}</dd></div>
               {order.refundedAmount > 0 && <div className="flex justify-between text-sky-300"><dt>Refunded</dt><dd>{formatINR(order.refundedAmount)}</dd></div>}
             </dl>

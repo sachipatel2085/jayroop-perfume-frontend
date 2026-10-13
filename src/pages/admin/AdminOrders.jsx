@@ -379,6 +379,8 @@ const OrderDrawer = ({ orderId, onClose, onUpdated }) => {
               {order.discount > 0 && <div className="flex justify-between text-emerald-300"><dt>Discount {order.appliedCoupon?.code}</dt><dd>-{money(order.discount)}</dd></div>}
               <div className="flex justify-between text-zinc-400"><dt>Shipping</dt><dd>{money(order.shipping)}</dd></div>
               {order.codFee > 0 && <div className="flex justify-between text-zinc-400"><dt>COD fee</dt><dd>{money(order.codFee)}</dd></div>}
+              {order.taxAmount > 0 && <div className="flex justify-between text-zinc-400"><dt>GST added</dt><dd>{money(order.taxAmount)}</dd></div>}
+              {order.shippingZone && <div className="flex justify-between text-zinc-500 text-xs"><dt>Shipping zone</dt><dd>{order.shippingZone}</dd></div>}
               {order.invoice?.number && (
                 <div className="flex justify-between text-zinc-500">
                   <dt>Taxable {money(order.invoice.totalTaxable)} · {order.invoice.isInterState ? `IGST ${money(order.invoice.totalIgst)}` : `CGST ${money(order.invoice.totalCgst)} + SGST ${money(order.invoice.totalSgst)}`}</dt>

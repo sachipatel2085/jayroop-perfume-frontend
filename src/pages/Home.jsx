@@ -14,6 +14,7 @@ import { HOME_FAQS } from '../config/homeContent.js';
 import { FAQSchema } from '../components/seo/FAQSchema.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { resolveMediaUrl } from '../utils/media.js';
+import { useStoreSettings, taxNote } from '../hooks/useStoreSettings.js';
 
 // Built-in responsive campaign artwork (public/images/hero). Used when no hero campaign is set in
 // Admin › Ads, or when the campaign image fails to load – so the hero is never blank.
@@ -43,6 +44,7 @@ export const Home = () => {
   const [heroMediaFailed, setHeroMediaFailed] = useState(false);
   const [isCampaignMuted, setIsCampaignMuted] = useState(true);
   const { addToCart } = useCart();
+  const storeSettings = useStoreSettings();
 
   useEffect(() => {
     const loadHomeData = async () => {
@@ -292,7 +294,7 @@ export const Home = () => {
                     <div className="mt-6 flex items-baseline gap-3">
                       <span className="text-2xl font-semibold text-zinc-100">₹{price}</span>
                       {onSale && <span className="text-sm text-zinc-500 line-through">₹{p.price}</span>}
-                      <span className="text-[11px] text-zinc-500">MRP incl. of all taxes</span>
+                      <span className="text-[11px] text-zinc-500">MRP {taxNote(storeSettings)}</span>
                     </div>
 
                     <div className="mt-6 flex flex-col sm:flex-row gap-3">

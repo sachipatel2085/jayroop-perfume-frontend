@@ -105,6 +105,7 @@ export const OrderSuccessPage = () => {
               {order.discount > 0 && <div className="flex sm:justify-end gap-4 text-emerald-300"><dt>Discount</dt><dd>-{formatINR(order.discount)}</dd></div>}
               <div className="flex sm:justify-end gap-4 text-zinc-400"><dt>Shipping</dt><dd>{order.shipping ? formatINR(order.shipping) : 'FREE'}</dd></div>
               {order.codFee > 0 && <div className="flex sm:justify-end gap-4 text-zinc-400"><dt>COD fee</dt><dd>{formatINR(order.codFee)}</dd></div>}
+              {order.taxAmount > 0 && <div className="flex sm:justify-end gap-4 text-zinc-400"><dt>GST</dt><dd>{formatINR(order.taxAmount)}</dd></div>}
               <div className="flex sm:justify-end gap-4 text-base font-bold text-gold pt-1"><dt>Total</dt><dd>{formatINR(order.total)}</dd></div>
             </dl>
           </div>

@@ -25,9 +25,16 @@ export const BlogDetail = () => {
           setBlog(res.blog);
           setRecentBlogs(res.recentBlogs || []);
           // "Shop the products" – products this article is about
+          // One request; products that no longer exist are simply left out (no 404s)
           const slugs = (res.blog.relatedProductSlugs || []).slice(0, 4);
-          const found = await Promise.all(slugs.map((s) => productService.getProductBySlug(s).then((d) => d?.product).catch(() => null)));
-          setRelatedProducts(found.filter(Boolean));
+          if (slugs.length) {
+            productService
+              .getProducts({ slugs: slugs.join(','), limit: slugs.length })
+              .then((r) => setRelatedProducts(Array.isArray(r?.data) ? r.data : []))
+              .catch(() => setRelatedProducts([]));
+          } else {
+            setRelatedProducts([]);
+          }
         }
       } catch (err) {
         console.error('Failed to load blog article', err);

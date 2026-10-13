@@ -150,6 +150,7 @@ export const RichTextEditor = ({
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const emit = (v) => onChangeRef.current?.(v);
+  const detectSlashRef = useRef(null);
 
   const uploadImage = useCallback(
     async (file) => {
@@ -172,10 +173,14 @@ export const RichTextEditor = ({
     [uploadFolder]
   );
 
-  const editor = useEditor({
-    shouldRerenderOnTransaction: true,
-    immediatelyRender: true,
-    extensions: [
+  // ── Editor options MUST stay referentially stable ──
+  // TipTap compares its options on every render and re-applies them when anything changed. New
+  // extension objects / editorProps / content on each render made it reconfigure itself on every
+  // keystroke, which fed back into React ("Maximum update depth exceeded"). Everything below is
+  // created once; event handlers are read through a ref so they always use the latest state.
+  const initialContent = useRef(value || '').current;
+  const extensions = useMemo(
+    () => [
       StarterKit.configure({
         heading: { levels: [2, 3, 4] },
         link: { openOnClick: false, autolink: true, HTMLAttributes: { rel: 'noopener noreferrer' } },
@@ -195,62 +200,91 @@ export const RichTextEditor = ({
       Placeholder.configure({ placeholder }),
       CharacterCount,
     ],
-    content: value || '',
-    editorProps: {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  const handleKeyDown = (view, event) => {
+    const s = slashRef.current;
+    if (!s) return false;
+    const items = filterSlash(s.query);
+    if (event.key === 'ArrowDown') {
+      setSlash((p) => p && { ...p, index: (p.index + 1) % Math.max(items.length, 1) });
+      return true;
+    }
+    if (event.key === 'ArrowUp') {
+      setSlash((p) => p && { ...p, index: (p.index - 1 + items.length) % Math.max(items.length, 1) });
+      return true;
+    }
+    if (event.key === 'Enter') {
+      if (items[s.index]) {
+        runSlash(items[s.index]);
+        return true;
+      }
+    }
+    if (event.key === 'Escape') {
+      setSlash(null);
+      return true;
+    }
+    return false;
+  };
+
+  const handleDrop = (view, event, slice, moved) => {
+    if (moved || !event.dataTransfer?.files?.length) return false;
+    const file = event.dataTransfer.files[0];
+    if (!file.type.startsWith('image/')) return false;
+    event.preventDefault();
+    const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
+    uploadImage(file).then((url) => {
+      if (url && editorRef.current) editorRef.current.chain().focus().insertContentAt(pos ?? editorRef.current.state.selection.from, { type: 'image', attrs: { src: url, alt: file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ') } }).run();
+    });
+    return true;
+  };
+
+  const handlePaste = (view, event) => {
+    const file = [...(event.clipboardData?.files || [])].find((f) => f.type.startsWith('image/'));
+    if (!file) return false;
+    event.preventDefault();
+    uploadImage(file).then((url) => {
+      if (url && editorRef.current) editorRef.current.chain().focus().setImage({ src: url, alt: '' }).run();
+    });
+    return true;
+  };
+
+  const handlersRef = useRef({});
+  handlersRef.current = { handleKeyDown, handleDrop, handlePaste };
+
+  const editorProps = useMemo(
+    () => ({
       attributes: { class: 'rich-content rich-editor focus:outline-none', spellcheck: 'true' },
-      handleKeyDown: (view, event) => {
-        const s = slashRef.current;
-        if (!s) return false;
-        const items = filterSlash(s.query);
-        if (event.key === 'ArrowDown') {
-          setSlash((p) => p && { ...p, index: (p.index + 1) % Math.max(items.length, 1) });
-          return true;
-        }
-        if (event.key === 'ArrowUp') {
-          setSlash((p) => p && { ...p, index: (p.index - 1 + items.length) % Math.max(items.length, 1) });
-          return true;
-        }
-        if (event.key === 'Enter') {
-          if (items[s.index]) {
-            runSlash(items[s.index]);
-            return true;
-          }
-        }
-        if (event.key === 'Escape') {
-          setSlash(null);
-          return true;
-        }
-        return false;
-      },
-      handleDrop: (view, event, slice, moved) => {
-        if (moved || !event.dataTransfer?.files?.length) return false;
-        const file = event.dataTransfer.files[0];
-        if (!file.type.startsWith('image/')) return false;
-        event.preventDefault();
-        const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
-        uploadImage(file).then((url) => {
-          if (url && editorRef.current) editorRef.current.chain().focus().insertContentAt(pos ?? editorRef.current.state.selection.from, { type: 'image', attrs: { src: url, alt: file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ') } }).run();
-        });
-        return true;
-      },
-      handlePaste: (view, event) => {
-        const file = [...(event.clipboardData?.files || [])].find((f) => f.type.startsWith('image/'));
-        if (!file) return false;
-        event.preventDefault();
-        uploadImage(file).then((url) => {
-          if (url && editorRef.current) editorRef.current.chain().focus().setImage({ src: url, alt: '' }).run();
-        });
-        return true;
-      },
-    },
+      handleKeyDown: (...args) => handlersRef.current.handleKeyDown(...args),
+      handleDrop: (...args) => handlersRef.current.handleDrop(...args),
+      handlePaste: (...args) => handlersRef.current.handlePaste(...args),
+    }),
+    []
+  );
+
+  // BubbleMenu re-sends its options (one editor transaction) whenever `shouldShow` changes identity.
+  // An inline arrow function is new on every render → transaction → re-render → loop. Keep it stable.
+  const bubbleShouldShow = useCallback(
+    ({ editor: ed, state }) => !state.selection.empty && !ed.isActive('image') && !ed.isActive('codeBlock'),
+    []
+  );
+
+  const editor = useEditor({
+    shouldRerenderOnTransaction: true,
+    immediatelyRender: true,
+    extensions,
+    content: initialContent,
+    editorProps,
     onUpdate: ({ editor: ed }) => {
       const out = ed.isEmpty ? '' : ed.getHTML();
       lastEmitted.current = out;
       setHtml(out);
       emit(out);
-      detectSlash(ed);
+      detectSlashRef.current?.(ed);
     },
-    onSelectionUpdate: ({ editor: ed }) => detectSlash(ed),
+    onSelectionUpdate: ({ editor: ed }) => detectSlashRef.current?.(ed),
   });
 
   const editorRef = useRef(null);
@@ -290,6 +324,8 @@ export const RichTextEditor = ({
     slashRef.current = next;
     setSlash(next);
   }
+
+  detectSlashRef.current = detectSlash;
 
   const api = useMemo(
     () => ({
@@ -516,7 +552,7 @@ export const RichTextEditor = ({
           )}
 
           {mode === 'write' && (
-            <BubbleMenu editor={editor} shouldShow={({ editor: ed, state }) => !state.selection.empty && !ed.isActive('image') && !ed.isActive('codeBlock')}>
+            <BubbleMenu editor={editor} shouldShow={bubbleShouldShow}>
               <div className="flex items-center gap-0.5 p-1 bg-noir-card border border-gold/30 rounded-lg shadow-2xl">
                 <Btn title="Bold" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="w-4 h-4" /></Btn>
                 <Btn title="Italic" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="w-4 h-4" /></Btn>

@@ -33,6 +33,7 @@ import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
 import { FAQSchema } from '../components/seo/FAQSchema.jsx';
 import { sanitizeHtml } from '../utils/sanitizeHtml.js';
 import { BRAND, formatINR } from '../config/site.js';
+import { useStoreSettings, taxNote } from '../hooks/useStoreSettings.js';
 
 const strip = (s = '') => String(s).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
@@ -62,6 +63,7 @@ export const ProductDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { addToCart, setInstantCheckout } = useCart();
+  const storeSettings = useStoreSettings();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const [product, setProduct] = useState(null);
@@ -201,7 +203,7 @@ export const ProductDetail = () => {
   const legalRows = [
     ['Brand', product.brand || BRAND.name],
     ['Net quantity', variant?.netQuantity || variant?.title || product.netQuantity],
-    ['MRP (incl. of all taxes)', formatINR(mrp)],
+    [`MRP (${taxNote(storeSettings)})`, formatINR(mrp)],
     ['Country of origin', product.countryOfOrigin || 'India'],
     ['Shelf life / Best before', product.shelfLife],
     ['Manufactured by', product.manufacturerDetails],
@@ -366,7 +368,7 @@ export const ProductDetail = () => {
                   </>
                 )}
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">Inclusive of all taxes · GST invoice available</p>
+              <p className="text-[11px] text-zinc-500 mt-1">{taxNote(storeSettings, { long: true })} · GST invoice available</p>
             </div>
 
             {product.shortDescription && <p className="mt-5 text-sm text-zinc-300 leading-relaxed">{product.shortDescription}</p>}

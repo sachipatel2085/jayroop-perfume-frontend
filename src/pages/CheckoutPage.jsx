@@ -96,6 +96,11 @@ export const CheckoutPage = () => {
     }
   }, [user]);
 
+  // Delivery state + PIN drive zone shipping rates, delivery days and COD availability.
+  // Only re-price when they become complete (not on every keystroke).
+  const shipState = address.state || '';
+  const shipPin = /^[1-9]\d{5}$/.test(String(address.postalCode || '')) ? address.postalCode : '';
+
   // Server-side price calculation (includes COD fee when COD is selected)
   useEffect(() => {
     if (!activeItems.length) return;
@@ -105,7 +110,8 @@ export const CheckoutPage = () => {
       .calculateCart(
         activeItems.map((i) => ({ productId: i.productId, variantSku: i.variantSku, quantity: i.quantity, name: i.name })),
         couponCode,
-        paymentMethod
+        paymentMethod,
+        shipState || shipPin ? { state: shipState, postalCode: shipPin } : null
       )
       .then((res) => alive && setCalc(res))
       .catch((err) => alive && setError(err.message))
@@ -113,7 +119,7 @@ export const CheckoutPage = () => {
     return () => {
       alive = false;
     };
-  }, [activeItems, couponCode, paymentMethod]);
+  }, [activeItems, couponCode, paymentMethod, shipState, shipPin]);
 
   const errors = validate(address);
   const isAddressValid = Object.keys(errors).length === 0;
@@ -124,10 +130,11 @@ export const CheckoutPage = () => {
   const subtotal = calc?.subtotal || 0;
   const codAllowed =
     settings?.codEnabled &&
+    calc?.codAvailableForAddress !== false &&
     (!settings.codMinOrderAmount || subtotal >= settings.codMinOrderAmount) &&
     (!settings.codMaxOrderAmount || subtotal <= settings.codMaxOrderAmount);
   const onlineAllowed = settings?.onlinePaymentEnabled !== false;
-  const stockErrors = (calc?.errors || []).filter((e) => !e.startsWith('Coupon') && !e.startsWith('Invalid coupon'));
+  const stockErrors = (calc?.errors || []).filter((e) => !e.startsWith('Coupon') && !e.startsWith('Invalid coupon') && !e.includes('Cash on Delivery is not available'));
   const couponError = (calc?.errors || []).find((e) => e.startsWith('Coupon') || e.startsWith('Invalid coupon'));
 
   useEffect(() => {
@@ -456,21 +463,37 @@ export const CheckoutPage = () => {
               )}
               {calc?.discount > 0 && <div className="flex justify-between text-emerald-300"><dt>Coupon discount</dt><dd>-{formatINR(calc.discount)}</dd></div>}
               <div className="flex justify-between text-zinc-400">
-                <dt className="flex items-center gap-1.5"><Truck className="w-3.5 h-3.5" />Shipping</dt>
+                <dt className="flex items-center gap-1.5">
+                  <Truck className="w-3.5 h-3.5" />Shipping
+                  {calc?.shippingZoneLabel && <span className="text-[10px] text-zinc-500">· {calc.shippingEstimated ? 'est.' : calc.shippingZoneLabel}</span>}
+                </dt>
                 <dd>{calc?.shipping ? formatINR(calc.shipping) : <span className="text-emerald-300">FREE</span>}</dd>
               </div>
               {calc?.codFee > 0 && <div className="flex justify-between text-amber-300"><dt>COD handling</dt><dd>{formatINR(calc.codFee)}</dd></div>}
+              {calc?.taxAmount > 0 && <div className="flex justify-between text-zinc-400"><dt>GST</dt><dd>{formatINR(calc.taxAmount)}</dd></div>}
               {calc?.amountToFreeShipping > 0 && (
                 <p className="text-[11px] text-gold/90 bg-gold/5 border border-gold/20 rounded-lg px-3 py-2">
                   Add {formatINR(calc.amountToFreeShipping)} more for FREE delivery.
                 </p>
               )}
               <div className="flex justify-between items-baseline pt-3 border-t border-zinc-800">
-                <dt className="font-semibold text-zinc-100">Total <span className="text-[10px] font-normal text-zinc-500">(incl. GST)</span></dt>
+                <dt className="font-semibold text-zinc-100">
+                  Total{' '}
+                  {calc?.gstApplicable !== false && (
+                    <span className="text-[10px] font-normal text-zinc-500">
+                      (incl. GST{calc?.pricesIncludeTax && calc?.includedTax > 0 ? ` ${formatINR(calc.includedTax)}` : ''})
+                    </span>
+                  )}
+                </dt>
                 <dd className="text-2xl font-extrabold text-gold">{calcLoading ? <Spinner className="w-5 h-5" /> : formatINR(total)}</dd>
               </div>
             </dl>
 
+            {calc?.codAvailableForAddress === false && settings?.codEnabled && (
+              <p className="mt-3 text-[11px] text-amber-300">Cash on Delivery isn’t available for this address – please pay online with PhonePe.</p>
+            )}
+            {calc?.shippingPolicyNote && <p className="mt-3 text-[11px] text-zinc-400">{calc.shippingPolicyNote}</p>}
+            {settings?.gst?.gstin && <p className="mt-3 text-[11px] text-zinc-500">Sold by {settings.business?.legalName || 'Jayrup'} · GSTIN {settings.gst.gstin}</p>}
             {calc?.estimatedDeliveryText && (
               <p className="mt-3 text-[11px] text-zinc-400">
                 Estimated delivery: <span className="text-zinc-200">{calc.estimatedDeliveryText}</span>

@@ -2,8 +2,9 @@ import api from './api.js';
 import { downloadFile } from '../utils/download.js';
 
 export const orderService = {
-  calculateCart: async (items, couponCode = '', paymentMethod = 'ONLINE') => {
-    const res = await api.post('/cart/calculate', { items, couponCode, paymentMethod });
+  // shippingAddress { state, postalCode } is optional – enables zone rates & PIN code rules
+  calculateCart: async (items, couponCode = '', paymentMethod = 'ONLINE', shippingAddress = null) => {
+    const res = await api.post('/cart/calculate', { items, couponCode, paymentMethod, shippingAddress });
     return res.data;
   },
 

@@ -22,6 +22,7 @@ import { RichTextEditor } from '../../components/common/RichTextEditor.jsx';
 import { SeoFormFields } from '../../components/admin/SeoFormFields.jsx';
 import { Input, Select, Textarea, Alert } from '../../components/ui/Field.jsx';
 import { Pill } from '../../components/ui/StatusBadge.jsx';
+import { useStoreSettings } from '../../hooks/useStoreSettings.js';
 
 // Suggestion chips per product type – admins can also type their own values.
 const SUITABLE_FOR = {
@@ -454,6 +455,7 @@ export const AdminProducts = () => {
 };
 
 const ProductEditor = ({ id, initial, categories, typeCatalog, onClose, onSaved }) => {
+  const storeSettings = useStoreSettings();
   const [f, setF] = useState(initial);
   const [tab, setTab] = useState('basic');
   const [saving, setSaving] = useState(false);
@@ -663,7 +665,7 @@ const ProductEditor = ({ id, initial, categories, typeCatalog, onClose, onSaved 
             {tab === 'pricing' && (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Input label="MRP (₹, incl. GST)" required type="number" min="0" step="0.01" value={f.price} onChange={(e) => set({ price: e.target.value })} />
+                  <Input label={storeSettings?.gst?.pricesIncludeTax === false ? "Price (₹, before GST)" : "MRP (₹, incl. GST)"} required type="number" min="0" step="0.01" value={f.price} onChange={(e) => set({ price: e.target.value })} />
                   <Input label="Selling price (₹)" hint="optional" type="number" min="0" step="0.01" value={f.salePrice} onChange={(e) => set({ salePrice: e.target.value })} />
                   <Input label="SKU" required value={f.sku} onChange={(e) => set({ sku: e.target.value.toUpperCase() })} />
                   <Input label={f.variants.length ? 'Stock (sum of variants)' : 'Stock'} type="number" min="0" disabled={f.variants.length > 0} value={f.variants.length ? f.variants.reduce((s, v) => s + Number(v.stock || 0), 0) : f.stock} onChange={(e) => set({ stock: e.target.value })} />

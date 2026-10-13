@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BrandLogo } from './BrandLogo.jsx';
-import { ShieldCheck, Truck, RefreshCw, Award, Mail, Phone, MapPin, MessageCircle, Smartphone, CreditCard, Landmark, Banknote } from 'lucide-react';
+import { ShieldCheck, Truck, RefreshCw, Award, Mail, Phone, MapPin, MessageCircle, Smartphone, CreditCard, Landmark, Banknote, BadgeCheck } from 'lucide-react';
 import { BRAND, fullAddress } from '../../config/site.js';
+import { useStoreSettings } from '../../hooks/useStoreSettings.js';
 
 const Col = ({ title, links }) => (
   <div>
@@ -18,6 +19,7 @@ const Col = ({ title, links }) => (
 );
 
 export const Footer = () => {
+  const storeSettings = useStoreSettings();
   const [email, setEmail] = useState('');
   const [joined, setJoined] = useState(false);
 
@@ -53,6 +55,9 @@ export const Footer = () => {
             <p className="flex gap-2"><Phone className="w-3.5 h-3.5 text-gold flex-shrink-0" /><a href={BRAND.phoneHref} className="hover:text-gold">{BRAND.phone}</a></p>
             <p className="flex gap-2"><Mail className="w-3.5 h-3.5 text-gold flex-shrink-0" /><a href={`mailto:${BRAND.email}`} className="hover:text-gold">{BRAND.email}</a></p>
             <p className="flex gap-2"><MessageCircle className="w-3.5 h-3.5 text-gold flex-shrink-0" /><a href={BRAND.whatsappHref} target="_blank" rel="noopener noreferrer" className="hover:text-gold">WhatsApp us</a></p>
+            {storeSettings?.gst?.gstin && (
+              <p className="flex gap-2"><BadgeCheck className="w-3.5 h-3.5 text-gold flex-shrink-0" /><span>GSTIN: <span className="font-mono text-zinc-300">{storeSettings.gst.gstin}</span></span></p>
+            )}
           </address>
         </div>
 
