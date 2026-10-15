@@ -12,7 +12,7 @@ export const ProductCard = ({ product }) => {
 
   const pId = product._id || product.id;
   const inWishlist = isInWishlist(pId);
-  const primaryImage = product.images?.[0]?.url || 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=800';
+  const primaryImage = product.images?.[0]?.url || '/og-image.jpg';
   const hasSale = product.salePrice && product.salePrice < product.price;
   const isOutOfStock = product.stock <= 0;
 
@@ -91,18 +91,16 @@ export const ProductCard = ({ product }) => {
             </h3>
           </Link>
 
-          {/* Ratings */}
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400 mb-2.5">
-            <div className="flex items-center text-gold">
-              <Star className="w-3.5 h-3.5 fill-gold" />
-              <span className="ml-1 text-[11px] font-semibold text-zinc-200">
-                {product.averageRating > 0 ? product.averageRating.toFixed(1) : '5.0'}
-              </span>
+          {/* Ratings – only real reviews are shown */}
+          {product.numReviews > 0 && (
+            <div className="flex items-center gap-1.5 text-xs text-zinc-400 mb-2.5">
+              <div className="flex items-center text-gold">
+                <Star className="w-3.5 h-3.5 fill-gold" />
+                <span className="ml-1 text-[11px] font-semibold text-zinc-200">{Number(product.averageRating || 0).toFixed(1)}</span>
+              </div>
+              <span className="text-[10px] text-zinc-500">({product.numReviews})</span>
             </div>
-            <span className="text-[10px] text-zinc-500">
-              ({product.numReviews || 12})
-            </span>
-          </div>
+          )}
         </div>
 
         {/* Pricing & Add to Cart button */}

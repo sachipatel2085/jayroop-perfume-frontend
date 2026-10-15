@@ -8,6 +8,7 @@ import { WishlistProvider } from './context/WishlistContext.jsx';
 import { Navbar } from './components/common/Navbar.jsx';
 import { Footer } from './components/common/Footer.jsx';
 import { CartDrawer } from './components/cart/CartDrawer.jsx';
+import { PhoneRequiredModal } from './components/auth/PhoneRequiredModal.jsx';
 import { ScrollToTop } from './components/common/ScrollToTop.jsx';
 import { SiteEffects } from './components/common/SiteEffects.jsx';
 import { PageLoader } from './components/ui/Field.jsx';
@@ -93,6 +94,7 @@ const StorefrontLayout = () => (
     </main>
     <Footer />
     <CartDrawer />
+    <PhoneRequiredModal />
   </div>
 );
 

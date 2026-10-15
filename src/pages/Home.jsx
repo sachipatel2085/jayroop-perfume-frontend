@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Volume2, VolumeX, ShieldCheck, Truck, BadgeCheck, Leaf, Droplets, Gift, Wallet, MapPin, ChevronDown, ShoppingBag, Check, Star } from 'lucide-react';
+import { ArrowRight, Sparkles, Volume2, VolumeX, ShieldCheck, Truck, BadgeCheck, Leaf, Droplets, SprayCan, Wallet, MapPin, ChevronDown } from 'lucide-react';
 import { productService } from '../services/productService.js';
-import { ProductCard } from '../components/product/ProductCard.jsx';
+import { ProductRail } from '../components/product/ProductRail.jsx';
 import { SEO } from '../components/seo/SEO.jsx';
 import { OrganizationSchema } from '../components/seo/OrganizationSchema.jsx';
 import { WebsiteSchema } from '../components/seo/WebsiteSchema.jsx';
@@ -12,7 +12,6 @@ import ScentFluencerSection from '../components/influencer/ScentFluencerSection.
 import { DEFAULT_SEO } from '../config/site.js';
 import { HOME_FAQS } from '../config/homeContent.js';
 import { FAQSchema } from '../components/seo/FAQSchema.jsx';
-import { useCart } from '../context/CartContext.jsx';
 import { resolveMediaUrl } from '../utils/media.js';
 import { useStoreSettings, taxNote } from '../hooks/useStoreSettings.js';
 
@@ -43,7 +42,6 @@ export const Home = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [heroMediaFailed, setHeroMediaFailed] = useState(false);
   const [isCampaignMuted, setIsCampaignMuted] = useState(true);
-  const { addToCart } = useCart();
   const storeSettings = useStoreSettings();
 
   useEffect(() => {
@@ -62,12 +60,14 @@ export const Home = () => {
           setCampaignAd(campRes[0]);
         }
 
-        // 2. Fetch featured products with fallback to latest creations
-        let prodRes = await productService.getProducts({ featured: 'true', limit: 8 });
-        if (!prodRes?.data || prodRes.data.length === 0) {
-          // If no products are explicitly marked featured, display latest creations so homepage is never empty
-          prodRes = await productService.getProducts({ limit: 8 });
-        }
+        // 2. Products for the rail under the hero – featured first, topped up with the rest of the catalogue
+        const [featRes, allRes] = await Promise.all([
+          productService.getProducts({ featured: 'true', limit: 12 }),
+          productService.getProducts({ limit: 12 }),
+        ]);
+        const seen = new Set();
+        const merged = [...(featRes?.data || []), ...(allRes?.data || [])].filter((p) => !seen.has(p._id) && seen.add(p._id));
+        const prodRes = { data: merged };
         if (prodRes?.data) setFeaturedProducts(prodRes.data);
 
         // 3. Fetch categories
@@ -92,9 +92,6 @@ export const Home = () => {
   }, []);
 
   const useAdImage = heroAd?.mediaType !== 'VIDEO' && Boolean(heroAd?.mediaUrl) && !heroMediaFailed;
-  // The first two products get a large "spotlight"; any extra products appear in the grid below.
-  const spotlight = featuredProducts.slice(0, 2);
-  const moreProducts = featuredProducts.slice(2);
   const plain = (html = '') => String(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   const inspirations = influencerVideos.filter((v) => v.sectionType === 'INSPIRATIONS');
   const scentFluencers = influencerVideos.filter((v) => v.sectionType === 'SCENT_FLUENCER');
@@ -191,7 +188,18 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* 2. TRUST BAR – the questions every Indian shopper asks first */}
+      {/* 2. SHOP THE COLLECTION – horizontal product rail with one-tap Add to cart */}
+      <ProductRail
+        id="bestsellers"
+        eyebrow="Shop the collection"
+        title="Bestsellers"
+        subtitle="Luxury perfume, deodorant body sprays and Ayurvedic skin care – add to cart in one tap."
+        products={featuredProducts}
+        loading={loading}
+        priceNote={`MRP ${taxNote(storeSettings)}`}
+      />
+
+      {/* 3. TRUST BAR – the questions every Indian shopper asks first */}
       <section aria-label="Why shop with Jayrup" className="border-b border-gold/15 bg-noir">
         <ul className="max-w-7xl mx-auto px-4 sm:px-8 py-5 grid grid-cols-2 md:grid-cols-5 gap-x-4 gap-y-4">
           {[
@@ -214,121 +222,6 @@ export const Home = () => {
         </ul>
       </section>
 
-      {/* 3. BESTSELLERS – one large spotlight per product, built from the live catalogue */}
-      <section className="py-16 sm:py-24 px-4 sm:px-8 max-w-7xl mx-auto" aria-labelledby="bestsellers-heading">
-        <header className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-gold">Shop our bestsellers</p>
-          <h2 id="bestsellers-heading" className="font-serif text-2xl sm:text-4xl uppercase tracking-wider text-zinc-100 mt-2">
-            Luxury Perfume &amp; Ayurvedic Skin Care
-          </h2>
-          <p className="text-sm text-zinc-400 mt-3">Two products, made in India and made to be trusted – each one crafted by a licensed manufacturer.</p>
-        </header>
-
-        {loading && !spotlight.length ? (
-          <div className="grid gap-8">
-            {[0, 1].map((n) => (
-              <div key={n} className="h-[420px] bg-noir-card border border-zinc-800 animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-10 sm:space-y-14">
-            {spotlight.map((p, i) => {
-              const img = p.images?.find((x) => x.isPrimary) || p.images?.[0];
-              const price = p.salePrice && p.salePrice < p.price ? p.salePrice : p.price;
-              const onSale = p.salePrice && p.salePrice < p.price;
-              const reverse = i % 2 === 1;
-              return (
-                <article
-                  key={p._id}
-                  className="group grid md:grid-cols-2 items-stretch border border-gold/20 bg-gradient-to-br from-noir-card to-noir shadow-[0_30px_60px_-30px_rgba(0,0,0,0.9)] overflow-hidden"
-                >
-                  <Link
-                    to={`/products/${p.slug}`}
-                    className={`relative block aspect-square self-center w-full overflow-hidden bg-[#0d1015] ${reverse ? 'md:order-2' : ''}`}
-                    aria-label={p.name}
-                  >
-                    <img
-                      src={resolveMediaUrl(img?.url)}
-                      alt={img?.altText || p.name}
-                      width="1200"
-                      height="1200"
-                      loading="lazy"
-                      decoding="async"
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                    />
-                    <span className="absolute inset-0 shadow-[inset_0_0_80px_rgba(0,0,0,0.45)] pointer-events-none" />
-                    <span className="absolute top-4 left-4 text-[10px] uppercase tracking-widest font-bold bg-gold text-black px-2.5 py-1">
-                      Bestseller
-                    </span>
-                  </Link>
-
-                  <div className="p-6 sm:p-10 lg:p-12 flex flex-col justify-center">
-                    {p.category?.name && (
-                      <Link to={`/category/${p.category.slug}`} className="text-[11px] uppercase tracking-[0.25em] text-gold hover:text-gold-light">
-                        {p.category.name}
-                      </Link>
-                    )}
-                    <h3 className="font-serif text-2xl sm:text-3xl text-zinc-100 mt-2 leading-snug">
-                      <Link to={`/products/${p.slug}`} className="hover:text-gold-light transition-colors">
-                        {p.name}
-                      </Link>
-                    </h3>
-                    {p.numReviews > 0 && (
-                      <p className="mt-2 flex items-center gap-1 text-xs text-zinc-400">
-                        <Star className="w-3.5 h-3.5 fill-gold text-gold" /> {Number(p.averageRating || 0).toFixed(1)} · {p.numReviews} reviews
-                      </p>
-                    )}
-                    <p className="text-sm text-zinc-400 leading-relaxed mt-4 line-clamp-4">{p.shortDescription || plain(p.description).slice(0, 260)}</p>
-
-                    {p.highlights?.length > 0 && (
-                      <ul className="mt-5 space-y-2">
-                        {p.highlights.slice(0, 4).map((h) => (
-                          <li key={h} className="flex items-start gap-2.5 text-sm text-zinc-300">
-                            <Check className="w-4 h-4 text-gold mt-0.5 shrink-0" aria-hidden="true" />
-                            <span>{h}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    <div className="mt-6 flex items-baseline gap-3">
-                      <span className="text-2xl font-semibold text-zinc-100">₹{price}</span>
-                      {onSale && <span className="text-sm text-zinc-500 line-through">₹{p.price}</span>}
-                      <span className="text-[11px] text-zinc-500">MRP {taxNote(storeSettings)}</span>
-                    </div>
-
-                    <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                      <button
-                        type="button"
-                        onClick={() => addToCart(p, p.variants?.[0] || null, 1)}
-                        disabled={p.stock === 0}
-                        className="btn-gold text-xs py-3.5 px-7 inline-flex items-center justify-center gap-2 disabled:opacity-50"
-                      >
-                        <ShoppingBag className="w-4 h-4" /> {p.stock === 0 ? 'Out of stock' : 'Add to cart'}
-                      </button>
-                      <Link to={`/products/${p.slug}`} className="btn-outline-gold text-xs py-3.5 px-7 inline-flex items-center justify-center gap-2 group/link">
-                        View details <ArrowRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
-                      </Link>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-
-        {moreProducts.length > 0 && (
-          <div className="mt-16">
-            <h3 className="font-serif text-xl uppercase tracking-wider text-zinc-100 mb-6">More from Jayrup</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-              {moreProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
-
       {/* 4. SHOP BY CATEGORY – wide banner cards from the live categories */}
       {categories.length > 0 && (
         <section className="pb-16 sm:pb-24 px-4 sm:px-8 max-w-7xl mx-auto" aria-labelledby="categories-heading">
@@ -344,11 +237,13 @@ export const Home = () => {
             </Link>
           </header>
           <div className={`grid gap-6 ${categories.length > 1 ? 'lg:grid-cols-2' : ''}`}>
-            {categories.slice(0, 4).map((cat) => (
+            {categories.slice(0, 4).map((cat, i, list) => (
               <Link
                 key={cat._id}
                 to={`/category/${cat.slug}`}
-                className="group relative overflow-hidden border border-gold/20 hover:border-gold/60 transition-colors aspect-[16/9] sm:aspect-[1600/700] flex items-end"
+                className={`group relative overflow-hidden border border-gold/20 hover:border-gold/60 transition-colors aspect-[16/9] sm:aspect-[1600/700] flex items-end ${
+                  list.length % 2 === 1 && i === 0 ? 'lg:col-span-2 lg:aspect-[1600/560]' : ''
+                }`}
               >
                 {cat.image?.url && (
                   <img
@@ -448,6 +343,12 @@ export const Home = () => {
               Ayurvedic proprietary medicine with Neem, Karanj, Manjistha and Daruhaldi, made in a GMP-certified facility. Every Jayrup product is made by a licensed
               manufacturer and carries full batch and expiry details on the pack.
             </p>
+            <p className="text-zinc-400 text-[15px] leading-relaxed mt-4">
+              For every day, our <Link to="/category/body-sprays" className="text-gold hover:underline">deodorant body sprays</Link> bring the same spirit to your
+              routine – <Link to="/products/jayrup-thar-bloom-deodorant-body-spray-150ml" className="text-gold hover:underline">Thar Bloom</Link> and{' '}
+              <Link to="/products/jayrup-desert-musk-deodorant-body-spray-150ml" className="text-gold hover:underline">Desert Musk</Link> for him, and{' '}
+              <Link to="/products/jayrup-charm-deodorant-body-spray-150ml" className="text-gold hover:underline">Charm</Link> for her.
+            </p>
 
             <dl className="grid grid-cols-2 gap-px bg-zinc-800 border border-zinc-800 mt-8">
               {[
@@ -483,7 +384,7 @@ export const Home = () => {
             { icon: Droplets, title: 'Long-lasting perfume', text: 'Royal Flora is an Eau de Parfum – richer and longer-lasting than a deo or body spray.', to: '/category/perfumes' },
             { icon: Leaf, title: 'Ayurvedic herbs', text: 'Neem, Karanj, Manjistha and Daruhaldi – a classical formula for pimple-prone skin.', to: '/category/skincare' },
             { icon: BadgeCheck, title: 'Licensed & GMP made', text: 'Made by licensed manufacturers, with batch, MRP and expiry printed on every pack.', to: '/about' },
-            { icon: Gift, title: 'Gift-ready packs', text: 'Premium bottle in a navy-and-gold gift tube – perfect for birthdays and festivals.', to: '/products/jayrup-royal-flora-eau-de-parfum-50ml' },
+            { icon: SprayCan, title: 'Body sprays for him & her', text: 'Thar Bloom, Desert Musk and Charm – 150 ml deodorant body sprays for everyday freshness.', to: '/category/body-sprays' },
           ].map(({ icon: Icon, title, text, to }) => (
             <Link
               key={title}
@@ -582,14 +483,16 @@ export const Home = () => {
       {/* 11. SEO INTRO – short, natural copy with the main search terms */}
       <section className="py-14 px-4 sm:px-8 max-w-4xl mx-auto text-center" aria-labelledby="seo-heading">
         <h2 id="seo-heading" className="font-serif text-xl sm:text-2xl uppercase tracking-wider text-zinc-100">
-          Buy Luxury Perfume &amp; Ayurvedic Pimple Cream Online in India
+          Buy Luxury Perfume, Body Spray &amp; Ayurvedic Pimple Cream Online in India
         </h2>
         <p className="text-sm text-zinc-400 leading-relaxed mt-4">
           Jayrup brings you a <Link to="/category/perfumes" className="text-gold hover:underline">long-lasting luxury perfume for men</Link> and{' '}
-          <Link to="/category/skincare" className="text-gold hover:underline">Ayurvedic skin care</Link> – made in India by licensed manufacturers. Shop{' '}
+          <Link to="/category/skincare" className="text-gold hover:underline">Ayurvedic skin care</Link>, plus{' '}
+          <Link to="/category/body-sprays" className="text-gold hover:underline">deodorant body sprays for men and women</Link> – made in India by licensed manufacturers. Shop{' '}
           <Link to="/products/jayrup-royal-flora-eau-de-parfum-50ml" className="text-gold hover:underline">Jayrup Royal Flora Eau de Parfum 50 ml</Link>, the
           royal man’s first choice, and <Link to="/products/jayrup-pimples-cream" className="text-gold hover:underline">Jayrup Pimples Cream</Link>, an Ayurvedic cream for
-          pimple-prone skin. Pay securely with PhonePe or choose Cash on Delivery, with delivery across India.
+          pimple-prone skin, and pick a 150 ml body spray – Thar Bloom, Desert Musk or Charm – for everyday freshness. Pay securely with PhonePe or choose Cash on
+          Delivery, with delivery across India.
         </p>
       </section>
     </div>

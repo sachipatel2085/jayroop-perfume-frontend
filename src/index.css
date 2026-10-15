@@ -204,3 +204,14 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Horizontal product rails: scroll without a visible scrollbar */
+@layer utilities {
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

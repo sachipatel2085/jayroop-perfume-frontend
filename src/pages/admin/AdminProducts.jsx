@@ -36,6 +36,7 @@ const CONCERN_OPTIONS = {
   HAIR_CARE: ['Hair fall', 'Dandruff', 'Frizz', 'Dryness', 'Growth'],
   SOAP: ['Oil control', 'Dryness', 'Tan', 'Freshness'],
   BODY_CARE: ['Body odour', 'Dryness', 'Freshness'],
+  DEODORANT: ['Body odour', 'Sweat', 'Freshness', 'Long day out'],
   DEFAULT: ['Gifting', 'Daily use'],
 };
 const FRAGRANCE_FAMILIES = ['Floral', 'Woody', 'Oriental / Amber', 'Oud', 'Fresh', 'Citrus', 'Aquatic', 'Fougère', 'Gourmand', 'Musky', 'Spicy', 'Green'];

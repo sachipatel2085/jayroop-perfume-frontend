@@ -4,6 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { Input, Alert } from '../../components/ui/Field.jsx';
 import { AuthShell, safeRedirect } from './AuthShell.jsx';
+import { GoogleSignInButton, AuthDivider } from '../../components/auth/GoogleSignInButton.jsx';
 
 export const Login = () => {
   const { login } = useAuth();
@@ -18,14 +19,18 @@ export const Login = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const afterLogin = (res) => {
+    if ((res.role === 'ADMIN' || res.role === 'SUPER_ADMIN') && !params.get('redirect')) navigate('/admin');
+    else navigate(redirect, { replace: true });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
       setError(null);
       const res = await login({ email: email.trim(), password });
-      if ((res.role === 'ADMIN' || res.role === 'SUPER_ADMIN') && !params.get('redirect')) navigate('/admin');
-      else navigate(redirect, { replace: true });
+      afterLogin(res);
     } catch (err) {
       setError(err.message || 'Invalid email or password');
     } finally {
@@ -48,6 +53,8 @@ export const Login = () => {
       }
     >
       {error && <Alert>{error}</Alert>}
+      <GoogleSignInButton onSuccess={afterLogin} onError={setError} />
+      <AuthDivider>or sign in with e-mail</AuthDivider>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input label="E-mail" type="email" name="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         <div className="relative">

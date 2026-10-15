@@ -19,6 +19,15 @@ export const authService = {
     return res.data;
   },
 
+  googleLogin: async (idToken, extra = {}) => {
+    const res = await api.post('/auth/google', { idToken, ...extra });
+    if (res.data?.token) {
+      localStorage.setItem('jayrup_token', res.data.token);
+      localStorage.setItem('jayrup_user', JSON.stringify(res.data));
+    }
+    return res.data;
+  },
+
   logout: () => {
     localStorage.removeItem('jayrup_token');
     localStorage.removeItem('jayrup_user');

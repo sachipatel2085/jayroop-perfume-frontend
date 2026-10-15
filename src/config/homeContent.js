@@ -4,12 +4,17 @@ export const HOME_FAQS = [
   {
     question: 'What does Jayrup sell?',
     answer:
-      'Jayrup makes long-lasting luxury perfumes and Ayurvedic skin care in India. Our range includes Jayrup Royal Flora Eau de Parfum 50 ml and Jayrup Pimples Cream 20 g, an Ayurvedic proprietary medicine for pimple-prone skin.',
+      'Jayrup makes luxury perfumes, deodorant body sprays and Ayurvedic skin care in India. Our range includes Jayrup Royal Flora Eau de Parfum 50 ml, the Thar Bloom and Desert Musk body sprays for men, the Charm body spray for women (150 ml each) and Jayrup Pimples Cream 20 g, an Ayurvedic proprietary medicine for pimple-prone skin.',
   },
   {
     question: 'Is Jayrup Royal Flora perfume long lasting?',
     answer:
       'Royal Flora is an Eau de Parfum (EDP) – a higher perfume-oil concentration than deodorants or body sprays – so it lasts much longer. For best results, spray on moisturised pulse points right after a shower.',
+  },
+  {
+    question: 'Which Jayrup body spray should I choose?',
+    answer:
+      'Thar Bloom is bold and refined, inspired by evenings in the Thar desert, and Desert Musk is warm and musky – both are made for men. Charm is a soft, feminine body spray for women. All three are 150 ml deodorant body sprays for everyday freshness.',
   },
   {
     question: 'What is Jayrup Pimples Cream?',

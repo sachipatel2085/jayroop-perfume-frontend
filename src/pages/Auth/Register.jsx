@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { Input, Alert } from '../../components/ui/Field.jsx';
 import { AuthShell, safeRedirect } from './AuthShell.jsx';
+import { GoogleSignInButton, AuthDivider } from '../../components/auth/GoogleSignInButton.jsx';
 
 export const Register = () => {
   const { register } = useAuth();
@@ -47,6 +48,18 @@ export const Register = () => {
       }
     >
       {error && <Alert>{error}</Alert>}
+      <GoogleSignInButton
+        label="Sign up with Google"
+        marketingOptIn={form.marketingOptIn}
+        onSuccess={() => navigate(redirect, { replace: true })}
+        onError={setError}
+      />
+      <p className="text-[11px] text-zinc-500 text-center -mt-2">
+        No forms – one tap with your Google account. By continuing you agree to our{' '}
+        <Link to="/terms-and-conditions" className="text-gold hover:underline">Terms</Link> and{' '}
+        <Link to="/privacy-policy" className="text-gold hover:underline">Privacy Policy</Link>.
+      </p>
+      <AuthDivider>or sign up with e-mail</AuthDivider>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input label="Full name" name="name" autoComplete="name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <Input label="E-mail" type="email" name="email" autoComplete="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />

@@ -33,6 +33,11 @@ const sections = [
           choosing not to use a particular service or feature on the Platform.
         </p>
         <p>
+          <strong>Sign in with Google.</strong> If you choose “Continue with Google”, Google (through Firebase Authentication) shares your name, e-mail address and profile
+          photo with us, and confirms that your e-mail address is verified. We use this only to create and sign in to your JAYRUP account. We do not receive your Google
+          password. Google does not share your mobile number, so we may ask you to add it for order and delivery updates.
+        </p>
+        <p>
           We may track your behaviour, preferences, and other information that you choose to provide on our Platform. This information is compiled and analysed on an
           aggregated basis. We will also collect your information related to your transactions on Platform and such third-party business partner platforms. When such a
           third-party business partner collects your personal data directly from you, you will be governed by their privacy policies. We shall not be responsible for the

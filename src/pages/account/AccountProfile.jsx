@@ -32,6 +32,9 @@ export const AccountProfile = () => {
     }
   };
 
+  // Accounts created with "Continue with Google" have no password until the customer sets one
+  const googleOnly = Array.isArray(user?.authProviders) && !user.authProviders.includes('password');
+
   const savePassword = async (e) => {
     e.preventDefault();
     if (pw.next.length < 8) return setPwMsg({ tone: 'error', text: 'New password must be at least 8 characters.' });
@@ -41,7 +44,8 @@ export const AccountProfile = () => {
       setPwMsg(null);
       await authService.changePassword(pw.current, pw.next);
       setPw({ current: '', next: '', confirm: '' });
-      setPwMsg({ tone: 'success', text: 'Password changed. Other devices have been signed out.' });
+      setPwMsg({ tone: 'success', text: googleOnly ? 'Password set – you can now also sign in with e-mail and password.' : 'Password changed. Other devices have been signed out.' });
+      if (googleOnly) refreshUser?.();
     } catch (err) {
       setPwMsg({ tone: 'error', text: err.message });
     } finally {
@@ -71,10 +75,14 @@ export const AccountProfile = () => {
         </form>
       </Card>
 
-      <Card title="Change password" icon={KeyRound}>
+      <Card title={googleOnly ? 'Set a password' : 'Change password'} icon={KeyRound}>
         <form onSubmit={savePassword} className="space-y-4">
           {pwMsg && <Alert tone={pwMsg.tone}>{pwMsg.text}</Alert>}
-          <Input label="Current password" type="password" autoComplete="current-password" required value={pw.current} onChange={(e) => setPw((p) => ({ ...p, current: e.target.value }))} />
+          {googleOnly ? (
+            <p className="text-xs text-zinc-400">You sign in with Google. Optionally set a password to also sign in with your e-mail.</p>
+          ) : (
+            <Input label="Current password" type="password" autoComplete="current-password" required value={pw.current} onChange={(e) => setPw((p) => ({ ...p, current: e.target.value }))} />
+          )}
           <Input label="New password" type="password" autoComplete="new-password" required minLength={8} hint="Min 8 characters" value={pw.next} onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))} />
           <Input label="Confirm new password" type="password" autoComplete="new-password" required value={pw.confirm} onChange={(e) => setPw((p) => ({ ...p, confirm: e.target.value }))} />
           <button type="submit" disabled={savingPw} className="btn-outline-gold rounded-lg">{savingPw ? 'Updating…' : 'Update password'}</button>

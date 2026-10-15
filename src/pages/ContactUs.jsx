@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, MessageCircle, RotateCcw, AlertCircle, Send, CheckCircle2, Clock, ChevronRight } from 'lucide-react';
+import { Phone, Mail, MapPin, MessageCircle, RotateCcw, AlertCircle, Send, CheckCircle2, Clock, ChevronRight, BadgeCheck } from 'lucide-react';
 import { SEO } from '../components/seo/SEO.jsx';
 import { OrganizationSchema } from '../components/seo/OrganizationSchema.jsx';
 import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
 import { contactService } from '../services/contactService.js';
 import { Input, Select, Textarea, Alert } from '../components/ui/Field.jsx';
 import { BRAND, fullAddress } from '../config/site.js';
+import { useStoreSettings } from '../hooks/useStoreSettings.js';
 
 const SUBJECTS = [
   'General Inquiry',
@@ -20,6 +21,7 @@ const SUBJECTS = [
 ];
 
 export const ContactUs = () => {
+  const storeSettings = useStoreSettings();
   const [form, setForm] = useState({ name: '', email: '', phone: '', orderNumber: '', subject: 'General Inquiry', message: '', website: '' });
   const [status, setStatus] = useState(null);
   const [sending, setSending] = useState(false);
@@ -107,6 +109,9 @@ export const ContactUs = () => {
               <p className="flex gap-3 text-zinc-400"><Phone className="w-4 h-4 text-gold" /><a href={BRAND.phoneHref} className="hover:text-gold">{BRAND.phone}</a></p>
               <p className="flex gap-3 text-zinc-400"><Mail className="w-4 h-4 text-gold" /><a href={`mailto:${BRAND.email}`} className="hover:text-gold">{BRAND.email}</a></p>
               <p className="flex gap-3 text-zinc-400"><MessageCircle className="w-4 h-4 text-gold" /><a href={BRAND.whatsappHref} target="_blank" rel="noopener noreferrer" className="hover:text-gold">Chat on WhatsApp</a></p>
+              {storeSettings?.gst?.gstin && (
+                <p className="flex gap-3 text-zinc-400"><BadgeCheck className="w-4 h-4 text-gold" /><span>GSTIN: <span className="font-mono text-zinc-200">{storeSettings.gst.gstin}</span></span></p>
+              )}
               <p className="flex gap-3 text-zinc-400"><Clock className="w-4 h-4 text-gold" />Mon – Sat, 10:00 AM – 6:00 PM IST</p>
             </div>
           </div>

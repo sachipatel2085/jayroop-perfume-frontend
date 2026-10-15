@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Settings, Banknote, Smartphone, Truck, Building2, Receipt, Globe, Save, CheckCircle2, AlertTriangle, Copy, Loader2, Percent, MapPin, Clock, Calculator, Ban, Info } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
+import api from '../../services/api.js';
 import { Input, Select, Textarea, Alert, Card } from '../../components/ui/Field.jsx';
 import { INDIA_STATES } from '../../config/site.js';
 
@@ -420,6 +421,37 @@ const ShippingTab = ({ s, set, setSh, setZone, Toggle }) => {
 };
 
 // ═══════════════════════════════ GST & Tax ═══════════════════════════════
+// Asks the live public API what the storefront shows right now – confirms the GSTIN really reached the website.
+const LiveGstinCheck = ({ savedGstin }) => {
+  const [state, setState] = useState(null);
+  const check = async () => {
+    setState({ loading: true });
+    try {
+      const res = await api.get('/settings/public', { params: { t: Date.now() } });
+      setState({ gstin: res?.data?.gst?.gstin || '' });
+    } catch (err) {
+      setState({ error: err.message });
+    }
+  };
+  return (
+    <div className="mt-4 rounded-lg border border-zinc-800 bg-noir/60 p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="text-zinc-400">
+        {!state && 'Press “Save settings” first, then check what customers see.'}
+        {state?.loading && 'Checking the live website…'}
+        {state?.error && <span className="text-red-300">Could not reach the API: {state.error}</span>}
+        {state && !state.loading && !state.error && (state.gstin ? (
+          <span className="text-emerald-300 inline-flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Live on the website: GSTIN {state.gstin}</span>
+        ) : (
+          <span className="text-amber-300 inline-flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" />
+            Not shown on the website{savedGstin ? ' – unsaved changes, “Show GSTIN” off, or the GSTIN/state does not match' : ' – no GSTIN saved yet'}.
+          </span>
+        ))}
+      </div>
+      <button type="button" onClick={check} className="btn-outline-gold rounded-lg text-[11px] py-2 px-4">Check website</button>
+    </div>
+  );
+};
+
 const GstTab = ({ s, setB, setI, Toggle }) => {
   const b = s.business;
   const inv = s.invoice;
@@ -477,6 +509,7 @@ const GstTab = ({ s, setB, setI, Toggle }) => {
             desc="Footer, contact page and checkout – builds trust and lets business buyers claim input tax credit."
           />
         </div>
+        <LiveGstinCheck savedGstin={s.business?.gstin} />
       </Card>
 
       <Card title="How prices are shown" icon={Percent}>
