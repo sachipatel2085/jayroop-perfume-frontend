@@ -42,6 +42,11 @@ export const productService = {
   },
 
   submitReview: async (reviewData) => api.post('/reviews', reviewData), // { success, message, data }
+  // Full response: { data: reviews[], summary: { average, count, verified, distribution }, pagination }
+  getReviewsPage: async (productId, params = {}) => api.get(`/reviews/product/${productId}`, { params }),
+  getMyReview: async (productId) => (await api.get(`/reviews/product/${productId}/mine`)).data,
+  toggleReviewHelpful: async (id) => (await api.post(`/reviews/${id}/helpful`)).data,
+  deleteMyReview: async (id) => api.delete(`/reviews/mine/${id}`),
 
   getInfluencerVideos: async (params = {}) => {
     const res = await api.get('/influencers', { params });

@@ -6,8 +6,10 @@ export const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://jayrup.in').r
 export const BRAND = {
   name: 'Jayrup',
   tradeName: 'Jayrup',
-  legalName: 'FITJAYESH',
-  registration: 'MSME Registered',
+  // Legal entity that owns the Jayrup brand – exactly as on the GST certificate, bank & PhonePe account.
+  // Admin › Settings › Business › Legal name overrides this at runtime.
+  legalName: 'JAYRUP TRADING COMPANY',
+  registration: '',
   tagline: 'Skincare · Fragrances · Personal Care',
   description:
     'Jayrup creates safe, effective and affordable skincare and long-lasting fragrances, made in India – combining traditional wisdom with modern cosmetic science.',
@@ -30,12 +32,12 @@ export const BRAND = {
     instagram: '',
     facebook: '',
     youtube: '',
-  },
+  }, // live profiles come from Admin › Settings › Storefront › Social media
 };
 
-// Legal identity line used in policies & footer, e.g. "Jayrup (under FITJAYESH – MSME Registered)"
-export const legalIdentity = () =>
-  `${BRAND.tradeName}${BRAND.legalName ? ` (under ${BRAND.legalName}${BRAND.registration ? ` – ${BRAND.registration}` : ''})` : ''}`;
+// Legal identity used in policies & footer, e.g. "JAYRUP TRADING COMPANY (brand: Jayrup)"
+export const legalIdentity = (legalName = BRAND.legalName, registration = BRAND.registration) =>
+  `${legalName || BRAND.tradeName}${legalName && legalName !== BRAND.tradeName ? ` (brand: ${BRAND.tradeName})` : ''}${registration ? ` – ${registration}` : ''}`;
 
 export const fullAddress = (a = BRAND.address) =>
   [a.line1, a.line2, a.city, a.district, `${a.state} – ${a.postalCode}`, a.country].filter(Boolean).join(', ');

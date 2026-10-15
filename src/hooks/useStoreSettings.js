@@ -42,3 +42,15 @@ export const taxNote = (settings, { long = false } = {}) => {
   if (gst && gst.pricesIncludeTax === false && gst.applicable) return long ? 'GST added at checkout' : '+ GST';
   return long ? 'Inclusive of all taxes' : 'incl. of all taxes';
 };
+
+/** Legal identity for footers, policies & contact blocks – Admin › Settings › Business, with safe fallbacks. */
+export const legalFrom = (settings, BRAND) => {
+  const b = settings?.business || {};
+  return {
+    legalName: b.legalName || BRAND.legalName,
+    registration: b.registrationNote ?? BRAND.registration,
+    brand: b.brandName || BRAND.name,
+    gstin: settings?.gst?.gstin || '',
+    social: Array.isArray(b.social) ? b.social : [],
+  };
+};

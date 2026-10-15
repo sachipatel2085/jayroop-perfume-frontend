@@ -1,6 +1,7 @@
 import React from 'react';
 import { StructuredData } from './StructuredData.jsx';
 import { SITE_URL, BRAND } from '../../config/site.js';
+import { useStoreSettings, legalFrom } from '../../hooks/useStoreSettings.js';
 
 export const returnPolicySchema = () => ({
   '@type': 'MerchantReturnPolicy',
@@ -12,20 +13,25 @@ export const returnPolicySchema = () => ({
   url: `${SITE_URL}/refund-return-policy`,
 });
 
-export const organizationData = () => ({
+// Same shape as the server-rendered schema (backend src/seo/headBuilder.js) so Google sees one consistent entity.
+export const organizationData = (settings = null) => {
+  const legal = legalFrom(settings, BRAND);
+  const sameAs = legal.social.map((l) => l.url);
+  return {
   '@context': 'https://schema.org',
   '@type': 'OnlineStore',
   '@id': `${SITE_URL}/#organization`,
   name: BRAND.name,
   alternateName: [...new Set([BRAND.tradeName, 'जयरूप'].filter((n) => n && n !== BRAND.name))],
-  legalName: BRAND.legalName,
+  legalName: legal.legalName,
+  ...(legal.gstin ? { vatID: legal.gstin, taxID: legal.gstin } : {}),
   url: SITE_URL,
   logo: { '@type': 'ImageObject', url: BRAND.logo, width: 512, height: 512 },
   image: BRAND.ogImage,
   email: BRAND.email,
   telephone: BRAND.phone,
   slogan: BRAND.tagline,
-  description: BRAND.description,
+  description: `${legal.brand} is a brand of ${legal.legalName} – luxury perfumes, deodorant body sprays and Ayurvedic skin care, made in India.`,
   address: {
     '@type': 'PostalAddress',
     streetAddress: `${BRAND.address.line1}, ${BRAND.address.line2}`,
@@ -46,7 +52,11 @@ export const organizationData = () => ({
   ],
   areaServed: { '@type': 'Country', name: 'India' },
   hasMerchantReturnPolicy: returnPolicySchema(),
-  ...(Object.values(BRAND.social).some(Boolean) ? { sameAs: Object.values(BRAND.social).filter(Boolean) } : {}),
-});
+  ...(sameAs.length ? { sameAs } : {}),
+  };
+};
 
-export const OrganizationSchema = () => <StructuredData id="organization-schema-jsonld" data={organizationData()} />;
+export const OrganizationSchema = () => {
+  const settings = useStoreSettings();
+  return <StructuredData id="organization-schema-jsonld" data={organizationData(settings)} />;
+};

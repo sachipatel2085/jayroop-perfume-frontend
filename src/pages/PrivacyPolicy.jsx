@@ -8,7 +8,7 @@ const sections = [
     heading: 'Introduction',
     content: (
       <p>
-        This Privacy Policy describes how JAYRUP and its affiliates (collectively “JAYRUP, we, our, us”) collect, use, share, protect or otherwise process your
+        This Privacy Policy describes how {BRAND.legalName}, the owner of the Jayrup brand, and its affiliates (collectively “Jayrup, we, our, us”) collect, use, share, protect or otherwise process your
         information/ personal data through our website <a href="https://jayrup.in/">https://jayrup.in/</a> (hereinafter referred to as Platform). Please note that you may
         be able to browse certain sections of the Platform without registering with us. We do not offer any product/service under this Platform outside India and your
         personal data will primarily be stored and processed in India. By visiting this Platform, providing your information or availing any product/service offered on the
@@ -34,7 +34,7 @@ const sections = [
         </p>
         <p>
           <strong>Sign in with Google.</strong> If you choose “Continue with Google”, Google (through Firebase Authentication) shares your name, e-mail address and profile
-          photo with us, and confirms that your e-mail address is verified. We use this only to create and sign in to your JAYRUP account. We do not receive your Google
+          photo with us, and confirms that your e-mail address is verified. We use this only to create and sign in to your Jayrup account. We do not receive your Google
           password. Google does not share your mobile number, so we may ask you to add it for order and delivery updates.
         </p>
         <p>
@@ -46,7 +46,7 @@ const sections = [
         </p>
         <div className="callout callout-warning">
           <p>
-            If you receive an email, a call from a person/association claiming to be JAYRUP seeking any personal data like debit/credit card PIN, net-banking or mobile
+            If you receive an email, a call from a person/association claiming to be Jayrup or {BRAND.legalName} seeking any personal data like debit/credit card PIN, net-banking or mobile
             banking password, we request you to never provide such information. If you have already revealed such information, report it immediately to an appropriate law
             enforcement agency.
           </p>

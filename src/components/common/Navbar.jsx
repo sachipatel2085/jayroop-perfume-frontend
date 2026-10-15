@@ -9,11 +9,11 @@ import {
   X,
   Shield,
   ChevronDown,
-  Sparkles,
   LogOut,
   Package,
 } from "lucide-react";
 import { BrandLogo } from "./BrandLogo.jsx";
+import { AnnouncementBar } from "./AnnouncementBar.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCart } from "../../context/CartContext.jsx";
 import { useWishlist } from "../../context/WishlistContext.jsx";
@@ -96,20 +96,8 @@ export const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-40 w-full transition-all duration-300">
-      {/* Royal Luxury Announcement Bar */}
-      <div className="bg-gradient-to-r from-noir via-[#161309] to-noir border-b border-gold/20 py-1.5 px-3 sm:px-4 text-center">
-        <div className="flex items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] sm:tracking-[0.2em] text-gold-light truncate">
-          <Sparkles className="w-3 h-3 text-gold animate-pulse flex-shrink-0" />
-          <span className="truncate">
-            Complimentary Royal Delivery on Orders Above ₹999
-          </span>
-          <span className="hidden md:inline text-zinc-500">•</span>
-          <span className="hidden md:inline text-gold">
-            Use Code <strong className="font-bold underline">ROYAL10</strong>{" "}
-            for 10% Off
-          </span>
-        </div>
-      </div>
+      {/* Announcement strip – Admin › Settings › Storefront */}
+      <AnnouncementBar />
 
       {/* Main Luxury Navigation Bar */}
       <nav

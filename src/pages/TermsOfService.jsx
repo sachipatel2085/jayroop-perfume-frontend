@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { PolicyLayout } from '../components/common/PolicyLayout.jsx';
-import { BRAND } from '../config/site.js';
+import { BRAND, fullAddress } from '../config/site.js';
 
 const sections = [
   {
@@ -18,6 +18,11 @@ const sections = [
           This document is published in accordance with the provisions of Rule 3 (1) of the Information Technology (Intermediaries guidelines) Rules, 2011 that require
           publishing the rules and regulations, privacy policy and Terms of Use for access or usage of domain name <a href="https://jayrup.in/">https://jayrup.in/</a>{' '}
           (‘Website’), including the related mobile site and mobile application (hereinafter referred to as ‘Platform’).
+        </p>
+        <p>
+          The Platform is owned and operated by <strong>{BRAND.legalName}</strong>, the owner of the <strong>{BRAND.tradeName}</strong> brand, having its principal
+          place of business at {fullAddress()} (hereinafter referred to as ‘Platform Owner’, ‘we’, ‘us’, ‘our’). All sales on the Platform are made by{' '}
+          {BRAND.legalName}, and all invoices are issued in its name.
         </p>
       </>
     ),

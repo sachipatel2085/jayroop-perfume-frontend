@@ -5,7 +5,8 @@ import { SEO } from '../components/seo/SEO.jsx';
 import { OrganizationSchema } from '../components/seo/OrganizationSchema.jsx';
 import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
 import logoImg from '../assets/jayroop-logo.webp';
-import { BRAND, legalIdentity } from '../config/site.js';
+import { BRAND } from '../config/site.js';
+import { useStoreSettings, legalFrom } from '../hooks/useStoreSettings.js';
 import { productService } from '../services/productService.js';
 
 const DIFFERENT = [
@@ -24,6 +25,7 @@ const Bullet = ({ children }) => (
 );
 
 export const AboutUs = () => {
+  const legal = legalFrom(useStoreSettings(), BRAND);
   const [categories, setCategories] = useState([]);
   useEffect(() => {
     productService
@@ -179,12 +181,14 @@ export const AboutUs = () => {
 
       <section className="border-t border-zinc-800 pt-10 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start">
         <p className="text-sm text-zinc-500 leading-relaxed max-w-3xl">
-          {legalIdentity()} operates as a brand owner and marketer. All products are manufactured by licensed third-party cosmetic manufacturers and marketed under the
-          Jayrup brand in compliance with Indian laws.
+          <strong className="text-zinc-300">{legal.legalName}</strong> is the owner and marketer of the {legal.brand} brand and operates jayrup.in
+          {legal.gstin ? ` (GSTIN ${legal.gstin})` : ''}. All products are manufactured by licensed third-party manufacturers and marketed under the Jayrup brand in
+          compliance with Indian laws.
         </p>
         <div className="bg-noir-card border border-gold/20 rounded-xl p-5 text-sm min-w-[260px]">
           <p className="text-[10px] uppercase tracking-[0.25em] text-gold mb-2">Contact Us</p>
-          <p className="font-semibold">{BRAND.tradeName}</p>
+          <p className="font-semibold">{legal.legalName}</p>
+          <p className="text-[11px] text-zinc-500">Brand: {legal.brand}</p>
           <p className="flex items-center gap-2 text-zinc-400 mt-2"><Mail className="w-4 h-4 text-gold" /><a href={`mailto:${BRAND.email}`} className="hover:text-gold">{BRAND.email}</a></p>
           <p className="flex items-center gap-2 text-zinc-400 mt-1"><Globe className="w-4 h-4 text-gold" />https://jayrup.in</p>
         </div>

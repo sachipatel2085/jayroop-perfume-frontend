@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Settings, Banknote, Smartphone, Truck, Building2, Receipt, Globe, Save, CheckCircle2, AlertTriangle, Copy, Loader2, Percent, MapPin, Clock, Calculator, Ban, Info } from 'lucide-react';
+import { Megaphone, Settings, Banknote, Smartphone, Truck, Building2, Receipt, Globe, Save, CheckCircle2, AlertTriangle, Copy, Loader2, Percent, MapPin, Clock, Calculator, Ban, Info } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import api from '../../services/api.js';
 import { Input, Select, Textarea, Alert, Card } from '../../components/ui/Field.jsx';
 import { INDIA_STATES } from '../../config/site.js';
+import { StorefrontTab } from './StorefrontTab.jsx';
 
 const SECTIONS = [
   ['payments', 'Payments', Smartphone],
   ['shipping', 'Shipping', Truck],
   ['gst', 'GST & Tax', Percent],
   ['business', 'Business', Building2],
+  ['storefront', 'Storefront & Reviews', Megaphone],
   ['invoice', 'Invoices', Receipt],
   ['seo', 'SEO & Tracking', Globe],
 ];
@@ -212,8 +214,8 @@ export const AdminSettings = () => {
               value={s.business.tagline || ''}
               onChange={(e) => setB({ tagline: e.target.value })}
             />
-            <Input label="Legal name (as on GST certificate)" value={s.business.legalName} onChange={(e) => setB({ legalName: e.target.value })} />
-            <Input label="Registration note" value={s.business.registrationNote} onChange={(e) => setB({ registrationNote: e.target.value })} />
+            <Input label="Legal name (as on GST certificate, bank & PhonePe)" hint="shown in the footer, policies, invoices & Google" value={s.business.legalName} onChange={(e) => setB({ legalName: e.target.value })} />
+            <Input label="Registration note (optional)" hint="e.g. MSME Registered – only if this entity is" value={s.business.registrationNote} onChange={(e) => setB({ registrationNote: e.target.value })} />
             <Input label="Udyam (MSME) no." value={s.business.udyamNumber} onChange={(e) => setB({ udyamNumber: e.target.value.toUpperCase() })} />
             <Input label="Phone" value={s.business.phone} onChange={(e) => setB({ phone: e.target.value })} />
             <Input label="Address line 1" value={s.business.addressLine1} onChange={(e) => setB({ addressLine1: e.target.value })} />
@@ -226,13 +228,12 @@ export const AdminSettings = () => {
             <Input label="PIN code" value={s.business.postalCode} onChange={(e) => setB({ postalCode: e.target.value })} />
             <Input label="Support e-mail" type="email" value={s.business.email} onChange={(e) => setB({ email: e.target.value })} />
             <Input label="WhatsApp" value={s.business.whatsapp} onChange={(e) => setB({ whatsapp: e.target.value })} />
-            <Input label="Instagram URL" value={s.business.instagram} onChange={(e) => setB({ instagram: e.target.value })} />
-            <Input label="Facebook URL" value={s.business.facebook} onChange={(e) => setB({ facebook: e.target.value })} />
-            <Input label="YouTube URL" value={s.business.youtube} onChange={(e) => setB({ youtube: e.target.value })} />
           </div>
           <p className="text-xs text-zinc-500 mt-4">GSTIN, PAN, GST scheme and tax rates are in the <b>GST &amp; Tax</b> tab. The state above decides CGST+SGST vs IGST on invoices.</p>
         </Card>
       )}
+
+      {tab === 'storefront' && <StorefrontTab s={s} set={set} setB={setB} Toggle={Toggle} />}
 
       {tab === 'invoice' && (
         <Card title="Invoice format" icon={Receipt}>

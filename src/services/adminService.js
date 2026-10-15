@@ -83,8 +83,12 @@ export const adminService = {
   deleteBlog: async (id) => (await api.delete(`/blogs/${id}`)).data,
 
   // Reviews Moderation
-  getReviews: async () => (await api.get('/reviews/admin')).data,
+  getReviews: async (params) => api.get('/reviews/admin', { params }), // { data, statusCounts, pagination }
+  setReviewStatus: async (id, status, reason = '') => (await api.put(`/reviews/admin/${id}/status`, { status, reason })).data,
   toggleReviewApproval: async (id) => (await api.put(`/reviews/admin/${id}/status`)).data,
+  replyToReview: async (id, text) => (await api.put(`/reviews/admin/${id}/reply`, { text })).data,
+  toggleReviewFeatured: async (id) => (await api.put(`/reviews/admin/${id}/feature`)).data,
+  bulkReviews: async (ids, action, reason = '') => api.post('/reviews/admin/bulk', { ids, action, reason }),
   deleteReview: async (id) => (await api.delete(`/reviews/admin/${id}`)).data,
 
   // Direct Media Upload (Cloudinary)

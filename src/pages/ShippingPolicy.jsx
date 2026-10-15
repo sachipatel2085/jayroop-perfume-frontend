@@ -111,7 +111,7 @@ const sections = [
         </ul>
         <div className="callout callout-info">
           <p>
-            <strong>{BRAND.tradeName}</strong>
+            <strong>{BRAND.legalName}</strong> ({BRAND.tradeName})
             <br />
             {BRAND.address.line1}
             <br />

@@ -7,7 +7,8 @@ import { BreadcrumbSchema } from '../components/seo/BreadcrumbSchema.jsx';
 import { contactService } from '../services/contactService.js';
 import { Input, Select, Textarea, Alert } from '../components/ui/Field.jsx';
 import { BRAND, fullAddress } from '../config/site.js';
-import { useStoreSettings } from '../hooks/useStoreSettings.js';
+import { useStoreSettings, legalFrom } from '../hooks/useStoreSettings.js';
+import { SocialLinks } from '../components/common/SocialLinks.jsx';
 
 const SUBJECTS = [
   'General Inquiry',
@@ -22,6 +23,7 @@ const SUBJECTS = [
 
 export const ContactUs = () => {
   const storeSettings = useStoreSettings();
+  const legal = legalFrom(storeSettings, BRAND);
   const [form, setForm] = useState({ name: '', email: '', phone: '', orderNumber: '', subject: 'General Inquiry', message: '', website: '' });
   const [status, setStatus] = useState(null);
   const [sending, setSending] = useState(false);
@@ -104,8 +106,9 @@ export const ContactUs = () => {
 
             <div className="bg-noir-card border border-zinc-800 rounded-2xl p-6 space-y-4 text-sm">
               <p className="text-[10px] uppercase tracking-[0.25em] text-gold">Business</p>
-              <p className="font-semibold text-zinc-100">{BRAND.tradeName}</p>
-              <p className="flex gap-3 text-zinc-400"><MapPin className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" /><span><span className="text-zinc-500 block text-xs">Business address</span>{BRAND.tradeName}, {fullAddress()}</span></p>
+              <p className="font-semibold text-zinc-100">{legal.legalName}</p>
+              <p className="text-xs text-zinc-500 -mt-2">Owner of the {legal.brand} brand</p>
+              <p className="flex gap-3 text-zinc-400"><MapPin className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" /><span><span className="text-zinc-500 block text-xs">Business address</span>{legal.legalName}, {fullAddress()}</span></p>
               <p className="flex gap-3 text-zinc-400"><Phone className="w-4 h-4 text-gold" /><a href={BRAND.phoneHref} className="hover:text-gold">{BRAND.phone}</a></p>
               <p className="flex gap-3 text-zinc-400"><Mail className="w-4 h-4 text-gold" /><a href={`mailto:${BRAND.email}`} className="hover:text-gold">{BRAND.email}</a></p>
               <p className="flex gap-3 text-zinc-400"><MessageCircle className="w-4 h-4 text-gold" /><a href={BRAND.whatsappHref} target="_blank" rel="noopener noreferrer" className="hover:text-gold">Chat on WhatsApp</a></p>
@@ -113,6 +116,12 @@ export const ContactUs = () => {
                 <p className="flex gap-3 text-zinc-400"><BadgeCheck className="w-4 h-4 text-gold" /><span>GSTIN: <span className="font-mono text-zinc-200">{storeSettings.gst.gstin}</span></span></p>
               )}
               <p className="flex gap-3 text-zinc-400"><Clock className="w-4 h-4 text-gold" />Mon – Sat, 10:00 AM – 6:00 PM IST</p>
+              {legal.social.length > 0 && (
+                <div className="pt-2 border-t border-zinc-800">
+                  <p className="text-[10px] uppercase tracking-[0.25em] text-gold mb-2">Follow us</p>
+                  <SocialLinks links={legal.social} />
+                </div>
+              )}
             </div>
           </div>
 

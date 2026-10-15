@@ -4,6 +4,7 @@ import { ChevronRight, Mail, Phone, MapPin, FileText, Printer } from 'lucide-rea
 import { SEO } from '../seo/SEO.jsx';
 import { BreadcrumbSchema } from '../seo/BreadcrumbSchema.jsx';
 import { BRAND, fullAddress } from '../../config/site.js';
+import { useStoreSettings, legalFrom } from '../../hooks/useStoreSettings.js';
 
 const RELATED = [
   ['/terms-and-conditions', 'Terms and Conditions'],
@@ -17,6 +18,7 @@ const RELATED = [
  * print button, breadcrumb schema and a contact card (required by payment gateways).
  */
 export const PolicyLayout = ({ title, eyebrow = 'Policies', intro, updated, path, seoTitle, seoDescription, sections = [], children }) => {
+  const legal = legalFrom(useStoreSettings(), BRAND);
   const [active, setActive] = useState(sections[0]?.id);
 
   useEffect(() => {
@@ -96,8 +98,11 @@ export const PolicyLayout = ({ title, eyebrow = 'Policies', intro, updated, path
           <div className="mt-14 grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
             <div className="bg-noir-card border border-gold/20 rounded-xl p-5 text-sm">
               <p className="text-[10px] uppercase tracking-[0.25em] text-gold mb-3">Contact us</p>
-              <p className="font-semibold text-zinc-100">{BRAND.tradeName}</p>
-              <p className="text-xs text-zinc-500 mb-3">(Under {BRAND.legalName} – {BRAND.registration})</p>
+              <p className="font-semibold text-zinc-100">{legal.legalName}</p>
+              <p className="text-xs text-zinc-500 mb-3">
+                Owner of the {legal.brand} brand{legal.registration ? ` · ${legal.registration}` : ''}
+                {legal.gstin ? ` · GSTIN ${legal.gstin}` : ''}
+              </p>
               <p className="flex gap-2 text-xs text-zinc-400 mb-2"><MapPin className="w-4 h-4 text-gold flex-shrink-0" />{fullAddress()}</p>
               <p className="flex gap-2 text-xs text-zinc-400 mb-1"><Mail className="w-4 h-4 text-gold" /><a href={`mailto:${BRAND.email}`} className="hover:text-gold">{BRAND.email}</a></p>
               <p className="flex gap-2 text-xs text-zinc-400"><Phone className="w-4 h-4 text-gold" /><a href={BRAND.phoneHref} className="hover:text-gold">{BRAND.phone}</a></p>

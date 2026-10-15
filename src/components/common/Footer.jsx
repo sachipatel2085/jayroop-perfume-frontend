@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { BrandLogo } from './BrandLogo.jsx';
 import { ShieldCheck, Truck, RefreshCw, Award, Mail, Phone, MapPin, MessageCircle, Smartphone, CreditCard, Landmark, Banknote, BadgeCheck } from 'lucide-react';
 import { BRAND, fullAddress } from '../../config/site.js';
-import { useStoreSettings } from '../../hooks/useStoreSettings.js';
+import { useStoreSettings, legalFrom } from '../../hooks/useStoreSettings.js';
+import { SocialLinks } from './SocialLinks.jsx';
 
 const Col = ({ title, links }) => (
   <div>
@@ -20,6 +21,7 @@ const Col = ({ title, links }) => (
 
 export const Footer = () => {
   const storeSettings = useStoreSettings();
+  const legal = legalFrom(storeSettings, BRAND);
   const [email, setEmail] = useState('');
   const [joined, setJoined] = useState(false);
 
@@ -51,13 +53,15 @@ export const Footer = () => {
             {BRAND.tagline}
           </span>
           <address className="not-italic pt-2 text-[11px] text-zinc-500 space-y-2">
-            <p className="flex gap-2"><MapPin className="w-3.5 h-3.5 text-gold flex-shrink-0 mt-0.5" /><span>{BRAND.tradeName}, {fullAddress()}</span></p>
+            <p className="flex gap-2"><MapPin className="w-3.5 h-3.5 text-gold flex-shrink-0 mt-0.5" /><span>{legal.legalName}, {fullAddress()}</span></p>
             <p className="flex gap-2"><Phone className="w-3.5 h-3.5 text-gold flex-shrink-0" /><a href={BRAND.phoneHref} className="hover:text-gold">{BRAND.phone}</a></p>
             <p className="flex gap-2"><Mail className="w-3.5 h-3.5 text-gold flex-shrink-0" /><a href={`mailto:${BRAND.email}`} className="hover:text-gold">{BRAND.email}</a></p>
             <p className="flex gap-2"><MessageCircle className="w-3.5 h-3.5 text-gold flex-shrink-0" /><a href={BRAND.whatsappHref} target="_blank" rel="noopener noreferrer" className="hover:text-gold">WhatsApp us</a></p>
             {storeSettings?.gst?.gstin && (
               <p className="flex gap-2"><BadgeCheck className="w-3.5 h-3.5 text-gold flex-shrink-0" /><span>GSTIN: <span className="font-mono text-zinc-300">{storeSettings.gst.gstin}</span></span></p>
             )}
+            <p className="flex gap-2 text-zinc-500"><span>Operated by <span className="text-zinc-300">{legal.legalName}</span></span></p>
+            <SocialLinks links={legal.social} size="sm" className="pt-2" />
           </address>
         </div>
 
@@ -119,7 +123,8 @@ export const Footer = () => {
       <div className="border-t border-zinc-900 py-6 px-4 text-zinc-500 text-[11px]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center">
           <p>
-            Copyright © {new Date().getFullYear()} jayrup.in · {BRAND.tradeName} (under {BRAND.legalName} – {BRAND.registration}). All rights reserved.
+            © {new Date().getFullYear()} {legal.legalName}. {legal.brand} is a brand of {legal.legalName}
+            {legal.registration ? ` (${legal.registration})` : ''}. All rights reserved.
           </p>
           <p className="text-gold/80">Made in India 🇮🇳</p>
         </div>

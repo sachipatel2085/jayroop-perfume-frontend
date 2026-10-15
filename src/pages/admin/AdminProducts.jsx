@@ -104,7 +104,7 @@ const emptyProduct = (categoryId = '') => ({
   countryOfOrigin: 'India',
   shelfLife: '',
   manufacturerDetails: '',
-  marketedBy: 'FITJAYESH (Jayrup), G-28, Metropolis Complex, Gambhoi–Bhiloda Road, Gambhoi, Himatnagar, Sabarkantha, Gujarat – 383030',
+  marketedBy: 'JAYRUP TRADING COMPANY (brand: Jayrup), G-28, Metropolis Complex, Gambhoi–Bhiloda Road, Gambhoi, Himatnagar, Sabarkantha, Gujarat – 383030',
   packerDetails: '',
   importerDetails: '',
   licenseNumber: '',
