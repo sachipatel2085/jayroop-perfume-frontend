@@ -21,7 +21,9 @@ import {
   Loader2,
   ExternalLink,
   Package,
+  CheckSquare,
 } from 'lucide-react';
+import { BulkPrintDialog } from '../../components/admin/BulkPrintDialog.jsx';
 import { adminService } from '../../services/adminService.js';
 import { OrderStatusBadge, PaymentBadge, Pill } from '../../components/ui/StatusBadge.jsx';
 import { Alert } from '../../components/ui/Field.jsx';
@@ -60,6 +62,24 @@ export const AdminOrders = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
+  // Bulk selection survives paging / filters: id → order
+  const [picked, setPicked] = useState(() => new Map());
+  const [printing, setPrinting] = useState(false);
+  const togglePick = (o) =>
+    setPicked((prev) => {
+      const next = new Map(prev);
+      if (next.has(o._id)) next.delete(o._id);
+      else next.set(o._id, o);
+      return next;
+    });
+  const allOnPage = orders.length > 0 && orders.every((o) => picked.has(o._id));
+  const togglePage = () =>
+    setPicked((prev) => {
+      const next = new Map(prev);
+      if (allOnPage) orders.forEach((o) => next.delete(o._id));
+      else orders.forEach((o) => next.set(o._id, o));
+      return next;
+    });
 
   const filters = {
     status: params.get('status') || '',
@@ -166,10 +186,31 @@ export const AdminOrders = () => {
 
       {error && <Alert>{error}</Alert>}
 
+      {picked.size > 0 && (
+        <div className="sticky top-2 z-30 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/40 bg-noir-card/95 backdrop-blur px-4 py-3 shadow-xl">
+          <p className="text-xs text-zinc-200 flex items-center gap-2">
+            <CheckSquare className="w-4 h-4 text-gold" /> <strong>{picked.size}</strong> order{picked.size > 1 ? 's' : ''} selected
+            <span className="text-zinc-500">· {[...picked.values()].filter((o) => o.invoice?.number).length} with invoice</span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {!allOnPage && orders.length > 0 && (
+              <button onClick={togglePage} className="text-xs text-gold hover:underline px-2">Select all on this page</button>
+            )}
+            <button onClick={() => setPicked(new Map())} className="btn-outline-gold rounded-lg !py-2 !px-3 text-xs">Clear</button>
+            <button onClick={() => setPrinting(true)} className="btn-gold rounded-lg !py-2 !px-4 text-xs">
+              <Printer className="w-4 h-4 mr-2" /> Invoices / labels PDF
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-noir-card border border-zinc-800 rounded-xl overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead className="border-b border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-400">
             <tr>
+              <th className="py-3 pl-4 pr-1 w-8">
+                <input type="checkbox" className="accent-[#D4AF37] w-4 h-4 cursor-pointer" checked={allOnPage} onChange={togglePage} aria-label="Select all orders on this page" />
+              </th>
               <th className="py-3 px-4">Order</th>
               <th className="py-3 px-4">Customer</th>
               <th className="py-3 px-4">Items</th>
@@ -181,14 +222,17 @@ export const AdminOrders = () => {
           </thead>
           <tbody className="divide-y divide-zinc-800/60">
             {loading && (
-              <tr><td colSpan={7} className="py-10 text-center"><Loader2 className="w-5 h-5 animate-spin text-gold inline" /></td></tr>
+              <tr><td colSpan={8} className="py-10 text-center"><Loader2 className="w-5 h-5 animate-spin text-gold inline" /></td></tr>
             )}
             {!loading && orders.length === 0 && (
-              <tr><td colSpan={7} className="py-10 text-center text-zinc-500">No orders match these filters.</td></tr>
+              <tr><td colSpan={8} className="py-10 text-center text-zinc-500">No orders match these filters.</td></tr>
             )}
             {!loading &&
               orders.map((o) => (
-                <tr key={o._id} onClick={() => setSelected(o)} className="hover:bg-white/[0.03] cursor-pointer">
+                <tr key={o._id} onClick={() => setSelected(o)} className={`hover:bg-white/[0.03] cursor-pointer ${picked.has(o._id) ? 'bg-gold/[0.06]' : ''}`}>
+                  <td className="py-3 pl-4 pr-1" onClick={(e) => e.stopPropagation()}>
+                    <input type="checkbox" className="accent-[#D4AF37] w-4 h-4 cursor-pointer" checked={picked.has(o._id)} onChange={() => togglePick(o)} aria-label={`Select order ${o.orderNumber}`} />
+                  </td>
                   <td className="py-3 px-4">
                     <span className="font-mono font-bold text-gold">{o.orderNumber}</span>
                     <span className="block text-[10px] text-zinc-500">{dt(o.createdAt)}</span>
@@ -222,6 +266,7 @@ export const AdminOrders = () => {
         </div>
       )}
 
+      {printing && <BulkPrintDialog orders={[...picked.values()]} onClose={() => setPrinting(false)} />}
       {selected && <OrderDrawer orderId={selected._id} onClose={() => setSelected(null)} onUpdated={onUpdated} />}
     </div>
   );

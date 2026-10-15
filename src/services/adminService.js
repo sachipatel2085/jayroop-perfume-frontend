@@ -21,6 +21,18 @@ export const adminService = {
   openInvoice: (id, copy) => downloadFile(`/orders/${id}/invoice?inline=1${copy ? `&copy=${copy}` : ''}`, { open: true }),
   downloadInvoice: (id, number) => downloadFile(`/orders/${id}/invoice`, { filename: `Invoice-${number || id}.pdf` }),
   openLabel: (id) => downloadFile(`/orders/${id}/label`, { open: true }),
+  getPrintOptions: async () => (await api.get('/orders/print/options')).data,
+  // Many invoices / labels in one PDF → { blob, summary }
+  bulkPrint: async (options) => {
+    const res = await api.post('/orders/print', options, { responseType: 'blob', rawResponse: true, timeout: 180000 });
+    let summary = null;
+    try {
+      summary = JSON.parse(decodeURIComponent(res.headers?.['x-print-summary'] || ''));
+    } catch {
+      summary = null;
+    }
+    return { blob: res.data instanceof Blob ? res.data : new Blob([res.data], { type: 'application/pdf' }), summary };
+  },
   syncPayment: async (id) => (await api.post(`/payments/admin/${id}/sync`)).data,
   refundOrder: async (id, payload) => (await api.post(`/payments/admin/${id}/refund`, payload)).data,
   syncRefund: async (id, refundId) => (await api.post(`/payments/admin/${id}/refunds/${refundId}/sync`)).data,
