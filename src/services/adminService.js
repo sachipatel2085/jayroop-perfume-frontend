@@ -33,6 +33,12 @@ export const adminService = {
     }
     return { blob: res.data instanceof Blob ? res.data : new Blob([res.data], { type: 'application/pdf' }), summary };
   },
+  // Bulk order tools → { success, message, data }
+  bulkOrders: async (payload) => api.post('/orders/bulk', payload, { timeout: 180000 }),
+  selectOrders: async (params) => api.get('/orders/bulk/select', { params }), // { total, limited, data }
+  getOrderQueues: async () => api.get('/orders/bulk/queues'),
+  lookupOrders: async (terms) => api.post('/orders/bulk/lookup', { terms }), // { data, missing }
+  bulkDispatch: async (payload) => api.post('/orders/bulk/dispatch', payload, { timeout: 300000 }),
   syncPayment: async (id) => (await api.post(`/payments/admin/${id}/sync`)).data,
   refundOrder: async (id, payload) => (await api.post(`/payments/admin/${id}/refund`, payload)).data,
   syncRefund: async (id, refundId) => (await api.post(`/payments/admin/${id}/refunds/${refundId}/sync`)).data,

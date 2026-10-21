@@ -55,6 +55,7 @@ const AdminDashboard = lazyNamed(() => import('./pages/admin/AdminDashboard.jsx'
 const AdminProducts = lazyNamed(() => import('./pages/admin/AdminProducts.jsx'), 'AdminProducts');
 const AdminCategories = lazyNamed(() => import('./pages/admin/AdminCategories.jsx'), 'AdminCategories');
 const AdminOrders = lazyNamed(() => import('./pages/admin/AdminOrders.jsx'), 'AdminOrders');
+const AdminBulkOrders = lazyNamed(() => import('./pages/admin/AdminBulkOrders.jsx'), 'AdminBulkOrders');
 const AdminReports = lazyNamed(() => import('./pages/admin/AdminReports.jsx'), 'AdminReports');
 const AdminCustomers = lazyNamed(() => import('./pages/admin/AdminCustomers.jsx'), 'AdminCustomers');
 const AdminInquiries = lazyNamed(() => import('./pages/admin/AdminInquiries.jsx'), 'AdminInquiries');
@@ -182,6 +183,7 @@ export default function App() {
               >
                 <Route index element={<AdminDashboard />} />
                 <Route path="orders" element={<AdminOrders />} />
+                <Route path="bulk-orders" element={<AdminBulkOrders />} />
                 <Route path="reports" element={<AdminReports />} />
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="categories" element={<AdminCategories />} />

@@ -21,6 +21,7 @@ import {
   BarChart3,
   Users,
   Inbox,
+  ClipboardList,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { BrandLogo } from '../common/BrandLogo.jsx';
@@ -36,6 +37,7 @@ export const AdminLayout = () => {
   const navItems = [
     { label: 'Overview', path: '/admin', icon: LayoutDashboard },
     { label: 'Orders & Invoices', path: '/admin/orders', icon: ShoppingBag },
+    { label: 'Bulk Order Update', path: '/admin/bulk-orders', icon: ClipboardList },
     { label: 'Reports & GST', path: '/admin/reports', icon: BarChart3 },
     { label: 'Products', path: '/admin/products', icon: Package },
     { label: 'Categories', path: '/admin/categories', icon: Layers },

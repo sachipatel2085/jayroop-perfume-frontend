@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   Truck,
   Search,
@@ -21,9 +21,12 @@ import {
   Loader2,
   ExternalLink,
   Package,
-  CheckSquare,
+  ClipboardList,
 } from 'lucide-react';
 import { BulkPrintDialog } from '../../components/admin/BulkPrintDialog.jsx';
+import { BulkActionBar } from '../../components/admin/BulkActionBar.jsx';
+import { BulkActionDialog } from '../../components/admin/BulkActionDialog.jsx';
+import { TRANSITIONS, COURIERS, exportOrdersCsv } from '../../components/admin/bulkOrderUtils.js';
 import { adminService } from '../../services/adminService.js';
 import { OrderStatusBadge, PaymentBadge, Pill } from '../../components/ui/StatusBadge.jsx';
 import { Alert } from '../../components/ui/Field.jsx';
@@ -43,18 +46,6 @@ const RETURN_REASON_LABEL = {
   NOT_AS_DESCRIBED: 'Not as described',
   CHANGED_MIND: 'Changed mind (unused)',
 };
-const TRANSITIONS = {
-  PENDING_PAYMENT: ['PROCESSING', 'CANCELLED'],
-  PAID: ['PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUND_REQUESTED'],
-  PROCESSING: ['SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUND_REQUESTED'],
-  SHIPPED: ['DELIVERED', 'PROCESSING', 'CANCELLED', 'REFUND_REQUESTED'],
-  DELIVERED: ['REFUND_REQUESTED', 'SHIPPED'],
-  REFUND_REQUESTED: ['PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'],
-  CANCELLED: [],
-  REFUNDED: [],
-};
-const COURIERS = ['Delhivery', 'BlueDart', 'DTDC', 'Shiprocket', 'Xpressbees', 'Ecom Express', 'Ekart', 'India Post Speed Post', 'Other'];
-
 export const AdminOrders = () => {
   const [params, setParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
@@ -65,13 +56,25 @@ export const AdminOrders = () => {
   // Bulk selection survives paging / filters: id → order
   const [picked, setPicked] = useState(() => new Map());
   const [printing, setPrinting] = useState(false);
-  const togglePick = (o) =>
+  const [bulk, setBulk] = useState(null); // { action, presetStatus }
+  const [selectingAll, setSelectingAll] = useState(false);
+  const [notice, setNotice] = useState(null);
+  const lastIndex = useRef(null);
+  // Click = toggle one · Shift+click = select the whole range on this page
+  const togglePick = (o, index, shift) => {
+    const anchor = lastIndex.current;
+    lastIndex.current = index;
     setPicked((prev) => {
       const next = new Map(prev);
-      if (next.has(o._id)) next.delete(o._id);
+      if (shift && anchor !== null && anchor !== index) {
+        const [a, b] = [Math.min(anchor, index), Math.max(anchor, index)];
+        const on = !prev.has(o._id);
+        orders.slice(a, b + 1).forEach((x) => (on ? next.set(x._id, x) : next.delete(x._id)));
+      } else if (next.has(o._id)) next.delete(o._id);
       else next.set(o._id, o);
       return next;
     });
+  };
   const allOnPage = orders.length > 0 && orders.every((o) => picked.has(o._id));
   const togglePage = () =>
     setPicked((prev) => {
@@ -121,6 +124,7 @@ export const AdminOrders = () => {
   }, [params]);
 
   useEffect(() => {
+    lastIndex.current = null;
     load();
   }, [load]);
 
@@ -133,6 +137,45 @@ export const AdminOrders = () => {
   const onUpdated = (o) => {
     setSelected(o);
     setOrders((prev) => prev.map((x) => (x._id === o._id ? { ...x, ...o } : x)));
+    setPicked((prev) => (prev.has(o._id) ? new Map(prev).set(o._id, { ...prev.get(o._id), ...o }) : prev));
+  };
+
+  const selectAllMatching = async () => {
+    try {
+      setSelectingAll(true);
+      const res = await adminService.selectOrders({
+        status: filters.status || undefined,
+        paymentMethod: filters.paymentMethod || undefined,
+        search: filters.search || undefined,
+        from: filters.from || undefined,
+        to: filters.to || undefined,
+      });
+      setPicked(new Map((res.data || []).map((o) => [o._id, o])));
+      if (res.limited) setNotice(`Selected the first ${res.max} of ${res.total} orders – narrow the filters to reach the rest.`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSelectingAll(false);
+    }
+  };
+
+  const onBulkAction = (key) => {
+    const list = [...picked.values()];
+    if (key === 'EXPORT') return exportOrdersCsv(list);
+    if (key === 'PROCESSING') return setBulk({ action: 'STATUS', presetStatus: 'PROCESSING' });
+    if (key === 'CANCEL') return setBulk({ action: 'STATUS', presetStatus: 'CANCELLED' });
+    return setBulk({ action: key });
+  };
+
+  // Patch changed orders into the table + selection straight away; the list reloads when the dialog closes
+  const onBulkDone = (changed) => {
+    const byId = new Map(changed.map((o) => [o._id, o]));
+    setOrders((prev) => prev.map((x) => (byId.has(x._id) ? { ...x, ...byId.get(x._id) } : x)));
+    setPicked((prev) => {
+      const next = new Map(prev);
+      byId.forEach((o, id) => next.has(id) && next.set(id, { ...next.get(id), ...o }));
+      return next;
+    });
   };
 
   return (
@@ -142,12 +185,17 @@ export const AdminOrders = () => {
           <h1 className="font-serif text-2xl uppercase tracking-wider text-zinc-100 font-bold">Orders</h1>
           <p className="text-xs text-zinc-400 mt-1">Fulfil, invoice, print labels, verify PhonePe payments and refund — all in one place.</p>
         </div>
-        <button
-          onClick={() => adminService.exportReport('orders', 'xlsx', { from: filters.from || undefined, to: filters.to || undefined }).catch((e) => setError(e.message))}
-          className="btn-outline-gold rounded-lg !py-2"
-        >
-          <FileSpreadsheet className="w-4 h-4 mr-2" /> Export to Excel
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/admin/bulk-orders" className="btn-outline-gold rounded-lg !py-2">
+            <ClipboardList className="w-4 h-4 mr-2" /> Bulk order update
+          </Link>
+          <button
+            onClick={() => adminService.exportReport('orders', 'xlsx', { from: filters.from || undefined, to: filters.to || undefined }).catch((e) => setError(e.message))}
+            className="btn-outline-gold rounded-lg !py-2"
+          >
+            <FileSpreadsheet className="w-4 h-4 mr-2" /> Export to Excel
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -186,23 +234,21 @@ export const AdminOrders = () => {
 
       {error && <Alert>{error}</Alert>}
 
-      {picked.size > 0 && (
-        <div className="sticky top-2 z-30 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/40 bg-noir-card/95 backdrop-blur px-4 py-3 shadow-xl">
-          <p className="text-xs text-zinc-200 flex items-center gap-2">
-            <CheckSquare className="w-4 h-4 text-gold" /> <strong>{picked.size}</strong> order{picked.size > 1 ? 's' : ''} selected
-            <span className="text-zinc-500">· {[...picked.values()].filter((o) => o.invoice?.number).length} with invoice</span>
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {!allOnPage && orders.length > 0 && (
-              <button onClick={togglePage} className="text-xs text-gold hover:underline px-2">Select all on this page</button>
-            )}
-            <button onClick={() => setPicked(new Map())} className="btn-outline-gold rounded-lg !py-2 !px-3 text-xs">Clear</button>
-            <button onClick={() => setPrinting(true)} className="btn-gold rounded-lg !py-2 !px-4 text-xs">
-              <Printer className="w-4 h-4 mr-2" /> Invoices / labels PDF
-            </button>
-          </div>
-        </div>
-      )}
+      {notice && <Alert tone="info">{notice}</Alert>}
+
+      <BulkActionBar
+        selected={[...picked.values()]}
+        matchingTotal={meta.total}
+        onSelectAllMatching={selectAllMatching}
+        selectingAll={selectingAll}
+        onSelectPage={!allOnPage && orders.length > 0 ? togglePage : null}
+        onClear={() => {
+          setPicked(new Map());
+          setNotice(null);
+        }}
+        onAction={onBulkAction}
+        onPrint={() => setPrinting(true)}
+      />
 
       <div className="bg-noir-card border border-zinc-800 rounded-xl overflow-x-auto">
         <table className="w-full text-left text-xs">
@@ -228,10 +274,18 @@ export const AdminOrders = () => {
               <tr><td colSpan={8} className="py-10 text-center text-zinc-500">No orders match these filters.</td></tr>
             )}
             {!loading &&
-              orders.map((o) => (
+              orders.map((o, idx) => (
                 <tr key={o._id} onClick={() => setSelected(o)} className={`hover:bg-white/[0.03] cursor-pointer ${picked.has(o._id) ? 'bg-gold/[0.06]' : ''}`}>
                   <td className="py-3 pl-4 pr-1" onClick={(e) => e.stopPropagation()}>
-                    <input type="checkbox" className="accent-[#D4AF37] w-4 h-4 cursor-pointer" checked={picked.has(o._id)} onChange={() => togglePick(o)} aria-label={`Select order ${o.orderNumber}`} />
+                    <input
+                      type="checkbox"
+                      className="accent-[#D4AF37] w-4 h-4 cursor-pointer"
+                      checked={picked.has(o._id)}
+                      onChange={() => {}}
+                      onClick={(e) => togglePick(o, idx, e.shiftKey)}
+                      aria-label={`Select order ${o.orderNumber}`}
+                      title="Shift + click to select a range"
+                    />
                   </td>
                   <td className="py-3 px-4">
                     <span className="font-mono font-bold text-gold">{o.orderNumber}</span>
@@ -267,6 +321,18 @@ export const AdminOrders = () => {
       )}
 
       {printing && <BulkPrintDialog orders={[...picked.values()]} onClose={() => setPrinting(false)} />}
+      {bulk && (
+        <BulkActionDialog
+          orders={[...picked.values()]}
+          action={bulk.action}
+          presetStatus={bulk.presetStatus}
+          onDone={onBulkDone}
+          onClose={() => {
+            setBulk(null);
+            load();
+          }}
+        />
+      )}
       {selected && <OrderDrawer orderId={selected._id} onClose={() => setSelected(null)} onUpdated={onUpdated} />}
     </div>
   );
