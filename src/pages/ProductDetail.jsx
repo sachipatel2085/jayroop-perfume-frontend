@@ -75,6 +75,9 @@ export const ProductDetail = () => {
   const [qty, setQty] = useState(1);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  // Network / server problems are NOT "not found" – they must never add noindex (Google would drop the page)
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [zoom, setZoom] = useState(null);
   const [shipping, setShipping] = useState({ freeShippingThreshold: 999, flatShippingFee: 100, codEnabled: true });
   const [copied, setCopied] = useState(false);
@@ -85,11 +88,22 @@ export const ProductDetail = () => {
     let alive = true;
     setLoading(true);
     setNotFound(false);
-    productService
-      .getProductBySlug(slug)
+    setLoadError(false);
+    // One quiet retry for brief network / rate-limit blips (also protects Googlebot's render)
+    const fetchProduct = () =>
+      productService.getProductBySlug(slug).catch(async (err) => {
+        if (err?.status === 404 || err?.status === 410 || err?.data?.redirectTo) throw err;
+        await new Promise((r) => setTimeout(r, 1500));
+        return productService.getProductBySlug(slug);
+      });
+    fetchProduct()
       .then((res) => {
         if (!alive) return;
-        if (!res?.product) throw new Error('not found');
+        if (!res?.product) {
+          const e = new Error('not found');
+          e.status = 404;
+          throw e;
+        }
         setProduct(res.product);
         setMeta(res.meta || {});
         setRelated(res.relatedProducts || []);
@@ -105,14 +119,15 @@ export const ProductDetail = () => {
           navigate(err.data.redirectTo, { replace: true });
           return;
         }
-        setNotFound(true);
+        if (err?.status === 404 || err?.status === 410) setNotFound(true);
+        else setLoadError(true);
       })
       .finally(() => alive && setLoading(false));
     window.scrollTo(0, 0);
     return () => {
       alive = false;
     };
-  }, [slug, navigate]);
+  }, [slug, navigate, reloadKey]);
 
   useEffect(() => {
     paymentService.getPublicSettings().then((s) => s && setShipping(s)).catch(() => {});
@@ -143,6 +158,21 @@ export const ProductDetail = () => {
           <div className="h-6 w-40 bg-noir-card rounded" />
           <div className="h-24 bg-noir-card rounded" />
           <div className="h-12 bg-noir-card rounded" />
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    // No <SEO> here on purpose: the server-rendered title, description, robots (index) and
+    // product schema stay in place, so a temporary outage never de-indexes the product.
+    return (
+      <div className="bg-noir min-h-[60vh] py-24 text-center px-4">
+        <h1 className="font-serif text-2xl text-zinc-200 uppercase tracking-wider mb-4">Couldn’t load this product</h1>
+        <p className="text-sm text-zinc-500 mb-6">Please check your connection and try again.</p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <button type="button" onClick={() => setReloadKey((k) => k + 1)} className="btn-gold">Try again</button>
+          <Link to="/shop" className="btn-outline-gold">Browse all products</Link>
         </div>
       </div>
     );
